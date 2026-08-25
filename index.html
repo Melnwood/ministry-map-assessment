@@ -868,7 +868,7 @@ function vMap(){
   return `<div class="view"><div class="wrap">
     <div class="eyebrow">Five Challenges of Christ</div>
     <h1>The furthest invitation<br>each student has <em>said yes to</em></h1>
-    <p class="lede">The five challenges are things you ask a student, not places you put them. Tap any name to move them, because the only reason to move someone is that the invitation was made and they answered it.</p>
+    <p class="lede">The five challenges are things you ask a student, not places you put them. Tap a name to move them — only move someone once you have actually asked, and they have said yes.</p>
 
     ${(()=>{
       const byS=STUDENTS.filter(x=>x.came==='Invited by a student').length;
@@ -936,7 +936,7 @@ function vMap(){
              <div class="chip-act"><button class="prim" data-newprog="go">Add</button><button data-newprog="cancel">Cancel</button></div></div>`
           : `<button class="prow addch" data-newprog="open">+ Add a programme</button>`}
       </div>
-      <p class="note" style="margin-top:12px">Everything else in the app reads from this page. Change it here and the check-up, the report and the cake all follow &mdash; there is nowhere else to keep it up to date.</p>
+      <p class="note" style="margin-top:12px">This page is the only place to keep your group up to date. Everything else you see is built from it.</p>
     </div>
   </div></div>${intake?intakeHTML():''}`;
 }
@@ -952,20 +952,21 @@ function vCheck(){
   if(quizIx===0){
     return `<div class="view"><div class="wrap"><div class="q-shell">
       <div class="eyebrow">Ministry check-up · step 1 of 2</div>
-      <h1>We already know <em>most of this</em></h1>
-      <p class="lede">The old diagnostic asked you for 18 numbers about your people and programs. Your map already has them, so we've filled them in. Check they look right.</p>
-      <div class="known" style="margin-top:24px">
-        <div class="known-row"><div class="known-k">Students on the map</div><div class="known-v">${tot}<span class="src">FROM ROSTER</span></div></div>
-        <div class="known-row"><div class="known-k">Furthest invitation said yes to</div><div class="known-v">${c.map((n,i)=>`${ZONES[i].name} ${n}`).join(' · ')}<span class="src">FROM CHECK-INS</span></div></div>
-        <div class="known-row"><div class="known-k">Asked to help reach others</div><div class="known-v">${ready} said yes<span class="src">CHALLENGE 4+</span></div></div>
-        <div class="known-row"><div class="known-k">Sent out to lead</div><div class="known-v">${lead} student<span class="src">CHALLENGE 5</span></div></div>
-        <div class="known-row"><div class="known-k">Programs running</div><div class="known-v">${PROGRAMS.length}, making 4 of the 5 invitations<span class="src">FROM PROGRAMS</span></div></div>
-        <div class="known-row"><div class="known-k">Never asked</div><div class="known-v">Nobody is ever sent out to lead<span class="src">COMPUTED</span></div></div>
+      <h1>You have already done <em>half of this</em></h1>
+      <p class="lede">This part is about your students and what you run, and it all comes off your map — so there is nothing to count. Have a look and make sure it matches what you would say out loud.</p>
+      <div class="eyebrow" style="margin-top:26px;margin-bottom:8px">All of this comes off your map</div>
+      <div class="known">
+        <div class="known-row"><div class="known-k">Students in your group</div><div class="known-v">${tot}</div></div>
+        <div class="known-row"><div class="known-k">Furthest invitation said yes to</div><div class="known-v">${c.map((n,i)=>`${ZONES[i].name} ${n}`).join(' · ')}</div></div>
+        <div class="known-row"><div class="known-k">Asked to help reach others</div><div class="known-v">${ready} said yes</div></div>
+        <div class="known-row"><div class="known-k">Sent out to lead</div><div class="known-v">${lead} student</div></div>
+        <div class="known-row"><div class="known-k">Programs running</div><div class="known-v">${PROGRAMS.length}, making 4 of the 5 invitations</div></div>
+        <div class="known-row"><div class="known-k">Never asked</div><div class="known-v">Nobody is ever sent out to lead</div></div>
       </div>
-      <p class="note" style="margin-top:18px">Something wrong? Fix it on your map and it corrects here — one source, not two.</p>
+      <p class="note" style="margin-top:18px">If something is wrong here, change it on your map and it changes here too.</p>
       <div style="margin-top:24px;display:flex;gap:10px">
-        <button class="btn" data-q="1">That's right — continue</button>
-        <button class="btn ghost" data-go="map">Go fix my map</button>
+        <button class="btn" data-q="1">That looks right — keep going</button>
+        <button class="btn ghost" data-go="map">Change my map first</button>
       </div>
     </div></div></div>`;
   }
@@ -975,12 +976,12 @@ function vCheck(){
   const q=Q[i], ph=PHASES[q.phase-1];
   return `<div class="view"><div class="wrap"><div class="q-shell">
     <div class="q-prog"><i style="width:${(i/Q.length)*100}%"></i></div>
-    <div class="q-meta"><span>Phase ${q.phase} · ${ph.name}</span><span>${i+1} / ${Q.length}</span></div>
+    <div class="q-meta"><span>${pname(ph)} · ${q.cat}</span><span>${i+1} / ${Q.length}</span></div>
     <div class="q-text">${q.t}</div>
     <div class="q-opts">
       ${SCALE.map(o=>`<button class="opt" data-ans="${o.v}"><span class="k">${o.k}</span>${o.t}</button>`).join('')}
     </div>
-    <p class="note" style="margin-top:22px">Only the 35 phase statements are left — the people and programme sections are already answered.</p>
+    <p class="note" style="margin-top:22px">Answer for your group as it actually is right now, not how you hope it will be.</p>
   </div></div></div>`;
 }
 
@@ -1008,7 +1009,7 @@ function vReports(){
   return `<div class="view"><div class="wrap">
     <div class="eyebrow">${REPORTS.length} check-ups kept</div>
     <h1>Every time you check in,<br>you keep <em>the whole picture</em></h1>
-    <p class="lede">Nothing is overwritten. Take this as often as you find it useful — the roster only changes when you change it, so the two move at their own pace.</p>
+    <p class="lede">Nothing gets written over. Take a check-up whenever it helps — every one is kept.</p>
     <div style="margin-top:26px;display:flex;flex-direction:column;gap:10px">
       ${rows.map(x=>`<button class="repcard ${x.i===REPORTS.length-1?'newest':''}" data-open="${x.i}">
         <div class="rc-date"><span class="d">${fmtDate(x.r)}</span><span class="t">${x.r.t}</span></div>
@@ -1020,7 +1021,7 @@ function vReports(){
         <div class="rc-go">Open &rarr;</div>
       </button>`).join('')}
     </div>
-    <p class="note" style="margin-top:18px">A report is a snapshot of what was true that evening — reading an old one should feel like reading an old journal entry, not a stale dashboard.</p>
+    <p class="note" style="margin-top:18px">Each one keeps what was true the day you took it, so you can look back and see how far your group has come.</p>
   </div></div>`;
 }
 
@@ -1285,7 +1286,7 @@ function coachHTML(){
   const list=st.questions||COACH_DEMO;
   return `<div class="coach">
     <div class="coach-top">
-      <div class="eyebrow">${st.questions?'Written from this report and your roster':'Example questions &mdash; not yet generated'}</div>
+      <div class="eyebrow">${st.questions?'Written from your answers and your students together':'Example questions &mdash; not generated yet'}</div>
       <button class="cbtn" data-coach="run" ${st.loading?'disabled':''}>${st.loading?'Thinking&hellip;':(st.questions?'Ask again':'Read my report')}</button>
     </div>
     ${st.loading?'<div class="cq skel">Reading your answers and your roster together&hellip;</div>':
