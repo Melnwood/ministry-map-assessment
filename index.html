@@ -362,6 +362,9 @@ h2{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.01
 .bl:last-child{border-bottom:none}
 .bl-t{font-size:13.5px;line-height:1.45;white-space:pre-wrap}
 .bl-m{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;color:var(--ink-45);margin-top:4px}
+.shots.sm{margin-top:8px;gap:5px}
+.blshot{display:block;max-width:88px;max-height:62px;object-fit:cover;border:1px solid var(--line);border-radius:6px;background:var(--ground)}
+.bl-nos{font-family:var(--mono);font-size:9.5px;color:var(--z5)}
 .bl-x{position:absolute;top:8px;right:0;font-size:15px;line-height:1;color:var(--ink-15)}
 .bl-x:hover{color:var(--z5)}
 @media (max-width:560px){.botwrap{right:10px;left:10px;bottom:10px;width:auto}.fab{right:16px;bottom:16px}}
@@ -1466,11 +1469,16 @@ function botHTML(){
       ${n?`<div class="bot-list">
         ${NOTES.slice().reverse().map(x=>`<div class="bl">
           <div class="bl-t">${x.text.replace(/</g,'&lt;')}</div>
-          <div class="bl-m">${x.area}${x.shots.length?` &middot; ${x.shots.length} shot${x.shots.length>1?'s':''}`:''}</div>
+          ${x.shots.length?`<div class="shots sm">${x.shots.map(sh=>sh.data
+            ?`<img src="${sh.data}" alt="" class="blshot">`
+            :'<span class="bl-nos">image too large to keep</span>').join('')}</div>`:''}
+          <div class="bl-m">${x.area}</div>
           <button class="bl-x" data-bdrop="${x.id}" aria-label="Delete">&times;</button>
         </div>`).join('')}
       </div>`:''}
-      ${storageOK===false&&n?'<p class="bot-hint warn">Not saving &mdash; copy before you close.</p>':''}
+      ${storageOK===false&&n?`<p class="bot-hint warn">${location.protocol==='file:'
+        ? 'Opened as a local file, so there is no server to save to. Notes last until you close the tab &mdash; use Copy all.'
+        : 'Not reaching Airtable, so notes last until you close the tab &mdash; use Copy all.'}</p>`:''}
     </div>
   </div></div>`;
 }
