@@ -1,0 +1,1711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ministry Map + Check-up</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,600&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#16202E; --ink-70:rgba(22,32,46,.70); --ink-45:rgba(22,32,46,.45); --ink-15:rgba(22,32,46,.15); --ink-08:rgba(22,32,46,.08);
+  --ground:#E8EAE6; --surface:#FBFBFA; --line:#D3D7D1;
+  --z1:#4C6B8A; --z2:#5E8A88; --z3:#8A9455; --z4:#C58A3B; --z5:#B04A38;
+  --mark:#16202E; --phase:#4A3BAE; --phase-08:rgba(74,59,174,.085);
+  --r:14px; --maxw:1080px;
+  --display:'Fraunces',Georgia,serif; --body:'Archivo',system-ui,sans-serif; --mono:'IBM Plex Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--ground);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
+:focus-visible{outline:2.5px solid var(--ink);outline-offset:2px;border-radius:4px}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+
+/* ---------- masthead ---------- */
+.mast{border-bottom:1px solid var(--line);background:var(--ground);position:sticky;top:0;z-index:40}
+.mast-in{max-width:var(--maxw);margin:0 auto;padding:14px 20px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.grp{font-family:var(--display);font-weight:800;font-size:19px;letter-spacing:-.01em}
+.grp em{font-style:italic;font-weight:600}
+.who{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-45)}
+.tabs{display:flex;gap:2px;margin-left:auto;flex-wrap:wrap}
+.tab{padding:7px 13px;border-radius:99px;font-size:13.5px;font-weight:600;color:var(--ink-70);white-space:nowrap}
+.tab:hover{background:var(--ink-08)}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--surface)}
+
+/* ---------- generic ---------- */
+.view{padding:34px 0 90px;animation:rise .34s cubic-bezier(.2,.7,.3,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-45);margin-bottom:9px}
+h1{font-family:var(--display);font-size:clamp(29px,5vw,42px);font-weight:800;letter-spacing:-.022em;line-height:1.08}
+h1 em{font-style:italic;font-weight:600}
+h2{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.015em}
+.lede{font-size:16.5px;color:var(--ink-70);max-width:60ch;margin-top:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.btn{background:var(--ink);color:var(--surface);padding:13px 22px;border-radius:99px;font-weight:600;font-size:15px;transition:transform .14s}
+.btn:hover{transform:translateY(-1px)}
+.btn.ghost{background:none;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink-15)}
+.sec{margin-top:38px}
+.sec-hd{display:flex;align-items:baseline;gap:12px;margin-bottom:14px;padding-bottom:9px;border-bottom:1px solid var(--line)}
+.sec-hd .n{font-family:var(--mono);font-size:11px;color:var(--ink-45);letter-spacing:.1em}
+
+/* ---------- zones ---------- */
+.zonebar{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:20px}
+.zcol{background:var(--surface);border:1px solid var(--line);border-radius:11px;overflow:hidden;display:flex;flex-direction:column}
+.zhd{padding:11px 11px 9px;border-top:4px solid var(--zc);position:relative}
+.zname{font-size:12.5px;font-weight:700;line-height:1.25;letter-spacing:-.01em}
+.zcount{font-family:var(--mono);font-size:26px;font-weight:600;margin-top:5px;color:var(--zc)}
+.zask{font-size:11px;line-height:1.35;color:var(--ink-45);margin-top:7px;font-style:italic}
+.zbody{padding:4px 8px 10px;display:flex;flex-direction:column;gap:3px}
+.chip{font-size:12px;padding:4px 8px;border-radius:6px;background:var(--ink-08);display:flex;justify-content:space-between;gap:6px;align-items:center}
+.chip .mv{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--z3)}
+.chip .mv.back{color:var(--z5)}
+
+/* ---------- known-data confirm ---------- */
+.known{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);overflow:hidden}
+.known-row{display:flex;gap:14px;padding:13px 18px;border-bottom:1px solid var(--line);align-items:baseline}
+.known-row:last-child{border-bottom:none}
+.known-k{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-45);min-width:150px;flex-shrink:0}
+.known-v{font-size:15px;font-weight:500}
+.known-v .src{font-family:var(--mono);font-size:10.5px;color:var(--ink-45);margin-left:8px;letter-spacing:.05em}
+
+/* ---------- quiz ---------- */
+.q-shell{max-width:660px;margin:0 auto}
+.q-prog{height:3px;background:var(--ink-15);border-radius:99px;overflow:hidden;margin-bottom:30px}
+.q-prog i{display:block;height:100%;background:var(--mark);transition:width .3s}
+.q-meta{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-45);display:flex;justify-content:space-between;margin-bottom:16px}
+.q-text{font-family:var(--display);font-size:clamp(22px,3.6vw,30px);font-weight:600;line-height:1.24;letter-spacing:-.018em;min-height:2.4em}
+.q-opts{display:flex;flex-direction:column;gap:9px;margin-top:26px}
+.opt{text-align:left;padding:15px 18px;border-radius:11px;background:var(--surface);border:1.5px solid var(--line);font-size:15.5px;font-weight:500;display:flex;gap:13px;align-items:center;transition:border-color .13s,transform .13s}
+.opt:hover{border-color:var(--ink);transform:translateX(3px)}
+.opt .k{font-family:var(--mono);font-size:11px;color:var(--ink-45);width:14px;flex-shrink:0}
+
+/* ---------- report ---------- */
+.stair{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;align-items:end;height:132px;margin:8px 0 6px}
+.stair .st{background:var(--ink-15);border-radius:6px 6px 0 0;position:relative;transition:background .2s,transform .16s;width:100%;display:block;align-self:end}
+.stair button.st{cursor:pointer}
+.stair button.st:hover{transform:translateY(-3px)}
+.stair .st.done{background:var(--ink-45)}
+.stair .st.on{background:var(--phase);box-shadow:0 5px 16px rgba(74,59,174,.22)}
+.stair .st.sel{outline:2.5px solid var(--phase);outline-offset:3px}
+.stair .st .youare{position:absolute;top:-25px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;color:var(--phase);white-space:nowrap;font-weight:600}
+.stairlab{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.stairlab div{font-size:11px;font-weight:600;text-align:center;color:var(--ink-45);line-height:1.2}
+.stairlab div.on{color:var(--phase)}
+.why-panel{margin-top:20px;border-top:1px solid var(--line);padding-top:20px;animation:rise .28s both}
+.ph-head{border-left:3px solid var(--phase);padding-left:18px;margin-bottom:20px}
+.ph-essence{font-family:var(--display);font-style:italic;font-weight:600;font-size:clamp(21px,3.2vw,27px);letter-spacing:-.015em;line-height:1.22;color:var(--phase)}
+.ph-stance{font-size:14.5px;color:var(--ink-70);margin-top:9px;max-width:56ch}
+.ph-about{font-size:16.5px;line-height:1.62;max-width:64ch}
+.ph-turn{margin-top:18px;background:var(--phase-08);border-radius:10px;padding:14px 17px;font-size:15.5px;line-height:1.5;font-weight:500}
+.ph-turn span{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--phase);margin-bottom:6px;font-weight:600}
+.tf-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:26px}
+.tf-hd{font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;padding-bottom:9px;margin-bottom:4px;border-bottom:1.5px solid var(--line);display:flex;justify-content:space-between;font-weight:600}
+.tf-hd.true{color:var(--z3);border-color:var(--z3)}
+.tf-hd.part{color:var(--z4);border-color:var(--z4)}
+.tf-hd.not{color:var(--phase);border-color:var(--phase)}
+.tf-hd span{color:var(--ink-45);font-weight:400}
+.tf{font-size:14.5px;line-height:1.45;padding:10px 0 10px 22px;position:relative;border-bottom:1px solid var(--ink-08)}
+.tf:before{content:'';position:absolute;left:2px;top:16px;width:8px;height:8px;border-radius:99px}
+.tf.true:before{background:var(--z3)}
+.tf.part:before{background:linear-gradient(90deg,var(--z4) 50%,transparent 50%);box-shadow:inset 0 0 0 1.8px var(--z4)}
+.tf.not:before{box-shadow:inset 0 0 0 1.8px var(--phase)}
+.tf.not{color:var(--ink-70)}
+.tf.none{padding-left:0;font-style:italic;color:var(--ink-45)}
+.tf.none:before{display:none}
+.ph-carry{margin-top:26px;background:var(--ink-08);border-radius:11px;padding:17px 19px}
+.carry-line{font-family:var(--display);font-size:15.5px;font-weight:600;line-height:1.4;padding:5px 0 5px 18px;position:relative}
+.carry-line:before{content:'';position:absolute;left:0;top:12px;width:9px;height:1.5px;background:var(--ink-45)}
+.ph-foot{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:26px;padding-top:20px;border-top:1px solid var(--line)}
+.ph-foot p{font-size:14.5px;line-height:1.55;color:var(--ink-70)}
+@media (max-width:900px){.tf-grid{grid-template-columns:1fr}}
+@media (max-width:760px){.ph-foot{grid-template-columns:1fr;gap:22px}}
+
+/* coach */
+.coach{background:var(--ink);color:var(--surface);border-radius:var(--r);padding:24px;margin-top:14px}
+.coach .eyebrow{color:rgba(251,251,250,.5)}
+.coach h2{color:var(--surface)}
+.coach-top{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:4px}
+.cbtn{border:1.5px solid rgba(251,251,250,.35);color:var(--surface);border-radius:99px;padding:8px 17px;font-size:13px;font-weight:600;transition:background .14s}
+.cbtn:hover:not(:disabled){background:rgba(251,251,250,.13)}
+.cbtn:disabled{opacity:.5;cursor:default}
+.cbtn.solid{background:var(--surface);color:var(--ink);border-color:var(--surface);flex-shrink:0}
+.cq{border-top:1px solid rgba(251,251,250,.15);padding:15px 0;font-family:var(--display);font-size:17.5px;font-weight:600;line-height:1.38;letter-spacing:-.01em}
+.cq:first-of-type{border-top:none}
+.cq.skel{color:rgba(251,251,250,.5);font-style:italic;font-weight:500;animation:pulse 1.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.45}50%{opacity:.9}}
+.cerr{background:rgba(176,74,56,.28);border-radius:9px;padding:11px 14px;font-size:13px;line-height:1.5;margin-top:14px;color:var(--surface)}
+.cask{display:flex;gap:9px;margin-top:18px;padding-top:18px;border-top:1px solid rgba(251,251,250,.15)}
+.cask input{flex:1;min-width:0;background:rgba(251,251,250,.09);border:1.5px solid rgba(251,251,250,.2);border-radius:99px;padding:11px 18px;color:var(--surface);font:inherit;font-size:14.5px}
+.cask input::placeholder{color:rgba(251,251,250,.42)}
+.cask input:focus{outline:none;border-color:rgba(251,251,250,.6)}
+.canswer{margin-top:16px;background:rgba(251,251,250,.07);border-radius:11px;padding:16px 18px}
+.canswer p{font-size:14.5px;line-height:1.62;margin-bottom:11px}
+.canswer p:last-child{margin-bottom:0}
+.cfoot{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid rgba(251,251,250,.12);font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;color:rgba(251,251,250,.5)}
+.cfoot label{display:flex;gap:7px;align-items:center;color:var(--surface);cursor:pointer}
+.cq .from{display:block;font-family:var(--mono);font-size:10.5px;font-weight:400;letter-spacing:.05em;color:rgba(251,251,250,.42);margin-top:8px;text-transform:uppercase}
+.bar{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--ink-08)}
+.bar .lb{font-size:14px;font-weight:500;min-width:150px}
+.bar .vl{font-size:13.5px;font-weight:600;min-width:118px;color:var(--ink-45)}
+.bar.true .vl{color:var(--z3)} .bar.part .vl{color:var(--z4)} .bar.not .vl{color:var(--phase)}
+.bar .lb{flex:1}
+.act{display:flex;gap:15px;padding:17px 0;border-bottom:1px solid var(--line)}
+.act:last-child{border-bottom:none}
+.act .num{font-family:var(--mono);font-size:11px;color:var(--ink-45);padding-top:3px;flex-shrink:0}
+.act .bd{font-size:15.5px;line-height:1.5}
+.act .bd b{font-weight:700}
+.act .why{font-family:var(--mono);font-size:11px;color:var(--ink-45);margin-top:7px;letter-spacing:.03em}
+.act .why span{color:var(--z2)}
+
+/* ---------- two roads ---------- */
+.roads{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px 18px 14px;overflow-x:auto}
+.roadkey{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px;font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-45)}
+.roadkey i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+
+/* journey dashboard */
+.jstats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:28px}
+.jstat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px}
+.jstat b{display:block;font-family:var(--display);font-size:clamp(28px,3.6vw,38px);font-weight:800;letter-spacing:-.028em;line-height:1;color:var(--phase)}
+.jstat span{display:block;font-size:13.5px;font-weight:600;margin-top:10px;line-height:1.3}
+.jstat em{display:block;font-family:var(--mono);font-size:10.5px;font-style:normal;color:var(--ink-45);margin-top:6px;letter-spacing:.03em;line-height:1.4}
+.thennow{display:grid;grid-template-columns:1fr auto 1fr;gap:20px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px}
+.tn-side .cake{display:flex;flex-direction:column;align-items:center;gap:3px;width:100%}
+.tn-lab{font-family:var(--display);font-size:15px;font-weight:700;text-align:center;margin-bottom:12px}
+.tn-lab span{display:block;font-family:var(--mono);font-size:10.5px;font-weight:400;color:var(--ink-45);margin-top:3px;letter-spacing:.05em}
+.tn-arrow{font-size:22px;color:var(--ink-45)}
+.tier.sm{padding:6px 9px;border-radius:5px}
+.tier.sm .tn{font-size:10px}.tier.sm b{font-size:12px}
+.legs{display:flex;gap:4px}
+.leg{background:rgba(74,59,174,.16);border-radius:8px;padding:13px 12px;min-width:0}
+.leg.now{background:var(--phase)}
+.lg-n{display:block;font-family:var(--display);font-size:14px;font-weight:700;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lg-t{display:block;font-family:var(--mono);font-size:10.5px;color:var(--ink-45);margin-top:4px}
+.leg.now .lg-n,.leg.now .lg-t{color:var(--surface)}
+.tf .qp{display:block;font-family:var(--mono);font-size:10px;color:var(--ink-45);margin-top:5px;letter-spacing:.04em}
+.stuckrow{display:flex;flex-wrap:wrap;gap:8px}
+.sc{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--zc);border-radius:0 9px 9px 0;padding:9px 13px;font-size:14.5px;font-weight:600}
+.sc em{display:block;font-family:var(--mono);font-size:10px;font-style:normal;color:var(--ink-45);margin-top:3px}
+.track{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.stop{text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;transition:border-color .14s,transform .14s}
+.stop:hover{border-color:var(--phase);transform:translateY(-2px)}
+.stop.now{border-color:var(--phase)}
+.stop .dot{display:block;width:10px;height:10px;border-radius:99px;background:var(--ink-15);margin-bottom:11px}
+.stop.now .dot{background:var(--phase)}
+.st-d{display:block;font-family:var(--mono);font-size:10.5px;color:var(--ink-45);letter-spacing:.05em}
+.st-p{display:block;font-family:var(--display);font-size:16px;font-weight:700;letter-spacing:-.012em;margin-top:5px}
+.st-n{display:block;font-family:var(--mono);font-size:10.5px;color:var(--ink-45);margin-top:5px}
+@media (max-width:860px){.jstats{grid-template-columns:1fr 1fr}
+ .thennow{grid-template-columns:1fr;gap:12px}.tn-arrow{transform:rotate(90deg);text-align:center}
+ .legs{flex-direction:column}.leg{width:100%!important}}
+
+/* phase meta + tool box */
+.ph-meta{display:flex;flex-wrap:wrap;gap:9px;margin:16px 0 4px}
+.ph-meta span{font-size:12.5px;background:var(--ink-08);border-radius:8px;padding:7px 12px;color:var(--ink-70)}
+.ph-meta b{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--phase);margin-right:9px}
+.toolbox{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--z4);border-radius:0 var(--r) var(--r) 0;padding:20px 22px}
+.tb-head{display:flex;gap:20px;align-items:baseline;flex-wrap:wrap}
+.tb-acr{font-family:var(--mono);font-size:30px;font-weight:600;letter-spacing:.1em;color:var(--z4);flex-shrink:0}
+.tb-head p{font-size:15px;line-height:1.5;color:var(--ink-70);flex:1;min-width:200px}
+.pips{display:inline-flex;gap:3px;flex-shrink:0}
+.pips i{width:15px;height:8px;border-radius:2px;background:var(--ink-08)}
+.true .pips i.on{background:var(--z3)} .part .pips i.on{background:var(--z4)} .not .pips i.on{background:var(--phase)}
+.tb-words{margin-top:18px;display:grid;gap:2px}
+.tw{display:flex;align-items:center;gap:14px;padding:8px 0;border-bottom:1px solid var(--ink-08)}
+.tw:last-child{border-bottom:none}
+.tw-w{min-width:112px;font-family:var(--display);font-size:16px;font-weight:700;letter-spacing:-.01em}
+.tw-v{font-size:14px;font-weight:600;min-width:118px}
+.tw.true .tw-v{color:var(--z3)} .tw.part .tw-v{color:var(--z4)} .tw.not .tw-v{color:var(--phase)}
+.tw-n{font-family:var(--mono);font-size:10.5px;color:var(--ink-45);margin-left:auto}
+@media (max-width:560px){.tb-acr{font-size:24px}.tw-w{min-width:88px;font-size:14px}}
+
+/* today: cake + climb */
+.duo{display:grid;grid-template-columns:1fr 1px 1fr;margin-top:28px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.duo-rule{background:var(--line)}
+.duo-half{padding:22px 24px 20px;display:flex;flex-direction:column;min-width:0}
+.duo-vis{flex:1;display:flex;align-items:center;min-height:186px}
+.big-n{font-family:var(--display);font-size:clamp(26px,3.4vw,38px);font-weight:800;letter-spacing:-.028em;line-height:1;margin-bottom:18px}
+.big-n em{font-style:italic;font-weight:600;font-size:.42em;margin-left:9px;letter-spacing:-.01em}
+.big-n.ph{color:var(--phase);font-size:clamp(22px,2.9vw,33px)}
+.cake{display:flex;flex-direction:column;align-items:center;gap:4px;width:100%}
+.tier{border-radius:7px;padding:9px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;color:#fff;min-width:0;transition:transform .16s}
+.tier:hover{transform:scale(1.015)}
+.tier .tn{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.005em}
+.tier b{font-family:var(--mono);font-size:16px;font-weight:600;flex-shrink:0}
+.tier.empty{background:none!important;box-shadow:inset 0 0 0 1.5px var(--ink-15);color:var(--ink-45)}
+.tier.empty b{color:var(--ink-15)}
+.plinth{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-45);text-align:center;margin-top:16px;padding-top:13px;border-top:1px solid var(--ink-08)}
+.climb{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;align-items:end;width:100%;height:186px}
+.step{display:flex;flex-direction:column;justify-content:flex-end;height:100%}
+.step .riser{height:var(--h);border-radius:7px 7px 0 0;background:rgba(74,59,174,var(--t));position:relative}
+.step.ahead .riser{background:var(--ink-08)}
+.step.on .riser{background:var(--phase);box-shadow:0 5px 16px rgba(74,59,174,.26)}
+.step .here{position:absolute;top:-24px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:9px;letter-spacing:.09em;color:var(--phase);white-space:nowrap;font-weight:600}
+.step .slab{font-size:10.5px;font-weight:600;text-align:center;color:var(--ink-45);margin-top:7px;line-height:1.2}
+.step.on .slab{color:var(--phase)}
+@media (max-width:900px){
+  .duo-half{padding:18px 17px 16px}
+  .tier{padding:8px 10px;border-radius:6px}
+  .tier .tn{font-size:10.5px}.tier b{font-size:14px}
+  .step .slab{font-size:8.5px}
+  .duo-vis{min-height:170px}.climb{height:170px}
+}
+@media (max-width:560px){
+  .duo{grid-template-columns:1fr}
+  .duo-rule{height:1px}
+  .duo-half{padding:20px 20px 18px}
+  .tier .tn{font-size:12px}.tier b{font-size:16px}.step .slab{font-size:10px}
+}
+
+/* report cards */
+.backlink{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-45);margin-bottom:18px;display:block}
+.backlink:hover{color:var(--ink)}
+.repcard{width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 20px;display:grid;grid-template-columns:150px 1fr auto auto;grid-template-areas:'date mid n go';gap:20px;align-items:center;transition:border-color .14s,transform .14s}
+.rc-date{grid-area:date}.rc-mid{grid-area:mid}.rc-n{grid-area:n}.rc-go{grid-area:go}
+.repcard:hover{border-color:var(--phase);transform:translateX(3px)}
+.repcard.newest{border-color:var(--phase);box-shadow:0 3px 14px rgba(74,59,174,.09)}
+.repcard.big{margin-top:26px;padding:22px 24px}
+.rc-date .d{display:block;font-family:var(--display);font-weight:700;font-size:16px;letter-spacing:-.01em}
+.rc-date .t{font-family:var(--mono);font-size:11px;color:var(--ink-45)}
+.rc-phase{font-family:var(--display);font-size:19px;font-weight:700;letter-spacing:-.015em;display:flex;align-items:center;gap:8px}
+.rc-phase i{width:9px;height:9px;border-radius:99px;background:var(--phase);flex-shrink:0}
+.rc-delta{font-family:var(--mono);font-size:11px;color:var(--ink-45);margin-top:5px;letter-spacing:.03em}
+.rc-delta b.up{color:var(--z3)} .rc-delta b.dn{color:var(--z5)}
+.rc-n{text-align:right}
+.rc-n b{display:block;font-family:var(--display);font-size:27px;font-weight:800;line-height:1}
+.rc-n span{font-family:var(--mono);font-size:10px;color:var(--ink-45);text-transform:uppercase;letter-spacing:.08em}
+.rc-go{font-family:var(--mono);font-size:11px;color:var(--phase);letter-spacing:.05em;white-space:nowrap}
+
+/* report cover */
+.cover{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:24px;margin-top:6px}
+.cover-date{font-family:var(--mono);font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-45);margin-bottom:20px}
+.cover-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:22px}
+.cv b{display:block;font-family:var(--display);font-size:clamp(26px,3.6vw,36px);font-weight:800;letter-spacing:-.025em;line-height:1}
+.cv b.ph{color:var(--phase);font-size:clamp(21px,2.7vw,27px)}
+.cv b .of{font-size:.55em;font-weight:600;color:var(--ink-45)}
+.cv span{display:block;font-size:12.5px;color:var(--ink-45);margin-top:8px;line-height:1.35}
+.cover-bar{display:flex;height:9px;border-radius:99px;overflow:hidden;margin-top:22px}
+
+/* training tools */
+.tools{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.tool{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--z4);border-radius:0 11px 11px 0;padding:16px 18px}
+.tool-hd{display:flex;justify-content:space-between;align-items:baseline}
+.tool-hd .acr{font-family:var(--mono);font-size:19px;font-weight:600;letter-spacing:.09em}
+.tool-hd .sc{font-family:var(--mono);font-size:12px;color:var(--z4)}
+.tool-full{font-family:var(--display);font-size:14.5px;font-weight:600;margin-top:5px;min-height:1.3em}
+.tool-full .needs{color:var(--z5);font-family:var(--body);font-size:12px;font-weight:400}
+.tool p{font-size:13.5px;line-height:1.5;color:var(--ink-70);margin-top:10px}
+.bar .lb .acrtag{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--ink-45);margin-left:9px;vertical-align:1px}
+.bar .lb .acrtag.mine{color:var(--z4);font-weight:600}
+.bar .lb .tag{font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--phase);border:1px solid var(--phase);border-radius:99px;padding:1px 7px;margin-left:8px;vertical-align:1.5px}
+@media (max-width:900px){.cover-grid{grid-template-columns:1fr 1fr}.tools{grid-template-columns:1fr}}
+@media (max-width:860px){
+  .repcard{grid-template-columns:1fr auto;grid-template-areas:'date n' 'mid go';gap:13px 16px;padding:17px 20px;align-items:start}
+  .rc-date{align-self:center}
+  .rc-date .d{font-size:15px}
+  .rc-n{display:flex;align-items:baseline;gap:6px;text-align:left;align-self:center}
+  .rc-n b{font-size:23px}
+  .rc-mid{padding-top:13px;border-top:1px solid var(--ink-08)}
+  .rc-go{border-top:1px solid var(--ink-08);padding-top:13px;align-self:start;line-height:1.6}
+  .rc-phase{font-size:20px}
+  .rc-delta{margin-top:5px}
+  .repcard:hover{transform:none;border-color:var(--phase)}
+}
+@media (max-width:560px){
+  .repcard{grid-template-areas:'date n' 'mid mid';padding:16px 17px}
+  .rc-go{display:none}
+  .rc-n b{font-size:21px}
+  .rc-phase{font-size:19px}
+}
+
+.mapstats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:24px 0 18px}
+.ms{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px}
+.ms b{font-family:var(--display);font-size:32px;font-weight:800;letter-spacing:-.028em;line-height:1;color:var(--z3)}
+.ms b .of{font-size:.45em;font-weight:600;color:var(--ink-45)}
+.ms.warn b{color:var(--z5)}
+.ms>span{display:block;font-size:14px;font-weight:600;margin-top:9px}
+.ms em{display:block;font-family:var(--mono);font-size:10.5px;font-style:normal;line-height:1.5;color:var(--ink-45);margin-top:8px}
+@media (max-width:900px){.mapstats{grid-template-columns:1fr 1fr}}
+@media (max-width:560px){.mapstats{grid-template-columns:1fr}}
+
+/* floating workbench bot */
+.fab{position:fixed;right:22px;bottom:22px;z-index:70;width:56px;height:56px;border-radius:99px;background:var(--ink);color:var(--surface);box-shadow:0 6px 22px rgba(22,32,46,.28);display:flex;align-items:center;justify-content:center;transition:transform .16s}
+.fab:hover{transform:translateY(-2px) scale(1.04)}
+.fabi{font-size:21px;line-height:1}
+.fabn{position:absolute;top:-3px;right:-3px;min-width:21px;height:21px;border-radius:99px;background:var(--phase);color:#fff;font-family:var(--mono);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;padding:0 5px;border:2px solid var(--ground)}
+.botwrap{position:fixed;right:22px;bottom:22px;z-index:70;width:min(410px,calc(100vw - 32px))}
+.bot{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 14px 44px rgba(22,32,46,.24);overflow:hidden;animation:rise .2s cubic-bezier(.2,.7,.3,1) both}
+.bot-hd{display:flex;align-items:center;gap:12px;padding:13px 15px;background:var(--ink);color:var(--surface)}
+.bot-hd>div:first-child{min-width:0}
+.bot-hd b{display:block;font-family:var(--display);font-size:15px;font-weight:700;letter-spacing:-.012em}
+.bot-hd span{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:rgba(251,251,250,.5);margin-top:2px}
+.bot-tabs{display:flex;gap:3px;margin-left:auto}
+.btb{font-family:var(--mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;padding:5px 11px;border-radius:99px;color:rgba(251,251,250,.6)}
+.btb:hover{background:rgba(251,251,250,.12);color:var(--surface)}
+.btb.is{background:var(--surface);color:var(--ink);font-weight:600}
+.bot-x{font-size:22px;line-height:1;color:rgba(251,251,250,.55);padding:0 2px}
+.bot-x:hover{color:var(--surface)}
+.bot-body{padding:15px;max-height:min(66vh,560px);overflow-y:auto}
+.bot-body textarea{width:100%;border:1.5px solid var(--ink-15);border-radius:11px;padding:12px 14px;font:inherit;font-size:14.5px;line-height:1.5;background:var(--ground);color:var(--ink);resize:vertical}
+.bot-body textarea:focus{outline:none;border-color:var(--phase)}
+.bnrow{display:flex;gap:8px;margin-top:10px}
+.bnrow select{flex:1;min-width:0;border:1.5px solid var(--ink-15);border-radius:99px;padding:9px 13px;font:inherit;font-size:13.5px;background:var(--ground);color:var(--ink)}
+.shotbtn{border:1.5px dashed var(--ink-15);border-radius:99px;padding:9px 15px;font-size:13.5px;font-weight:600;color:var(--ink-45);cursor:pointer;white-space:nowrap;display:flex;align-items:center}
+.shotbtn:hover{border-color:var(--ink);color:var(--ink)}
+.shotbtn input{display:none}
+.bot-hint{font-family:var(--mono);font-size:10px;line-height:1.55;color:var(--ink-45);margin-top:11px}
+.bot-go{width:100%;margin-top:12px;text-align:center;padding:12px}
+.shots{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}
+.shot{position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--ground)}
+.shot img{display:block;max-width:110px;max-height:80px;object-fit:cover}
+.shot.sm img{max-width:78px;max-height:56px}
+.shot button{position:absolute;top:3px;right:3px;width:19px;height:19px;border-radius:99px;background:rgba(22,32,46,.8);color:#fff;font-size:13px;line-height:1}
+.bfilters{display:flex;gap:5px;align-items:center;margin-bottom:12px}
+.bspacer{flex:1}
+.bf{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--ink-15);border-radius:99px;padding:5px 10px;color:var(--ink-45)}
+.bf:hover{border-color:var(--ink);color:var(--ink)}
+.bf.is{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.bnote{border:1px solid var(--line);border-left:3px solid var(--ink-15);border-radius:0 11px 11px 0;padding:12px 14px;margin-bottom:9px}
+.bnote.open{border-left-color:var(--phase)}
+.bnote.doing{border-left-color:var(--z4)}
+.bnote.done{border-left-color:var(--z3);opacity:.62}
+.bn-hd{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.bn-area{font-family:var(--display);font-size:13px;font-weight:700}
+.bn-kind{font-family:var(--mono);font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;border-radius:99px;padding:1px 7px;border:1px solid currentColor}
+.bn-kind.bug{color:var(--z5)}.bn-kind.wording{color:var(--z4)}.bn-kind.idea{color:var(--z3)}.bn-kind.question{color:var(--z1)}
+.bn-at{font-family:var(--mono);font-size:9px;color:var(--ink-45);margin-left:auto}
+.bn-x{font-size:16px;line-height:1;color:var(--ink-15)}
+.bn-x:hover{color:var(--z5)}
+.bn-text{font-size:13.5px;line-height:1.5;margin-top:7px;white-space:pre-wrap}
+.bn-reply{background:var(--ink);color:var(--surface);border-radius:9px;padding:12px 14px;margin-top:10px}
+.bn-reply p{font-size:12.5px;line-height:1.6;margin-bottom:9px}
+.bn-reply p:last-child{margin-bottom:0}
+.bn-reply b{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(251,251,250,.55);display:block;margin-bottom:2px}
+.bn-err{background:rgba(176,74,56,.13);border-radius:8px;padding:9px 12px;font-size:12px;margin-top:9px}
+.bn-foot{display:flex;gap:4px;align-items:center;margin-top:10px;padding-top:9px;border-top:1px solid var(--ink-08)}
+.bst{font-family:var(--mono);font-size:9px;letter-spacing:.05em;text-transform:uppercase;border:1px solid var(--ink-15);border-radius:99px;padding:4px 9px;color:var(--ink-45)}
+.bst:hover{border-color:var(--ink);color:var(--ink)}
+.bst.is{background:var(--ink-08);color:var(--ink);border-color:transparent;font-weight:600}
+.bst.read{color:var(--phase);border-color:var(--phase)}
+.bempty{text-align:center;color:var(--ink-45);font-size:13.5px;padding:26px 0}
+@media (max-width:560px){.botwrap{right:10px;left:10px;bottom:10px;width:auto}.fab{right:16px;bottom:16px}}
+
+.bnew{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px;margin-top:26px}
+.bnew textarea{width:100%;border:1.5px solid var(--ink-15);border-radius:11px;padding:13px 15px;font:inherit;font-size:15.5px;line-height:1.5;background:var(--ground);color:var(--ink);resize:vertical}
+.bnew textarea:focus{outline:none;border-color:var(--phase)}
+.bnrow{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-top:14px}
+.bnrow .fld{margin-top:0;flex:1;min-width:150px}
+.shotbtn{border:1.5px dashed var(--ink-15);border-radius:99px;padding:11px 18px;font-size:14px;font-weight:600;color:var(--ink-45);cursor:pointer;white-space:nowrap}
+.shotbtn:hover{border-color:var(--ink);color:var(--ink)}
+.shotbtn input{display:none}
+.shots{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+.shot{position:relative;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:var(--ground)}
+.shot img{display:block;max-width:190px;max-height:130px;object-fit:cover}
+.shot button{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:99px;background:rgba(22,32,46,.78);color:#fff;font-size:15px;line-height:1}
+.bfilters{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin:26px 0 14px}
+.bspacer{flex:1}
+.bf{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--ink-15);border-radius:99px;padding:7px 14px;color:var(--ink-45)}
+.bf:hover{border-color:var(--ink);color:var(--ink)}
+.bf.is{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.bnote{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--ink-15);border-radius:0 var(--r) var(--r) 0;padding:17px 20px;margin-bottom:11px}
+.bnote.open{border-left-color:var(--phase)}
+.bnote.doing{border-left-color:var(--z4)}
+.bnote.done{border-left-color:var(--z3);opacity:.6}
+.bn-hd{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.bn-area{font-family:var(--display);font-size:15px;font-weight:700;letter-spacing:-.012em}
+.bn-kind{font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;border-radius:99px;padding:2px 9px;border:1px solid currentColor}
+.bn-kind.bug{color:var(--z5)}.bn-kind.wording{color:var(--z4)}.bn-kind.idea{color:var(--z3)}.bn-kind.question{color:var(--z1)}
+.bn-at{font-family:var(--mono);font-size:10px;color:var(--ink-45);margin-left:auto}
+.bn-x{font-size:19px;line-height:1;color:var(--ink-15);padding:0 3px}
+.bn-x:hover{color:var(--z5)}
+.bn-text{font-size:15.5px;line-height:1.55;margin-top:9px;white-space:pre-wrap}
+.bn-reply{background:var(--ink);color:var(--surface);border-radius:11px;padding:15px 18px;margin-top:14px}
+.bn-reply p{font-size:14px;line-height:1.6;margin-bottom:10px}
+.bn-reply p:last-child{margin-bottom:0}
+.bn-reply b{font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;color:rgba(251,251,250,.55);display:block;margin-bottom:3px}
+.bn-err{background:rgba(176,74,56,.13);border-radius:9px;padding:11px 14px;font-size:13px;margin-top:12px}
+.bn-foot{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px solid var(--ink-08)}
+.bst{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--ink-15);border-radius:99px;padding:5px 12px;color:var(--ink-45)}
+.bst:hover{border-color:var(--ink);color:var(--ink)}
+.bst.is{background:var(--ink-08);color:var(--ink);border-color:transparent;font-weight:600}
+.bst.read{color:var(--phase);border-color:var(--phase)}
+.bst.read:disabled{opacity:.5}
+.bempty{background:var(--surface);border:1px dashed var(--line);border-radius:var(--r);padding:34px;text-align:center;color:var(--ink-45);font-size:15px}
+@media (max-width:640px){.bnrow{flex-direction:column;align-items:stretch}.bnrow .btn,.shotbtn{text-align:center}}
+
+/* intake sheet */
+.sheet{position:fixed;inset:0;background:rgba(22,32,46,.5);z-index:80;display:flex;align-items:flex-start;justify-content:center;padding:34px 18px;overflow-y:auto;animation:fade .18s both}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.sheetin{background:var(--ground);border-radius:18px;max-width:660px;width:100%;padding:26px 28px 22px;animation:rise .24s cubic-bezier(.2,.7,.3,1) both}
+.sh-hd{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.sh-x{font-size:26px;line-height:1;color:var(--ink-45);padding:0 4px}
+.sh-x:hover{color:var(--ink)}
+.sh-lede{font-size:14px;line-height:1.55;color:var(--ink-70);margin-top:10px;max-width:56ch}
+.sh-err{background:rgba(176,74,56,.13);border-left:3px solid var(--z5);border-radius:0 8px 8px 0;padding:10px 14px;font-size:13.5px;margin-top:14px}
+.fgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:18px}
+.fgrid.four{grid-template-columns:1.4fr .6fr 1fr 1.2fr}
+.fld{display:block;margin-top:16px}
+.fld.wide{grid-column:span 1}
+.fgrid .fld{margin-top:0}
+.fld>span{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-45);margin-bottom:7px}
+.fld input:not([type=radio]),.fld select{width:100%;border:1.5px solid var(--ink-15);border-radius:9px;padding:11px 13px;font:inherit;font-size:14.5px;background:var(--surface);color:var(--ink)}
+.fld input:focus,.fld select:focus{outline:none;border-color:var(--phase)}
+.zpick{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.zp{background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:10px;cursor:pointer;display:block;transition:all .13s}
+.zp input{position:absolute;opacity:0;pointer-events:none}
+.zp b{display:block;font-size:11.5px;font-weight:700;line-height:1.25;border-top:3px solid var(--zc);padding-top:7px}
+.zp em{display:block;font-size:10px;line-height:1.35;color:var(--ink-45);margin-top:5px;font-style:italic}
+.zp:hover{border-color:var(--zc)}
+.zp:has(input:checked){border-color:var(--zc);background:color-mix(in srgb,var(--zc) 11%,var(--surface));box-shadow:0 0 0 1px var(--zc)}
+.sh-foot{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-top:24px;padding-top:18px;border-top:1px solid var(--line)}
+.sh-foot div{display:flex;gap:9px}
+.sh-foot .btn{padding:11px 20px;font-size:14px}
+@media (max-width:640px){.fgrid{grid-template-columns:1fr}.zpick{grid-template-columns:1fr 1fr}.sheetin{padding:20px}}
+
+/* editable map */
+.zonebar.edit .zcol{min-height:250px}
+.chip{width:100%;text-align:left;border:none;transition:background .13s}
+button.chip:hover{background:var(--ink-15)}
+.chip.addch{background:none;box-shadow:inset 0 0 0 1.5px var(--ink-15);color:var(--ink-45);justify-content:center;font-weight:600;margin-top:4px}
+.chip.addch:hover{box-shadow:inset 0 0 0 1.5px var(--zc);color:var(--zc);background:none}
+.chip.open{display:block;background:var(--surface);box-shadow:0 0 0 2px var(--zc);padding:11px;border-radius:9px;margin:3px 0}
+.chip-nm{font-size:14px;font-weight:700}
+.chip-since{font-family:var(--mono);font-size:9.5px;line-height:1.5;color:var(--ink-45);margin:5px 0 9px}
+.chip-since b{color:var(--z5)}
+.chip-move{display:flex;gap:3px}
+.mvb{flex:1;height:32px;border-radius:6px;background:color-mix(in srgb,var(--zc) 20%,transparent);font-family:var(--mono);font-size:12px;font-weight:600;color:var(--zc);transition:all .12s}
+.mvb:hover{background:var(--zc);color:#fff}
+.mvb.is{background:var(--zc);color:#fff}
+.chip-act{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px;padding-top:9px;border-top:1px solid var(--ink-08)}
+.chip-act span{font-family:var(--mono);font-size:9.5px;line-height:1.4;color:var(--ink-45);flex:1;min-width:90px}
+.chip-act button{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--z5);border:1px solid var(--ink-15);border-radius:99px;padding:4px 10px}
+.chip-act button:hover{border-color:var(--z5)}
+.chip-act button.prim{color:var(--surface);background:var(--ink);border-color:var(--ink)}
+.nsin,.pnin{width:100%;border:1.5px solid var(--ink-15);border-radius:7px;padding:8px 11px;font:inherit;font-size:14px;background:var(--ground)}
+.nsin:focus,.pnin:focus{outline:none;border-color:var(--ink)}
+
+.proglist{display:flex;flex-direction:column;gap:7px}
+.prow{width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:14px 17px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;transition:border-color .13s}
+button.prow:hover{border-color:var(--ink)}
+.prow.open{display:block;border-color:var(--ink);box-shadow:0 3px 14px rgba(22,32,46,.07)}
+.pname{font-family:var(--display);font-size:16.5px;font-weight:700;letter-spacing:-.012em}
+.pfr{font-family:var(--mono);font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-45);border:1px solid var(--ink-15);border-radius:99px;padding:2px 9px}
+.pfr.rare{color:var(--z5);border-color:var(--z5)}
+.ptags{display:flex;gap:4px;align-items:center;margin-left:auto}
+.ptags i{width:22px;height:8px;border-radius:2px;display:block}
+.ptags em{font-family:var(--mono);font-size:10px;font-style:normal;color:var(--z5)}
+.pfreq{display:flex;gap:5px;margin-top:11px;flex-wrap:wrap}
+.fq{font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;border:1px solid var(--ink-15);border-radius:99px;padding:5px 12px;color:var(--ink-45)}
+.fq.is{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.pinv{display:flex;gap:5px;margin-top:9px;flex-wrap:wrap}
+.inv{font-size:11.5px;font-weight:600;border:1.5px solid var(--ink-15);border-radius:99px;padding:5px 11px;color:var(--ink-45)}
+.inv.on{background:var(--zc);border-color:var(--zc);color:#fff}
+.prow.addch{background:none;border-style:dashed;color:var(--ink-45);justify-content:center;font-weight:600;font-size:14px}
+.prow.addch:hover{color:var(--ink)}
+@media (max-width:760px){.ptags{margin-left:0;width:100%}}
+
+.note{font-family:var(--mono);font-size:11.5px;line-height:1.65;color:var(--ink-45);letter-spacing:.02em}
+.pill{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:99px;background:var(--ink-08);color:var(--ink-70)}
+@media (max-width:760px){
+  .grid2{grid-template-columns:1fr}
+  .zonebar{grid-template-columns:1fr;gap:5px}
+  .zhd{display:flex;align-items:center;gap:10px}
+  .zcount{margin-top:0;font-size:20px}
+  .known-row{flex-direction:column;gap:3px}
+  .known-k{min-width:0}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="mast">
+  <div class="mast-in">
+    <div>
+      <div class="grp">CB Frýdlant <em>— youth</em></div>
+      <div class="who">Katka &amp; Boža · Czech Republic</div>
+    </div>
+    <nav class="tabs" id="tabs" role="tablist"></nav>
+  </div>
+</header>
+<main id="app"></main>
+<div id="bot"></div>
+<script>
+/* ============================================================
+   MINISTRY MAP + CHECK-UP — merge prototype
+   Ministry Map app (live roster, zones, movement)
+     + M-Lens Diagnostic (Five Phases instrument)
+   The join: the check-up stops asking for people/program data
+   and reads it from the map instead.
+   ============================================================ */
+
+/* ---- Five Challenges of Christ = the map's zones ---- */
+/* Each challenge is an INVITATION a leader makes to a student, not a
+   place or a programme. A student's position on the map is the
+   furthest invitation they have said yes to. `ask` is the invitation
+   in plain words; `verb` is how to say it in a sentence. */
+const ZONES=[
+ {n:1,name:'Come &amp; See',      v:'--z1',
+  ask:'Come and look at Jesus for yourself &mdash; nothing is being asked of you yet.',
+  verb:'invited to come and see'},
+ {n:2,name:'Repent &amp; Believe',v:'--z2',
+  ask:'Turn from your old life and give it to Christ.',
+  verb:'asked to give their life to Christ'},
+ {n:3,name:'Follow Me',        v:'--z3',
+  ask:'Let Jesus lead your whole life, not just your Sunday.',
+  verb:'asked to follow Jesus daily'},
+ {n:4,name:'Follow Me &amp; Fish',v:'--z4',
+  ask:'Come with me and help reach the people who are still outside.',
+  verb:'asked to help reach others'},
+ {n:5,name:'I Am Sending You', v:'--z5',
+  ask:'Go and lead this somewhere I am not.',
+  verb:'sent out to lead'}
+];
+const plain=t=>t.replace(/&amp;/g,'&');
+
+/* ---- Five Phases of a Disciplemaking Ministry ----
+   Names, spans, audiences and per-phase tools read from Mel's
+   chalkboard diagram. The spans trace Jesus' own ministry. ---- */
+const PHASES=[
+ {n:1,name:'Preparation',            span:'30 years',    who:'Everyone', tool:'CCE'},
+ {n:2,name:'Foundation',             span:'1.5 years',   who:'Disciples',tool:'SIX'},
+ {n:3,name:'Ministry Training',      span:'6\u20139 months', who:'Workers',  tool:'TAR'},
+ {n:4,name:'Expansion',              span:'ongoing',     who:'Workers',  tool:'CPR'},
+ {n:5,name:'Leadership Multiplication',short:'Leadership Mult.',span:'1.5 years',who:'Leaders',tool:'REST'}
+];
+PHASES[4].tool='REST';
+const pname=p=>p.short||p.name;
+
+/* ============================================================
+   QUESTION BANK — PLACEHOLDER WORDING
+   Structure is real: 5 phases x 7 statements, 4-point scale,
+   each statement tagged to a scoring category.
+   Swap `t` strings for the verbatim docx statements; keep `cat`.
+   ============================================================ */
+const SCALE=[{k:'A',t:'Not yet true of us',v:1},{k:'B',t:'Starting to be true',v:2},{k:'C',t:'Mostly true',v:3},{k:'D',t:'Consistently true',v:4}];
+const Q=[
+ [1,'Calling',  'I know why God has put me with these young people.'],
+ [1,'Calling',  'I can say out loud what I believe God wants this ministry to become.'],
+ [1,'Calling',  'I have prayed specifically for young people in this town by name.'],
+ [1,'Character','People close to me would say my private life matches my public one.'],
+ [1,'Character','When I fail, I go back and make it right rather than move on.'],
+ [1,'Character','I am not carrying this alone — someone knows how I actually am.'],
+ [1,'Empower',  'I have the blessing of my church leadership to lead this group.'],
+
+ [2,'Prayer',      'We pray together for people who are far from God.'],
+ [2,'Relationship','Students would say an adult here knows them well.'],
+ [2,'Relationship','I meet with students outside of the program itself.'],
+ [2,'God’s Word',  'We open the Bible together in a way students can follow.'],
+ [2,'Vision',      'Our students could say what this group is for.'],
+ [2,'Love',        'New students are noticed and welcomed within their first visit.'],
+ [2,'Christ',      'Students hear the gospel clearly, not just good advice.'],
+
+ [3,'Teach',  'We have a way of teaching students to feed themselves spiritually.'],
+ [3,'Teach',  'I am investing in a few students on purpose, not just the crowd.'],
+ [3,'Act',    'Students are given real responsibility, not just tasks.'],
+ [3,'Act',    'A student here could lead a small group without me in the room.'],
+ [3,'Act',    'I give away things I could do better myself.'],
+ [3,'Reflect','Our leaders meet to talk about students, not just logistics.'],
+ [3,'Reflect','After we serve together, we stop and talk about what God did.'],
+
+ [4,'Cultivate','Our group regularly meets young people who are far from God.'],
+ [4,'Cultivate','We are present somewhere students already are — school, sport, music.'],
+ [4,'Cultivate','Our students invite their friends without being asked.'],
+ [4,'Plant',    'We have a program built for students who do not yet believe.'],
+ [4,'Plant',    'Our team can name who we are trying to reach next.'],
+ [4,'Reap',     'We know what happens to a new believer in their first month.'],
+ [4,'Reap',     'Growth would not break how we are currently organised.'],
+
+ [5,'Re-structure','This ministry would continue if I left tomorrow.'],
+ [5,'Re-structure','Our vision is bigger than our own group.'],
+ [5,'Entrust',     'Leaders we raised are now leading something we do not control.'],
+ [5,'Entrust',     'We celebrate people leaving us more than people staying.'],
+ [5,'Support',     'We help other youth groups, not only our own.'],
+ [5,'Support',     'We have sent someone out of this group into ministry elsewhere.'],
+ [5,'Train',       'A second generation of leaders is being raised by the first.']
+].map((r,i)=>({id:i,phase:r[0],cat:r[1],t:r[2]}));
+
+/* ============================================================
+   JV TRAINING TOOLS
+   These categories are not abstract — each is a tool JV already
+   teaches. A low score is not a diagnosis, it is a pointer to the
+   tool you already have. `full` needs the expansion from the docx.
+   ============================================================ */
+const TOOLS={
+ CCE: {phase:1, words:['Character','Calling','Empower'],
+       line:'What God settles in the leader before there is a ministry to lead.'},
+ SIX: {phase:2, words:['Prayer','Relationship','God\u2019s Word','Vision','Love','Christ'],
+       line:'The six things a group is built on before it is built out.'},
+ TAR: {phase:3, words:['Teach','Act','Reflect'],
+       line:'The training loop. You teach it, they do it, then you sit down and talk about what happened.'},
+ CPR: {phase:4, words:['Cultivate','Plant','Reap'],
+       line:'How ground that is not yours yet becomes ground where something grows.'},
+ REST:{phase:5, words:['Re-structure','Entrust','Support','Train'],
+       line:'How you hand a ministry to the leaders you raised without dropping it.'}
+};
+const toolFor=n=>Object.entries(TOOLS).find(([k,v])=>v.phase===n);
+const LETTERS={};Object.values(TOOLS).forEach(t=>t.words.forEach(w=>LETTERS[w]=t));
+const isTool=c=>!!LETTERS[c];
+
+/* ============================================================
+   DEMO DATA — stands in for the live Airtable base
+   (Groups / Students / Check-ins / Programs / Events / Leaders)
+   ============================================================ */
+const DATES=['2025-10-12','2026-03-08','2026-08-02'];
+const DLAB=['Oct 2025','Mar 2026','Aug 2026'];
+
+/* zone per student at each date; 0 = not in the group then */
+const STUDENTS=[
+ ['Tomáš',   [3,4,5]], ['Klára',   [3,4,4]], ['Vojta',  [2,3,4]],
+ ['Anička',  [2,3,4]], ['Petr',    [3,3,3]], ['Lucie',  [2,2,3]],
+ ['Marek',   [1,2,3]], ['Eliška',  [1,2,3]], ['Honza',  [2,3,3]],
+ ['Bára',    [1,2,2]], ['Ondra',   [1,1,2]], ['Tereza', [0,1,2]],
+ ['Filip',   [1,2,2]], ['Natálie', [0,1,2]], ['Kuba',   [2,2,2]],
+ ['Míša',    [1,1,1]], ['Adam',    [0,1,1]], ['Verča',  [0,1,1]],
+ ['Štěpán',  [0,0,1]], ['Denisa',  [0,0,1]], ['Radek',  [1,1,1]],
+ ['Sára',    [0,0,1]], ['Matěj',   [1,1,1]], ['Karolína',[0,0,1]]
+].map((r,i)=>({id:i,name:r[0],hist:r[1],zone:r[1][r[1].length-1],
+  age:['15-17','18-20','12-14','15-17','18-20','15-17','12-14','15-17','18-20','12-14','15-17','12-14','15-17','12-14','18-20','12-14','15-17','12-14','12-14','15-17','18-20','12-14','15-17','12-14'][i],
+  came:['Invited by a student','Invited by a student','Through school or club','Invited by a student','Came with family','Invited by a leader','Through school or club','Invited by a student','Came with family','Invited by a student','Through school or club','Invited by a student','Invited by a leader','Invited by a student','Came with family','Found us themselves','Invited by a student','Invited by a student','Invited by a student','Through school or club','Came with family','Invited by a student','Found us themselves','Invited by a student'][i],
+  invitedBy:[null,null,null,'Klára',null,null,null,'Marek',null,'Bára',null,'Anička',null,'Vojta',null,null,'Tereza','Natálie','Adam',null,null,'Verča',null,'Štěpán'][i],
+  knownBy:['Katka','Katka','Boža','Katka','Boža','Katka','Boža','Katka','Boža','Katka','Boža',null,'Boža',null,'Katka',null,'Katka','Boža',null,null,'Boža',null,null,null][i],
+  since:null, yes:{}}));
+
+/* Build dated history for the demo roster. A student's `since` is when
+   they first came; `yes[n]` is when they first said yes to invitation n.
+   In production both are real records, not derived from snapshots. */
+(function seedDates(){
+  const snap=['2025-10-12','2026-03-08','2026-08-02'];
+  const shift=(d,days)=>{const t=new Date(d);t.setDate(t.getDate()-days);return t.toISOString().slice(0,10)};
+  STUDENTS.forEach(st=>{
+    let first=null, high=0;
+    st.hist.forEach((z,i)=>{
+      if(!z)return;
+      if(first===null)first=i;
+      for(let k=high+1;k<=z;k++) st.yes[k]=snap[i];
+      if(z>high)high=z;
+    });
+    st.since=shift(snap[first], 24+((st.id*29)%150));   /* came a while before first counted */
+    if(st.yes[1])st.yes[1]=st.since;                     /* saying yes to "come and see" is coming */
+  });
+})();
+const MS_MO=2629800000;
+const monthsBetween=(a,b)=>Math.max(0,Math.round((new Date(b)-new Date(a))/MS_MO));
+const fmtShort=d=>new Date(d).toLocaleDateString('en-GB',{month:'short',year:'numeric'});
+const LEADERS=['Katka','Boža'];
+const AGES=['12-14','15-17','18-20','21+'];
+const CAME=['Invited by a student','Invited by a leader','Came with family','Through school or club','Found us themselves'];
+
+const PROGRAMS=[
+ {name:'Youth club',        freq:'Weekly',  n:38, ch:[1]},
+ {name:'Small groups',      freq:'Weekly',  n:14, ch:[3]},
+ {name:'Summer camp',       freq:'Yearly',  n:31, ch:[2,3]},
+ {name:'Leader training',   freq:'Monthly', n:6,  ch:[4]}
+];
+
+/* ============================================================
+   REPORTS — one per check-up, dated and timed.
+   A leader can take this as often as they like; the roster only
+   changes when they update it, so the two move at their own pace.
+   ============================================================ */
+const REPORTS=[
+ {d:'2025-10-12',t:'19:40',r:0,a:{1:[4,3,4,3,3,3,3],2:[3,3,3,2,3,2,2],3:[2,2,2,2,2,2,1],4:[1,1,2,1,2,1,1],5:[1,1,1,1,1,1,1]}},
+ {d:'2026-03-08',t:'20:05',r:1,a:{1:[4,4,4,3,4,3,3],2:[4,3,4,3,3,3,3],3:[3,2,3,2,3,2,2],4:[2,1,2,1,2,2,1],5:[1,1,1,1,1,1,1]}},
+ {d:'2026-08-02',t:'09:14',r:2,a:{1:[4,4,4,3,4,3,3],2:[4,3,4,3,4,3,3],3:[3,3,3,3,3,3,2],4:[3,3,2,1,2,1,1],5:[1,1,1,1,1,1,1]}},
+ {d:'2026-08-05',t:'21:30',r:2,a:{1:[4,4,4,3,4,3,3],2:[4,4,4,3,4,3,3],3:[3,3,3,3,3,3,2],4:[3,3,3,1,2,1,1],5:[1,1,1,1,1,1,1]}}
+];
+const qIx=q=>Q.filter(x=>x.phase===q.phase).indexOf(q);
+const ansIn=(rep,q)=>rep.a[q.phase][qIx(q)];
+const scoresOf=rep=>{const o={};PHASES.forEach(p=>o[p.n]=Math.round((rep.a[p.n].reduce((a,b)=>a+b,0)/28)*100)/10);return o};
+/* categories report the mean of their statements on the 1-4 scale,
+   never a rescaled decimal — some letters rest on two questions and
+   a tenth of a point is precision the instrument does not have */
+const catScores=rep=>{const g={};Q.forEach(q=>{(g[q.cat]=g[q.cat]||[]).push(ansIn(rep,q))});
+  const o={};for(const k in g)o[k]={v:g[k].reduce((a,b)=>a+b,0)/g[k].length,n:g[k].length};return o};
+const BANDS=[{m:3.5,l:'Consistently true',s:'consistent',k:'true'},
+             {m:2.5,l:'Mostly true',      s:'mostly',    k:'true'},
+             {m:1.5,l:'Starting',         s:'starting',  k:'part'},
+             {m:0,  l:'Not yet',          s:'not yet',   k:'not'}];
+const band=v=>BANDS.find(b=>v>=b.m);
+const pips=v=>{const f=Math.round(v);return `<span class="pips">${[1,2,3,4].map(i=>`<i class="${i<=f?'on':''}"></i>`).join('')}</span>`};
+const fmtDate=r=>new Date(r.d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+
+const FREQ_RANK={'Weekly':3,'Monthly':2,'Yearly':1};
+
+/* ---- derived helpers ---- */
+const zoneCounts=di=>{const c=[0,0,0,0,0];STUDENTS.forEach(s=>{const z=s.hist[di];if(z)c[z-1]++});return c};
+const totalAt=di=>zoneCounts(di).reduce((a,b)=>a+b,0);
+const currentPhase=s=>{for(const p of PHASES){if(s[p.n]<7)return p.n}return 5};
+
+const coverage=()=>{const c={1:[],2:[],3:[],4:[],5:[]};PROGRAMS.forEach(p=>p.ch.forEach(x=>c[x].push(p)));return c};
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const el=(h)=>{const d=document.createElement('div');d.innerHTML=h;return d};
+
+/* ============================================================
+   VIEWS
+   ============================================================ */
+const VIEWS=[
+ {id:'today',   label:'Today'},
+ {id:'map',     label:'Your map'},
+ {id:'check',   label:'Check-up'},
+ {id:'reports', label:'Reports'},
+ {id:'time',    label:'The year'}
+];
+let active='today', quizIx=0, answers={}, selPhase=null, openIx=REPORTS.length-1;
+const rep=()=>REPORTS[openIx];
+
+function renderTabs(){
+  document.getElementById('tabs').innerHTML=VIEWS.map(v=>
+    `<button class="tab" role="tab" aria-selected="${v.id===active||(v.id==='reports'&&active==='report')}" data-go="${v.id}">${v.label}</button>`).join('');
+}
+function go(id){active=id;selPhase=null;selStudent=null;intake=null;intakeErr=null;addingTo=null;selProgram=null;addingProgram=false;coachState={loading:false,questions:null,error:null,answer:null,asking:false};if(id==='check'){quizIx=0;answers={}}renderTabs();render();window.scrollTo({top:0,behavior:'instant'})}
+
+/* ---------- TODAY ---------- */
+function vToday(){
+  const L=REPORTS[REPORTS.length-1];
+  const ph=currentPhase(scoresOf(L));
+  /* look back for the last check-up that sat in a different phase */
+  let chg=null;
+  for(let i=REPORTS.length-2;i>=0;i--){ if(currentPhase(scoresOf(REPORTS[i]))!==ph){chg=REPORTS[i];break} }
+  const c=zoneCounts(L.r), tot=c.reduce((a,b)=>a+b,0), mx=Math.max(...c);
+  const moved=STUDENTS.filter(s=>s.hist[2]>s.hist[1]&&s.hist[1]>0).length;
+
+  /* the cake — widest tier is where most students are, so a healthy
+     pipeline makes a cake and an unhealthy one visibly does not */
+  const tiers=cakeHTML(L.r);
+
+  return `<div class="view"><div class="wrap">
+    <div class="eyebrow">CB Fr&yacute;dlant youth &middot; ${fmtDate(L)}</div>
+    <h1>${moved} students moved forward<br>since <em>the spring</em>.</h1>
+
+    <div class="duo">
+      <div class="duo-half">
+        <div class="eyebrow">Where your students are</div>
+        <div class="big-n">${tot}<em>students</em></div>
+        <div class="duo-vis"><div class="cake">${tiers}</div></div>
+        <div class="plinth">Each student sits at the furthest invitation they have said yes to</div>
+      </div>
+      <div class="duo-rule"></div>
+      <div class="duo-half">
+        <div class="eyebrow">What season your ministry is in</div>
+        <div class="big-n ph">${pname(PHASES[ph-1])}</div>
+        <div class="duo-vis"><div class="climb">
+          ${PHASES.map(p=>{
+            const st=p.n===ph?'on':(p.n<ph?'done':'ahead');
+            return `<div class="step ${st}" style="--h:${20+p.n*16}%;--t:${.22+p.n*.09}">
+              <div class="riser">${p.n===ph?'<span class="here">YOU ARE HERE</span>':''}</div>
+              <div class="slab">${pname(p)}</div></div>`;
+          }).join('')}
+        </div></div>
+        <div class="plinth">${chg?`Stepped up from ${pname(PHASES[currentPhase(scoresOf(chg))-1])} on ${fmtDate(chg)}`:'Your first phase'}</div>
+      </div>
+    </div>
+
+    <button class="repcard newest big" data-open="${REPORTS.length-1}">
+      <div class="rc-date"><span class="d">${fmtDate(L)}</span><span class="t">${L.t}</span></div>
+      <div class="rc-mid">
+        <div class="rc-phase"><i></i>Your latest report</div>
+        <div class="rc-delta">${c[3]+c[4]} ready to fish or being sent &middot; ${REPORTS.length} check-ups kept</div>
+      </div>
+      <div class="rc-n"><b>${tot}</b><span>students</span></div>
+      <div class="rc-go">Open &rarr;</div>
+    </button>
+
+    <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn" data-go="check">Start a new check-up</button>
+      <button class="btn ghost" data-go="reports">All ${REPORTS.length} reports</button>
+      <button class="btn ghost" data-go="time">See how you have moved</button>
+    </div>
+  </div></div>`;
+}
+
+/* reusable cake, used on Today and in the then/now comparison */
+function cakeHTML(ri,small){
+  const c=zoneCounts(ri), mx=Math.max(...c);
+  return [...ZONES].reverse().map(z=>{
+    const n=c[z.n-1], w=n?44+56*(n/mx):44;
+    return `<div class="tier ${n?'':'empty'} ${small?'sm':''}" style="width:${w}%;background:var(${z.v})">
+      <span class="tn">${small?z.name.replace(' &amp; ',' &amp; '):z.name}</span><b>${n}</b></div>`;
+  }).join('');
+}
+
+/* ---------- MAP ----------
+   Editable. This is the only place data changes; everything else
+   in the app reads from it. Moving a student here updates the
+   current snapshot, so the cake, the report and the check-up
+   auto-fill all follow. */
+let selStudent=null, addingTo=null, selProgram=null, addingProgram=false;
+const NOW=2;                       /* the current roster snapshot */
+const FREQS=['Weekly','Monthly','Termly','Yearly'];
+
+function moveStudent(id,z){
+  const st=STUDENTS.find(x=>x.id===id);if(!st)return;
+  const today=new Date().toISOString().slice(0,10);
+  for(let k=1;k<=z;k++) if(!st.yes[k]) st.yes[k]=today;   /* dated crossing, not a silent overwrite */
+  Object.keys(st.yes).forEach(k=>{if(+k>z)delete st.yes[k]});
+  st.hist[NOW]=z;st.zone=z;selStudent=null;render();
+}
+function dropStudent(id){const i=STUDENTS.findIndex(x=>x.id===id);if(i>-1)STUDENTS.splice(i,1);selStudent=null;render()}
+let intake=null, intakeErr=null;
+const val=id=>{const el=document.getElementById(id);return el?el.value:''};
+
+function saveIntake(){
+  const first=val('in-name').trim(), init=val('in-init').trim().toUpperCase().slice(0,1);
+  const name=first+(init?' '+init+'.':'');
+  if(!first){intakeErr='A first name is the one thing this cannot go without.';render();return}
+  const z=+val('in-zone')||1, came=val('in-came');
+  const h=[0,0,0]; h[NOW]=z;
+  STUDENTS.push({id:Math.max(0,...STUDENTS.map(x=>x.id))+1,name,hist:h,zone:z,
+    age:val('in-age'), came, invitedBy:came==='Invited by a student'?(val('in-by')||null):null,
+    knownBy:val('in-known')||null, since:val('in-since')||new Date().toISOString().slice(0,10),
+    yes:(()=>{const y={},since=val('in-since')||new Date().toISOString().slice(0,10),
+      today=new Date().toISOString().slice(0,10);
+      for(let k=1;k<=z;k++)y[k]=k===1?since:today; return y})(),
+    note:val('in-note').trim()||null});
+  intake=null;intakeErr=null;render();
+}
+
+function intakeHTML(){
+  const today=new Date().toISOString().slice(0,10);
+  return `<div class="sheet" data-close="bg"><div class="sheetin" role="dialog" aria-label="Add a student">
+    <div class="sh-hd">
+      <div><div class="eyebrow">New student</div><h2>Who has joined you?</h2></div>
+      <button class="sh-x" data-close="x">&times;</button>
+    </div>
+    <p class="sh-lede">Every field here earns its place later &mdash; how they came tells you whether your students are inviting their friends, and who knows them tells you whether anyone actually does.</p>
+    ${intakeErr?`<div class="sh-err">${intakeErr}</div>`:''}
+
+    <div class="fgrid four">
+      <label class="fld wide"><span>First name</span><input id="in-name" placeholder="First name" autofocus></label>
+      <label class="fld"><span>Last initial</span><input id="in-init" maxlength="1" placeholder="H"></label>
+      <label class="fld"><span>Age</span><select id="in-age">${AGES.map(a=>`<option ${a==='15-17'?'selected':''}>${a}</option>`).join('')}</select></label>
+      <label class="fld"><span>First came</span><input id="in-since" type="date" value="${today}"></label>
+    </div>
+
+    <div class="fld"><span>Furthest invitation they have said yes to</span>
+      <div class="zpick">${ZONES.map(z=>`<label class="zp" style="--zc:var(${z.v})">
+        <input type="radio" name="in-zone-r" value="${z.n}" ${z.n===intake?'checked':''} data-zone="${z.n}">
+        <b>${z.name}</b><em>${z.ask}</em></label>`).join('')}</div>
+      <input type="hidden" id="in-zone" value="${intake}">
+    </div>
+
+    <div class="fgrid">
+      <label class="fld"><span>How they came</span><select id="in-came" data-came>${CAME.map(x=>`<option>${x}</option>`).join('')}</select></label>
+      <label class="fld" id="bywrap" style="display:${CAME[0]==='Invited by a student'?'':'none'}"><span>Invited by</span>
+        <select id="in-by"><option value="">&mdash;</option>${STUDENTS.map(x=>`<option>${x.name}</option>`).join('')}</select></label>
+      <label class="fld"><span>Who knows them best</span>
+        <select id="in-known"><option value="">Nobody yet</option>${LEADERS.map(l=>`<option>${l}</option>`).join('')}</select></label>
+    </div>
+
+    <label class="fld"><span>Anything worth remembering</span><input id="in-note" placeholder="Optional &mdash; a sentence you would want to read in six months"></label>
+
+    <div class="sh-foot">
+      <span class="note">First name and last initial only &mdash; never a full name. Stays on your device and in your group&rsquo;s own records.</span>
+      <div><button class="btn ghost" data-close="x">Cancel</button><button class="btn" data-save="1">Add student</button></div>
+    </div>
+  </div></div>`;
+}
+
+function vMap(){
+  const c=zoneCounts(NOW);
+  return `<div class="view"><div class="wrap">
+    <div class="eyebrow">Five Challenges of Christ</div>
+    <h1>The furthest invitation<br>each student has <em>said yes to</em></h1>
+    <p class="lede">The five challenges are things you ask a student, not places you put them. Tap any name to move them, because the only reason to move someone is that the invitation was made and they answered it.</p>
+
+    ${(()=>{
+      const byS=STUDENTS.filter(x=>x.came==='Invited by a student').length;
+      const unknown=STUDENTS.filter(x=>!x.knownBy);
+      const asked=STUDENTS.filter(x=>x.yes[2]).map(x=>monthsBetween(x.since,x.yes[2])).sort((a,b)=>a-b);
+      const med=asked.length?asked[Math.floor(asked.length/2)]:null;
+      const waiting=STUDENTS.filter(x=>!x.yes[2])
+        .map(x=>({...x,mo:monthsBetween(x.since,new Date().toISOString().slice(0,10))}))
+        .sort((a,b)=>b.mo-a.mo);
+      const longest=waiting[0];
+      return `<div class="mapstats">
+        <div class="ms"><b>${byS}<span class="of">/${STUDENTS.length}</span></b>
+          <span>came because another student invited them</span>
+          <em>Your check-up asks whether students invite friends without being asked. This answers it from the roster instead of from memory.</em></div>
+        <div class="ms ${med>9?'warn':''}"><b>${med===null?'&mdash;':med}<span class="of"> mo</span></b>
+          <span>from first coming to being asked to give their life to Christ</span>
+          <em>Typical wait across the ${asked.length} students who have been asked. Only the date they first came makes this knowable.</em></div>
+        <div class="ms ${waiting.length?'warn':''}"><b>${waiting.length}</b>
+          <span>${waiting.length===1?'student has never been asked':'students have never been asked'}</span>
+          <em>${longest?`${longest.name} has been coming ${longest.mo} months.`:'Everyone has been asked.'}</em></div>
+        <div class="ms ${unknown.length?'warn':''}"><b>${unknown.length}</b>
+          <span>${unknown.length===1?'student nobody is following':'students nobody is following'}</span>
+          <em>${unknown.length?unknown.map(x=>x.name).join(', '):'Every student has a leader who knows them.'}</em></div>
+      </div>`})()}
+
+    <div class="zonebar edit">
+      ${ZONES.map((z,i)=>{
+        const inz=STUDENTS.filter(x=>x.hist[NOW]===z.n);
+        return `<div class="zcol" style="--zc:var(${z.v})">
+          <div class="zhd"><div class="zname">${z.name}</div><div class="zcount">${c[i]}</div><div class="zask">${z.ask}</div></div>
+          <div class="zbody">
+            ${inz.map(x=>{
+              const d=x.hist[NOW]-(x.hist[1]||x.hist[NOW]);
+              const tag=!x.hist[1]?'<span class="mv">new</span>':d>0?`<span class="mv">+${d}</span>`:d<0?`<span class="mv back">${d}</span>`:'';
+              if(selStudent===x.id) return `<div class="chip open">
+                <div class="chip-nm">${x.name}</div>
+                <div class="chip-since">Coming since ${fmtShort(x.since)} &middot; ${monthsBetween(x.since,new Date().toISOString().slice(0,10))} months${x.knownBy?` &middot; ${x.knownBy} knows them`:' &middot; <b>nobody is following them</b>'}</div>
+                <div class="chip-move">${ZONES.map(t=>`<button class="mvb ${t.n===z.n?'is':''}" style="--zc:var(${t.v})" data-move="${x.id}:${t.n}" title="${plain(t.name)}">${t.n}</button>`).join('')}</div>
+                <div class="chip-act"><span>Move to the furthest invitation they have said yes to</span><button data-drop="${x.id}">Remove</button></div>
+              </div>`;
+              return `<button class="chip" data-sel="${x.id}"><span>${x.name}</span>${tag}</button>`;
+            }).join('')}
+            <button class="chip addch" data-adding="${z.n}">+ Add student</button>
+          </div>
+        </div>`}).join('')}
+    </div>
+
+    <div class="sec">
+      <div class="sec-hd"><h2>Where each invitation gets made</h2><span class="n">TAP TO EDIT</span></div>
+      <div class="proglist">
+        ${PROGRAMS.map((p,pi)=>selProgram===pi
+          ? `<div class="prow open">
+              <input class="pnin" id="pn${pi}" value="${p.name}">
+              <div class="pfreq">${FREQS.map(fq=>`<button class="fq ${fq===p.freq?'is':''}" data-freq="${pi}:${fq}">${fq}</button>`).join('')}</div>
+              <div class="pinv">${ZONES.map(z=>`<button class="inv ${p.ch.includes(z.n)?'on':''}" style="--zc:var(${z.v})" data-inv="${pi}:${z.n}">${z.name}</button>`).join('')}</div>
+              <div class="chip-act"><span>Which invitations actually get made here</span><button class="prim" data-pdone="${pi}">Done</button><button data-pdrop="${pi}">Remove</button></div>
+            </div>`
+          : `<button class="prow" data-prog="${pi}">
+              <span class="pname">${p.name}</span>
+              <span class="pfr ${p.freq==='Yearly'?'rare':''}">${p.freq}</span>
+              <span class="ptags">${p.ch.length?p.ch.map(x=>`<i style="background:var(${ZONES[x-1].v})" title="${plain(ZONES[x-1].name)}"></i>`).join(''):'<em>no invitation made here</em>'}</span>
+            </button>`).join('')}
+        ${addingProgram
+          ? `<div class="prow open"><input class="pnin" id="newpr" placeholder="Programme name" autofocus>
+             <div class="chip-act"><button class="prim" data-newprog="go">Add</button><button data-newprog="cancel">Cancel</button></div></div>`
+          : `<button class="prow addch" data-newprog="open">+ Add a programme</button>`}
+      </div>
+      <p class="note" style="margin-top:12px">Everything else in the app reads from this page. Change it here and the check-up, the report and the cake all follow &mdash; there is nowhere else to keep it up to date.</p>
+    </div>
+  </div></div>${intake?intakeHTML():''}`;
+}
+
+/* ---------- CHECK-UP ----------
+   Screen 0 is the whole point of the merge: the sections M-Lens
+   used to ask a leader to fill in by hand, answered from the map. */
+function vCheck(){
+  const c=zoneCounts(2), tot=c.reduce((a,b)=>a+b,0);
+  const ready=STUDENTS.filter(s=>s.hist[2]>=4).length;
+  const lead=STUDENTS.filter(s=>s.hist[2]===5).length;
+
+  if(quizIx===0){
+    return `<div class="view"><div class="wrap"><div class="q-shell">
+      <div class="eyebrow">Ministry check-up · step 1 of 2</div>
+      <h1>We already know <em>most of this</em></h1>
+      <p class="lede">The old diagnostic asked you for 18 numbers about your people and programs. Your map already has them, so we've filled them in. Check they look right.</p>
+      <div class="known" style="margin-top:24px">
+        <div class="known-row"><div class="known-k">Students on the map</div><div class="known-v">${tot}<span class="src">FROM ROSTER</span></div></div>
+        <div class="known-row"><div class="known-k">Furthest invitation said yes to</div><div class="known-v">${c.map((n,i)=>`${ZONES[i].name} ${n}`).join(' · ')}<span class="src">FROM CHECK-INS</span></div></div>
+        <div class="known-row"><div class="known-k">Asked to help reach others</div><div class="known-v">${ready} said yes<span class="src">CHALLENGE 4+</span></div></div>
+        <div class="known-row"><div class="known-k">Sent out to lead</div><div class="known-v">${lead} student<span class="src">CHALLENGE 5</span></div></div>
+        <div class="known-row"><div class="known-k">Programs running</div><div class="known-v">${PROGRAMS.length}, making 4 of the 5 invitations<span class="src">FROM PROGRAMS</span></div></div>
+        <div class="known-row"><div class="known-k">Never asked</div><div class="known-v">Nobody is ever sent out to lead<span class="src">COMPUTED</span></div></div>
+      </div>
+      <p class="note" style="margin-top:18px">Something wrong? Fix it on your map and it corrects here — one source, not two.</p>
+      <div style="margin-top:24px;display:flex;gap:10px">
+        <button class="btn" data-q="1">That's right — continue</button>
+        <button class="btn ghost" data-go="map">Go fix my map</button>
+      </div>
+    </div></div></div>`;
+  }
+
+  const i=quizIx-1;
+  if(i>=Q.length){return ''}
+  const q=Q[i], ph=PHASES[q.phase-1];
+  return `<div class="view"><div class="wrap"><div class="q-shell">
+    <div class="q-prog"><i style="width:${(i/Q.length)*100}%"></i></div>
+    <div class="q-meta"><span>Phase ${q.phase} · ${ph.name}</span><span>${i+1} / ${Q.length}</span></div>
+    <div class="q-text">${q.t}</div>
+    <div class="q-opts">
+      ${SCALE.map(o=>`<button class="opt" data-ans="${o.v}"><span class="k">${o.k}</span>${o.t}</button>`).join('')}
+    </div>
+    <p class="note" style="margin-top:22px">Only the 35 phase statements are left — the people and programme sections are already answered.</p>
+  </div></div></div>`;
+}
+
+/* ---------- REPORTS: the archive ----------
+   Every check-up keeps its own dated report. Nothing overwrites. */
+function vReports(){
+  const rows=REPORTS.map((r,i)=>{
+    const sc=scoresOf(r), ph=currentPhase(sc), tot=totalAt(r.r);
+    const prev=i>0?REPORTS[i-1]:null;
+    const pph=prev?currentPhase(scoresOf(prev)):null;
+    const dt=prev?tot-totalAt(prev.r):null;
+    let delta='';
+    if(prev){
+      const bits=[];
+      if(ph>pph) bits.push(`<b class="up">stepped up from ${pname(PHASES[pph-1])}</b>`);
+      else if(ph<pph) bits.push(`<b class="dn">back to ${pname(PHASES[ph-1])}</b>`);
+      else bits.push('same phase');
+      if(dt>0) bits.push(`+${dt} students`); else if(dt<0) bits.push(`${dt} students`);
+      delta=bits.join(' · ');
+    } else delta='first check-up';
+    return {r,i,sc,ph,tot,delta};
+  }).reverse();
+
+  return `<div class="view"><div class="wrap">
+    <div class="eyebrow">${REPORTS.length} check-ups kept</div>
+    <h1>Every time you check in,<br>you keep <em>the whole picture</em></h1>
+    <p class="lede">Nothing is overwritten. Take this as often as you find it useful — the roster only changes when you change it, so the two move at their own pace.</p>
+    <div style="margin-top:26px;display:flex;flex-direction:column;gap:10px">
+      ${rows.map(x=>`<button class="repcard ${x.i===REPORTS.length-1?'newest':''}" data-open="${x.i}">
+        <div class="rc-date"><span class="d">${fmtDate(x.r)}</span><span class="t">${x.r.t}</span></div>
+        <div class="rc-mid">
+          <div class="rc-phase"><i></i>${pname(PHASES[x.ph-1])}</div>
+          <div class="rc-delta">${x.delta}</div>
+        </div>
+        <div class="rc-n"><b>${x.tot}</b><span>students</span></div>
+        <div class="rc-go">Open &rarr;</div>
+      </button>`).join('')}
+    </div>
+    <p class="note" style="margin-top:18px">A report is a snapshot of what was true that evening — reading an old one should feel like reading an old journal entry, not a stale dashboard.</p>
+  </div></div>`;
+}
+
+/* ---------- REPORT ---------- */
+function vReport(){
+  const R=rep(), sc=scoresOf(R), ph=currentPhase(sc), cats=catScores(R);
+  const c=zoneCounts(R.r), tot=c.reduce((a,b)=>a+b,0);
+  const cov=coverage();
+  const prev=openIx>0?REPORTS[openIx-1]:null;
+  const pph=prev?currentPhase(scoresOf(prev)):null;
+  const ranked=Object.entries(cats).sort((a,b)=>a[1].v-b[1].v);
+  const low=ranked.slice(0,3);
+  const toolFlags=ranked.filter(k=>isTool(k[0])&&k[1]<8);
+
+  const weakFreq=ZONES.map(z=>({z,best:Math.max(0,...cov[z.n].map(p=>FREQ_RANK[p.freq]))})).filter(x=>x.best===1)[0];
+  const gapZone=ZONES.find(z=>!cov[z.n].length);
+  const acts=[];
+  if(weakFreq){const wz=weakFreq.z, only=cov[wz.n][0];
+    acts.push({b:`<b>Students are only ${wz.verb} once a year.</b> ${c[wz.n-1]+c[0]} of them have not been asked yet, and ${only.name} is the only time it happens. That invitation does not need a programme — it needs someone willing to make it more often than once a year.`,
+    w:`instrument: <span>Cultivate &mdash; ${band(cats.Cultivate.v).s}</span> &middot; map: ${only.name} runs ${only.freq.toLowerCase()}`});}
+  if(gapZone) acts.push({b:`<b>You never actually ask anyone to go.</b> ${c[4]} student has been sent, and ${STUDENTS.filter(x=>x.hist[R.r]===4).length} more have already said yes to helping you reach others &mdash; but none of them has been asked to lead something of their own. That is a conversation, not a programme.`,
+    w:`instrument: <span>Entrust &mdash; ${band(cats.Entrust.v).s}</span> &middot; map: ${STUDENTS.filter(x=>x.hist[R.r]===4).length} said yes, none sent`});
+  const used=acts.map(a=>a.w).join(' ');
+  const fresh=low.find(k=>!used.includes(k[0]))||low[0];
+  acts.push({b:`<b>${fresh[0]} is your weakest untouched area &mdash; ${band(fresh[1].v).s}.</b> That is the work of ${PHASES[ph-1].name} &mdash; the phase you have just entered, not a failure of the one you left.`,
+    w:`instrument: ${fresh[0]} from ${fresh[1].n} statement${fresh[1].n>1?'s':''}, lowest of ${ranked.length}`});
+
+  return `<div class="view"><div class="wrap">
+    <button class="backlink" data-go="reports">&larr; All reports</button>
+
+    <div class="cover">
+      <div class="cover-date">${fmtDate(R)} &middot; ${R.t}${openIx===REPORTS.length-1?' <span class="pill">LATEST</span>':''}</div>
+      <div class="cover-grid">
+        <div class="cv"><b>${tot}</b><span>students on the map</span></div>
+        <div class="cv"><b class="ph">${pname(PHASES[ph-1])}</b><span>phase ${ph} of 5${prev&&ph>pph?` &middot; up from ${pname(PHASES[pph-1])}`:''}</span></div>
+        <div class="cv"><b>${c[3]+c[4]}</b><span>said yes to helping reach others</span></div>
+        <div class="cv"><b>${ZONES.filter(z=>cov[z.n].length).length}<span class="of">/5</span></b><span>invitations your programs make</span></div>
+      </div>
+      <div class="cover-bar">${c.map((n,i)=>n?`<div style="flex:${n};background:var(${ZONES[i].v})"></div>`:'').join('')}</div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-hd"><h2>What season you are in</h2><span class="n">TAP A STEP</span></div>
+      <div class="card">
+        <div class="stair">${PHASES.map(p=>`<button class="st ${p.n===ph?'on':(p.n<ph?'done':'')} ${p.n===selPhase?'sel':''}" data-phase="${p.n}" style="height:${18+p.n*16}%" aria-label="${p.name}">${p.n===ph?'<span class="youare">YOU ARE HERE</span>':''}</button>`).join('')}</div>
+        <div class="stairlab">${PHASES.map(p=>`<div class="${p.n===ph?'on':''}">${pname(p)}</div>`).join('')}</div>
+        ${selPhase?phaseWhy(selPhase,ph,R):'<p class="note" style="margin-top:16px;text-align:center">Tap any step to read what that season is about, and what is true of you in it.</p>'}
+      </div>
+    </div>
+
+    ${(()=>{const tk=PHASES[ph-1].tool,T=TOOLS[tk];
+      const parts=T.words.map(w=>[w,cats[w]]).filter(x=>x[1]);
+      return `<div class="sec">
+      <div class="sec-hd"><h2>How ${pname(PHASES[ph-1])} works</h2><span class="n">JV TRAINING TOOL</span></div>
+      <div class="toolbox">
+        <div class="tb-head"><span class="tb-acr">${tk}</span><p>${T.line}</p></div>
+        <div class="tb-words">
+          ${parts.map(x=>{const b=band(x[1].v);return `<div class="tw ${b.k}"><div class="tw-w">${x[0]}</div>
+            ${pips(x[1].v)}<div class="tw-v">${b.l}</div>
+            <div class="tw-n">${x[1].n} statement${x[1].n>1?'s':''}</div></div>`}).join('')}
+        </div>
+      </div>
+      <p class="note" style="margin-top:12px">${parts.length?`Weakest letter: <b>${parts.slice().sort((a,b)=>a[1].v-b[1].v)[0][0]}</b>. The tool is the answer, not the diagnosis &mdash; ${tk} is already trained, so this is a pointer to the part of it you are skipping.`:''}</p>
+    </div>`})()}
+
+    <div class="sec">
+      <div class="sec-hd"><h2>Do this next</h2><span class="n">FROM BOTH SOURCES</span></div>
+      ${acts.map((a,ix)=>`<div class="act"><div class="num">0${ix+1}</div><div class="bd">${a.b}<div class="why">${a.w}</div></div></div>`).join('')}
+    </div>
+
+    <div class="sec">
+      <div class="sec-hd"><h2>Questions worth sitting with</h2><span class="n">COACH</span></div>
+      ${coachHTML()}
+    </div>
+
+    <div class="sec">
+      <div class="sec-hd"><h2>Where each invitation gets made</h2><span class="n">MAP DATA &mdash; NOT RE-ENTERED</span></div>
+      <div class="zonebar">
+        ${ZONES.map((z,i)=>`<div class="zcol" style="--zc:var(${z.v})">
+          <div class="zhd"><div class="zname">${z.name}</div><div class="zcount">${c[i]}</div></div>
+          <div class="zbody">${cov[z.n].length?cov[z.n].map(p=>`<div class="chip"><span>${p.name}</span><span class="mv ${p.freq==='Yearly'?'back':''}">${p.freq}</span></div>`).join(''):'<div class="chip" style="background:none;box-shadow:inset 0 0 0 1.5px var(--ink-15);color:var(--ink-45);font-style:italic">never asked</div>'}</div>
+        </div>`).join('')}
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-hd"><h2>Every category</h2><span class="n">${ranked.length} MEASURED</span></div>
+      ${ranked.map(k=>{const b=band(k[1].v),T=LETTERS[k[0]],mine=T&&T.phase===ph;
+        return `<div class="bar ${b.k}"><div class="lb">${k[0]}${T?`<span class="acrtag ${mine?'mine':''}">${Object.keys(TOOLS).find(x=>TOOLS[x]===T)}</span>`:''}${mine?'<span class="tag">your phase</span>':''}</div>${pips(k[1].v)}<div class="vl">${b.l}</div></div>`}).join('')}
+    </div>
+  </div></div>`;
+}
+
+
+
+/* ============================================================
+   WHAT EACH PHASE IS ABOUT
+   The report answers "what season am I in and what does it ask
+   of me", not "how did the maths land".
+   ============================================================ */
+const STORY={
+ 1:{essence:'Before the ministry, the minister.',
+    about:'Thirty years of preparation for three years of ministry &mdash; that is the proportion Jesus kept, and it is the one this phase refuses to let you skip. Preparation is where God settles your character, your calling, and who has authorised you, so that everything built later has something to stand on.',
+    turn:null,
+    risk:'Skipping it. A ministry can run on gifting alone &mdash; for about two years.',
+    door:'You know your call, someone knows the real you, and your church has blessed you. Then you can start building.'},
+ 2:{essence:'A few students, genuinely known.',
+    about:'Foundation is where a group becomes a place rather than an event. Six things go in the ground here &mdash; prayer, relationship, God&rsquo;s Word, vision, love, and Christ himself &mdash; and none of them can be added later without digging up what you already built.',
+    turn:'You stopped working only on yourself and started working on the room.',
+    risk:'Mistaking a full room for a healthy one.',
+    door:'Students would say an adult here knows them, and they have heard the gospel clearly. Then you have something worth handing to someone.'},
+ 3:{essence:'Teach it, let them do it, then talk about what happened.',
+    about:'Ministry Training is the narrowing. You stop spending yourself evenly across the crowd and start pouring into a handful who can carry what you carry. It is the shortest phase on the board and the one that decides everything after it &mdash; and it only works as a loop, not a course.',
+    turn:'You stopped being the one who does the ministry and became the one who trains it.',
+    risk:'Teaching and acting but never reflecting &mdash; activity without anyone growing.',
+    door:'A student could lead without you in the room, and another leader is growing beside you.'},
+ 4:{essence:'The turn outward.',
+    about:'For three phases the work pointed inward &mdash; your own walk, then your group&rsquo;s health, then a few workers you trained. Expansion is where that trained core stops being the point and becomes the means. The question changes from &ldquo;are our students growing?&rdquo; to &ldquo;who is not here yet?&rdquo;',
+    turn:'You stopped asking whether your students are growing and started asking who is still outside.',
+    risk:'Reaping where nothing was cultivated, or cultivating forever and never reaping. Both feel like work.',
+    door:'Your students bring friends without being asked, you are present where students already are, and you know what happens to a new believer in their first month.'},
+ 5:{essence:'Give it away.',
+    about:'Leadership Multiplication is the bravest phase because it costs you the thing you built. You re-structure so the ministry no longer runs through you, entrust it to leaders you raised, stay close enough to support them, and keep training the generation behind them.',
+    turn:'You stopped growing your ministry and started growing other people&rsquo;s.',
+    risk:'Entrusting without supporting &mdash; which is not releasing people, it is abandoning them.',
+    door:'There is no next door. This is the room.'}
+};
+
+/* the story of a phase, read from the statements */
+function phaseWhy(n,cur,R){
+  const p=PHASES[n-1], st=STORY[n];
+  const qs=Q.filter(q=>q.phase===n).map(q=>({...q,a:ansIn(R,q)}));
+  const tiers=[
+    {k:'true', hd:'True of you',        list:qs.filter(q=>q.a>=3)},
+    {k:'part', hd:'Starting to be true',list:qs.filter(q=>q.a===2)},
+    {k:'not',  hd:'Not yet true',       list:qs.filter(q=>q.a===1)}
+  ];
+  const prev=n>1?Q.filter(q=>q.phase===n-1).map(q=>({...q,a:ansIn(R,q)})).sort((a,b)=>b.a-a.a).slice(0,2):[];
+
+  let stance;
+  if(n===cur) stance=`This is where you are now. You are not behind — you have arrived here, and this is the work in front of you.`;
+  else if(n<cur) stance=`You have come through this. It is not finished — it is simply no longer the thing deciding your next move.`;
+  else stance=`Not yet. This is what is waiting on the other side of ${PHASES[cur-1].name}, and it is worth knowing where you are headed.`;
+
+  const tk=p.tool, T=TOOLS[tk];
+  return `<div class="why-panel">
+    <div class="ph-head">
+      <div class="ph-essence">&ldquo;${st.essence}&rdquo;</div>
+      <div class="ph-stance">${stance}</div>
+    </div>
+    <div class="ph-meta">
+      <span><b>${tk}</b>${T.words.join(' &middot; ')}</span>
+      <span><b>Aimed at</b>${p.who}</span>
+      <span><b>Typically</b>${p.span}</span>
+    </div>
+    <p class="ph-about">${st.about}</p>
+    ${st.turn?`<div class="ph-turn"><span>The turn</span>${st.turn}</div>`:''}
+
+    <div class="tf-grid">
+      ${tiers.map(t=>`<div>
+        <div class="tf-hd ${t.k}">${t.hd}<span>${t.list.length}</span></div>
+        ${t.list.length?t.list.map(q=>`<div class="tf ${t.k}">${q.t}</div>`).join(''):'<div class="tf none">&mdash;</div>'}
+      </div>`).join('')}
+    </div>
+
+    ${prev.length?`<div class="ph-carry">
+      <div class="eyebrow">What you carried in from ${PHASES[n-2].name}</div>
+      ${prev.map(q=>`<div class="carry-line">${q.t}</div>`).join('')}
+      <p class="note" style="margin-top:9px">This is what makes ${p.name} possible. Lose it and you drop back, whatever the rest of the ministry looks like.</p>
+    </div>`:''}
+
+    <div class="ph-foot">
+      <div><div class="eyebrow">Where this goes wrong</div><p>${st.risk}</p></div>
+      <div><div class="eyebrow">${n===5?'When you are here':`How you know you have finished ${p.name}`}</div><p>${st.door}</p></div>
+    </div>
+  </div>`;
+}
+
+/* ---------- COACH ----------
+   Live. Talks to Claude with the report AND the roster in the prompt —
+   which is the whole reason the merge is worth doing: neither source
+   alone can produce a question with a student's name in it.
+   In production this call goes through a Netlify function so the key
+   stays server-side; set CONFIG.coachEndpoint and it will use that. */
+const CONFIG={coachEndpoint:'/api/claude', notesEndpoint:'/api/notes', sendNames:true};
+let coachState={loading:false,questions:null,error:null,answer:null,asking:false};
+
+function coachPayload(){
+  const R=rep(), sc=scoresOf(R), ph=currentPhase(sc), cats=catScores(R);
+  const c=zoneCounts(R.r), cov=coverage(), P=PHASES[ph-1], T=TOOLS[P.tool];
+  const anon=x=>CONFIG.sendNames?x.name:'a student';
+  const F=REPORTS[0];
+  return {
+    takenAt:R.d+' '+R.t,
+    phase:P.name, aimedAt:P.who,
+    tool:{acronym:P.tool, letters:T.words.map(w=>cats[w]?`${w}: ${band(cats[w].v).l.toLowerCase()} (from ${cats[w].n} statements)`:w)},
+    trueOfUs:Q.filter(q=>q.phase===ph&&ansIn(R,q)>=3).map(q=>q.t),
+    notYetTrue:Q.filter(q=>q.phase===ph&&ansIn(R,q)<2).map(q=>q.t),
+    furthestInvitationSaidYesTo:ZONES.map((z,i)=>({invitation:plain(z.name),means:plain(z.ask),students:c[i]})),
+    programs:PROGRAMS.map(p=>({name:p.name,runs:p.freq,wheretheseinvitationsgetmade:p.ch.map(x=>plain(ZONES[x-1].name))})),
+    invitationsNeverMade:ZONES.filter(z=>!cov[z.n].length).map(z=>plain(z.name)),
+    movedForwardSinceLastCheckup:STUDENTS.filter(x=>x.hist[1]&&x.hist[R.r]>x.hist[1]).map(anon),
+    notMovedInTenMonths:STUDENTS.filter(x=>x.hist[F.r]&&x.hist[F.r]===x.hist[R.r]).map(anon),
+    language:'English'
+  };
+}
+
+const COACH_SYS=`You are a coach for youth leaders in Central and Eastern Europe, working inside Josiah Venture's Five Phases framework.
+The Five Challenges of Christ are INVITATIONS a leader makes to a student, not programmes, events or containers. "Repent & Believe" means asking a student to turn from their old life and give it to Christ. "I Am Sending You" means asking a student to go and lead somewhere you are not. A student's position on the map is the furthest invitation they have said yes to. Never write as though a challenge is a place a student sits in, a thing a programme "carries", or an event on a calendar — write about who has been asked and who has not.
+You are given one ministry check-up: the leader's own answers about their ministry, AND live data about the actual students on their map.
+Write questions a wise mentor would ask — specific, warm, never flattering and never scolding. Ground every question in something concrete from the data, preferring facts that combine BOTH sources (e.g. a low score next to a real student who is stuck).
+Never give advice or action steps. Only questions. A good question makes the leader think of the answer themselves.
+Never smuggle your suggestion into the question. Do not name a month, a programme, an event or a plan the leader has not mentioned — "what stops you from asking in November?" is your idea wearing a question mark. Ask about the pattern instead: what stops you asking more often, what has kept you from asking them, what would have to change. The leader supplies the when and the how.
+Return ONLY a JSON array, no preamble and no markdown fences:
+[{"q":"the question, 1-2 sentences","from":"the evidence, under 12 words, lowercase"}]
+Exactly 3 objects.`;
+
+async function callClaude(system,user,maxTokens){
+  const r=await fetch(CONFIG.coachEndpoint,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:maxTokens||1000,system,messages:[{role:'user',content:user}]})});
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  const d=await r.json();
+  return (d.content||[]).filter(x=>x.type==='text').map(x=>x.text).join('\n');
+}
+
+async function runCoach(){
+  coachState={loading:true,questions:null,error:null,answer:null,asking:false}; render();
+  try{
+    const txt=await callClaude(COACH_SYS,'Here is the check-up:\n\n'+JSON.stringify(coachPayload(),null,1));
+    const clean=txt.replace(/```json|```/g,'').trim();
+    const arr=JSON.parse(clean.slice(clean.indexOf('['),clean.lastIndexOf(']')+1));
+    coachState={loading:false,questions:arr,error:null,answer:null,asking:false};
+  }catch(err){ coachState={loading:false,questions:null,error:String(err.message||err),answer:null,asking:false}; }
+  render();
+}
+
+async function askCoach(q){
+  if(!q||!q.trim())return;
+  coachState={...coachState,asking:true,answer:null}; render();
+  try{
+    const txt=await callClaude(
+      'You are a coach for a youth leader, working inside Josiah Venture\'s Five Phases framework. You are given their ministry check-up and their live student roster. Answer in 2-4 short paragraphs, plain and warm, grounded in the data you were given. Cite specific numbers or students where they support the point. If the data cannot answer the question, say so plainly rather than guessing.',
+      'The check-up:\n\n'+JSON.stringify(coachPayload(),null,1)+'\n\nThe leader asks: '+q, 1000);
+    coachState={...coachState,asking:false,answer:txt};
+  }catch(err){ coachState={...coachState,asking:false,answer:null,error:String(err.message||err)}; }
+  render();
+}
+
+/* fallback shown before the leader asks for anything */
+const COACH_DEMO=[
+ {q:'Tom&aacute;&scaron; is the only student you have sent. Vojta, Ani&ccaron;ka and Kl&aacute;ra said yes to helping you reach others months ago &mdash; what has stopped you asking them?',
+  from:'entrust &mdash; not yet &middot; 3 said yes, none sent'},
+ {q:'M&iacute;&scaron;a, Radek and Mat&ecaron;j have not moved in ten months. When did you last have a real conversation with one of them?',
+  from:'roster: 3 students unchanged across every check-up'},
+ {q:'The only time a student here is asked to give their life to Christ is at camp. What stops you from asking more often?',
+  from:'reap &mdash; not yet &middot; that invitation is made once a year'}
+];
+
+function coachHTML(){
+  const st=coachState;
+  const list=st.questions||COACH_DEMO;
+  return `<div class="coach">
+    <div class="coach-top">
+      <div class="eyebrow">${st.questions?'Written from this report and your roster':'Example questions &mdash; not yet generated'}</div>
+      <button class="cbtn" data-coach="run" ${st.loading?'disabled':''}>${st.loading?'Thinking&hellip;':(st.questions?'Ask again':'Read my report')}</button>
+    </div>
+    ${st.loading?'<div class="cq skel">Reading your answers and your roster together&hellip;</div>':
+      list.map(x=>`<div class="cq">${x.q}<span class="from">${x.from}</span></div>`).join('')}
+    ${st.error?`<div class="cerr">Could not reach the coach &mdash; ${st.error}. The questions above are the built-in examples.</div>`:''}
+    <div class="cask">
+      <input id="cq" type="text" placeholder="Or ask your own question about this report&hellip;" ${st.asking?'disabled':''}>
+      <button class="cbtn solid" data-coach="ask" ${st.asking?'disabled':''}>${st.asking?'&hellip;':'Ask'}</button>
+    </div>
+    ${st.answer?`<div class="canswer">${st.answer.split('\n').filter(Boolean).map(p=>`<p>${p}</p>`).join('')}</div>`:''}
+    <div class="cfoot">
+      <label><input type="checkbox" data-coach="names" ${CONFIG.sendNames?'checked':''}> Send student names</label>
+      <span>${CONFIG.sendNames?'Names are included so questions can be specific.':'Names replaced with &ldquo;a student&rdquo; before sending.'}</span>
+    </div>
+  </div>`;
+}
+
+function vTime(){
+  const F=REPORTS[0], L=REPORTS[REPORTS.length-1];
+  const fPh=currentPhase(scoresOf(F)), lPh=currentPhase(scoresOf(L));
+  const t0=totalAt(F.r), t1=totalAt(L.r);
+  const months=Math.round((new Date(L.d)-new Date(F.d))/2629800000);
+
+  /* --- people --- */
+  const started=STUDENTS.filter(x=>x.hist[F.r]);
+  const advanced=started.filter(x=>x.hist[L.r]>x.hist[F.r]);
+  const crossings=advanced.reduce((a,x)=>a+(x.hist[L.r]-x.hist[F.r]),0);
+  const stuck=started.filter(x=>x.hist[L.r]===x.hist[F.r]);
+  const joined=STUDENTS.filter(x=>!x.hist[F.r]&&x.hist[L.r]);
+  const furthest=advanced.slice().sort((a,b)=>(b.hist[L.r]-b.hist[F.r])-(a.hist[L.r]-a.hist[F.r]))[0];
+
+  /* --- instrument --- */
+  const became=Q.filter(q=>ansIn(F,q)<3&&ansIn(L,q)>=3);
+  const slipped=Q.filter(q=>ansIn(L,q)<ansIn(F,q));
+  const frozen=Q.filter(q=>ansIn(F,q)===1&&ansIn(L,q)===1);
+
+  /* --- time spent in each phase, from the reports themselves --- */
+  const legs=[];
+  REPORTS.forEach((r,i)=>{
+    const p=currentPhase(scoresOf(r));
+    const last=legs[legs.length-1];
+    if(last&&last.p===p) last.to=r.d; else legs.push({p,from:r.d,to:r.d});
+  });
+  const span=new Date(L.d)-new Date(F.d);
+  legs.forEach((g,i)=>{
+    const end=i<legs.length-1?new Date(legs[i+1].from):new Date(L.d);
+    g.w=Math.max(((end-new Date(g.from))/span)*100,i===legs.length-1?20:12);
+    g.mo=Math.max(Math.round((end-new Date(g.from))/2629800000),0);
+  });
+
+  const stat=(n,l,sub)=>`<div class="jstat"><b>${n}</b><span>${l}</span>${sub?`<em>${sub}</em>`:''}</div>`;
+
+  return `<div class="view"><div class="wrap">
+    <div class="eyebrow">${fmtDate(F)} &rarr; ${fmtDate(L)} &middot; ${months} months &middot; ${REPORTS.length} check-ups</div>
+    <h1>From ${t0} students to ${t1},<br>and Foundation to <em>${pname(PHASES[lPh-1])}</em>.</h1>
+
+    <div class="jstats">
+      ${stat('+'+(t1-t0),'more students','${joined.length} joined, none lost'.replace('${joined.length}',joined.length))}
+      ${stat(crossings,'challenges crossed','by '+advanced.length+' of the original '+started.length)}
+      ${stat(became.length+'/35','statements became true','none went backward')}
+      ${stat(lPh-fPh,'phases climbed',pname(PHASES[fPh-1])+' &rarr; '+pname(PHASES[lPh-1]))}
+    </div>
+
+    <div class="sec">
+      <div class="sec-hd"><h2>How the shape changed</h2><span class="n">THEN AND NOW</span></div>
+      <div class="thennow">
+        <div class="tn-side"><div class="tn-lab">${fmtDate(F)}<span>${t0} students</span></div><div class="cake">${cakeHTML(F.r,1)}</div></div>
+        <div class="tn-arrow">&rarr;</div>
+        <div class="tn-side"><div class="tn-lab">${fmtDate(L)}<span>${t1} students</span></div><div class="cake">${cakeHTML(L.r,1)}</div></div>
+      </div>
+      <p class="note" style="margin-top:14px">The base widened and the top filled in. A year ago nobody was being sent; ${furthest?`${furthest.name} has gone from ${ZONES[furthest.hist[F.r]-1].name.replace(/&amp;/g,'&')} to ${ZONES[furthest.hist[L.r]-1].name.replace(/&amp;/g,'&')}`:'that is still true'}.</p>
+    </div>
+
+    <div class="sec">
+      <div class="sec-hd"><h2>How long you spent in each phase</h2><span class="n">FROM YOUR CHECK-UPS</span></div>
+      <div class="legs">
+        ${legs.map((g,i)=>`<div class="leg ${i===legs.length-1?'now':''}" style="width:${g.w}%">
+          <span class="lg-n">${pname(PHASES[g.p-1])}</span>
+          <span class="lg-t">${i===legs.length-1?'now':'~'+g.mo+' mo'}</span></div>`).join('')}
+      </div>
+      <p class="note" style="margin-top:12px">Measured between check-ups, so it is only as precise as how often you take one &mdash; a phase change is dated to the check-up that first showed it, not the day it happened.</p>
+    </div>
+
+    <div class="sec">
+      <div class="sec-hd"><h2>What became true</h2><span class="n">${became.length} STATEMENTS</span></div>
+      <div class="tf-grid" style="grid-template-columns:1fr 1fr">
+        <div>
+          <div class="tf-hd true">Now true that was not${''}<span>${became.length}</span></div>
+          ${became.map(q=>`<div class="tf true">${q.t}<span class="qp">${pname(PHASES[q.phase-1])} &middot; ${q.cat}</span></div>`).join('')}
+        </div>
+        <div>
+          <div class="tf-hd not">Unmoved all year<span>${frozen.length}</span></div>
+          ${frozen.slice(0,6).map(q=>`<div class="tf not">${q.t}<span class="qp">${pname(PHASES[q.phase-1])} &middot; ${q.cat}</span></div>`).join('')}
+          ${frozen.length>6?`<p class="note" style="margin-top:10px">and ${frozen.length-6} more, all in ${pname(PHASES[4])}.</p>`:''}
+        </div>
+      </div>
+      ${slipped.length?`<p class="note" style="margin-top:14px">${slipped.length} statement${slipped.length>1?'s':''} went backward this year.</p>`:''}
+    </div>
+
+    <div class="sec">
+      <div class="sec-hd"><h2>Who has not moved</h2><span class="n">${stuck.length} OF THE ORIGINAL ${started.length}</span></div>
+      <div class="stuckrow">${stuck.map(x=>`<span class="sc" style="--zc:var(${ZONES[x.hist[L.r]-1].v})">${x.name}<em>${ZONES[x.hist[L.r]-1].name}</em></span>`).join('')}</div>
+      <p class="note" style="margin-top:12px">Same challenge as ${months} months ago. Not a failure &mdash; but if nobody has had a real conversation with them, this is the list to start from.</p>
+    </div>
+
+    <div class="sec">
+      <div class="sec-hd"><h2>Every check-up</h2><span class="n">TAP TO OPEN</span></div>
+      <div class="track">
+        ${REPORTS.map((r,i)=>{const p=currentPhase(scoresOf(r));
+          return `<button class="stop ${i===REPORTS.length-1?'now':''}" data-open="${i}">
+            <span class="dot"></span>
+            <span class="st-d">${fmtDate(r)}</span>
+            <span class="st-p">${pname(PHASES[p-1])}</span>
+            <span class="st-n">${totalAt(r.r)} students</span></button>`}).join('')}
+      </div>
+    </div>
+  </div></div>`;
+}
+
+/* ============================================================
+   WORKBENCH
+   Log a problem the moment you hit it, with a screenshot, without
+   leaving the screen that caused it. Notes persist between
+   sessions where storage is available, and export as text so
+   Mel and Claude can work through them together in chat.
+   ============================================================ */
+const SCREENS={today:'Today',map:'Your map',check:'Check-up',reports:'Reports',report:'A report',time:'The year'};
+const screenNow=()=>SCREENS[active]||'Somewhere';
+const KINDS=[{k:'bug',l:'Broken'},{k:'wording',l:'Wording is off'},{k:'idea',l:'Idea'},{k:'question',l:'Question'}];
+const STATES=[{k:'open',l:'Open'},{k:'doing',l:'Working on it'},{k:'done',l:'Settled'}];
+
+let NOTES=[], draftShots=[], benchFilter='open', storageOK=null, benchBusy=null;
+
+async function benchLoad(){
+  try{ const r=await fetch(CONFIG.notesEndpoint);
+       if(!r.ok)throw new Error('HTTP '+r.status);
+       NOTES=await r.json(); storageOK=true; }
+  catch(err){ storageOK=false; }
+  render();
+}
+async function benchSave(note){
+  try{
+    const r=await fetch(CONFIG.notesEndpoint,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(note)});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const saved=await r.json();
+    const i=NOTES.findIndex(n=>n.id===note.id); if(i>-1)NOTES[i]=saved;
+    storageOK=true;
+  }catch(err){ storageOK=false; }
+  render();
+}
+function benchAdd(){
+  const t=document.getElementById('bn-text');
+  if(!t||!t.value.trim())return;
+  NOTES.push({id:Date.now(), text:t.value.trim(),
+    area:screenNow(),
+    kind:document.getElementById('bn-kind').value,
+    shots:draftShots.slice(), state:'open', at:new Date().toISOString(), reply:null});
+  draftShots=[]; botTab='list'; render(); benchSave(NOTES[NOTES.length-1]);
+}
+function benchShot(files){
+  [...files].slice(0,3).forEach(file=>{
+    const r=new FileReader();
+    r.onload=()=>{ draftShots.push({name:file.name,type:file.type,data:r.result}); render(); };
+    r.readAsDataURL(file);
+  });
+}
+function benchSet(id,k,v){const n=NOTES.find(x=>x.id===id);if(n){n[k]=v;render();benchSave(n)}}
+async function benchDrop(id){const n=NOTES.find(x=>x.id===id);NOTES=NOTES.filter(x=>x.id!==id);render();
+  try{await fetch(CONFIG.notesEndpoint+'?id='+encodeURIComponent(n&&n.rec||id),{method:'DELETE'})}catch(e){}}
+
+async function benchTriage(id){
+  const n=NOTES.find(x=>x.id===id); if(!n)return;
+  benchBusy=id; render();
+  try{
+    const content=[];
+    n.shots.forEach(sh=>{ const m=/^data:([^;]+);base64,(.*)$/.exec(sh.data);
+      if(m)content.push({type:'image',source:{type:'base64',media_type:m[1],data:m[2]}}); });
+    content.push({type:'text',text:'Screen: '+n.area+'\nKind: '+KINDS.find(k=>k.k===n.kind).l+'\n\nWhat I noticed:\n'+n.text});
+    const r=await fetch(CONFIG.coachEndpoint,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,
+        system:"You are helping build a ministry app for youth leaders, working inside Josiah Venture's Five Phases framework. The user logs problems as they test it, sometimes with a screenshot.\nRead the note and any image. Reply in three short labelled parts, plain text, no markdown:\nWHAT I THINK YOU MEAN - one sentence restating the problem. If the note is ambiguous, say which reading you picked and what the other one was.\nWHY IT MATTERS - one or two sentences on what it costs a youth leader if left alone. If it is cosmetic, say so plainly rather than inflating it.\nWHAT I WOULD CHANGE - the smallest change that fixes it, and anything it would knock over elsewhere.\nBe direct. If the note describes a symptom of a deeper problem, say that instead of fixing the symptom. If you do not have enough to go on, say what you would need rather than guessing.",
+        messages:[{role:'user',content:content}]})});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    n.reply=(d.content||[]).filter(x=>x.type==='text').map(x=>x.text).join('\n');
+  }catch(err){ n.reply='__ERR__'+(err.message||err); }
+  benchBusy=null; render(); benchSave(n);
+}
+
+function benchText(){
+  const open=NOTES.filter(n=>n.state!=='done');
+  return 'WORKBENCH \u2014 '+open.length+' open of '+NOTES.length+'\n\n'+
+    NOTES.map(n=>'['+n.area+' \u2014 '+KINDS.find(k=>k.k===n.kind).l+' \u2014 '+n.state+']\n'+
+      new Date(n.at).toLocaleString('en-GB')+(n.shots.length?' \u2014 '+n.shots.length+' screenshot(s), not included in this text':'')+'\n'+
+      n.text+'\n').join('\n');
+}
+function benchCopy(){
+  const t=benchText();
+  if(!navigator.clipboard){benchBusy='copyfail';render();return}
+  navigator.clipboard.writeText(t).then(function(){benchBusy='copied';render();setTimeout(function(){benchBusy=null;render()},1600)})
+    .catch(function(){benchBusy='copyfail';render()});
+}
+
+/* Split on the labels wherever they appear, so a reply that comes back
+   as one paragraph reads the same as one that comes back as three. */
+function fmtReply(txt){
+  const LB=['WHAT I THINK YOU MEAN','WHY IT MATTERS','WHAT I WOULD CHANGE'];
+  const re=new RegExp('('+LB.join('|')+')\\s*[:\\-\\u2014]?\\s*','gi');
+  const parts=[]; let m,last=0,cur=null;
+  while((m=re.exec(txt))!==null){
+    if(cur)parts.push({lab:cur,body:txt.slice(last,m.index).trim()});
+    cur=m[1].toUpperCase(); last=re.lastIndex;
+  }
+  if(cur)parts.push({lab:cur,body:txt.slice(last).trim()});
+  if(!parts.length) return txt.split('\n').filter(Boolean).map(p=>`<p>${p}</p>`).join('');
+  return parts.map(p=>`<p><b>${p.lab}</b>${p.body}</p>`).join('');
+}
+
+let botOpen=false, botTab='new';
+
+function botHTML(){
+  const openN=NOTES.filter(n=>n.state!=='done').length;
+  if(!botOpen) return `<button class="fab" data-bot="open" aria-label="Log a problem">
+      <span class="fabi">&#9998;</span>${openN?`<span class="fabn">${openN}</span>`:''}</button>`;
+
+  const shown=NOTES.filter(n=>benchFilter==='all'?true:benchFilter==='open'?n.state!=='done':n.state==='done')
+                   .sort((a,b)=>b.id-a.id);
+  return `<div class="botwrap">
+    <div class="bot">
+      <div class="bot-hd">
+        <div><b>Workbench</b><span>on ${screenNow()}</span></div>
+        <div class="bot-tabs">
+          <button class="btb ${botTab==='new'?'is':''}" data-bottab="new">Log</button>
+          <button class="btb ${botTab==='list'?'is':''}" data-bottab="list">List${openN?' ('+openN+')':''}</button>
+        </div>
+        <button class="bot-x" data-bot="close" aria-label="Close">&times;</button>
+      </div>
+
+      ${botTab==='new'?`
+      <div class="bot-body">
+        <textarea id="bn-text" placeholder="What felt wrong on this screen? Say it the way you would say it out loud." rows="4"></textarea>
+        <div class="bnrow">
+          <select id="bn-kind">${KINDS.map(k=>`<option value="${k.k}">${k.l}</option>`).join('')}</select>
+          <label class="shotbtn">Screenshot<input type="file" accept="image/*" multiple id="bn-file"></label>
+        </div>
+        ${draftShots.length?`<div class="shots">${draftShots.map((sh,i)=>
+          `<div class="shot"><img src="${sh.data}" alt=""><button data-unshot="${i}">&times;</button></div>`).join('')}</div>`:''}
+        <p class="bot-hint">Paste an image straight in with &#8984;V. This screen is tagged automatically.</p>
+        <button class="btn bot-go" data-bench="add">Log it</button>
+      </div>`:`
+      <div class="bot-body list">
+        <div class="bfilters">
+          ${[{k:'open',l:'Open'},{k:'done',l:'Settled'},{k:'all',l:'All'}].map(fl=>
+            `<button class="bf ${benchFilter===fl.k?'is':''}" data-bfilter="${fl.k}">${fl.l}</button>`).join('')}
+          <div class="bspacer"></div>
+          <button class="bf" data-bench="copy">${benchBusy==='copied'?'Copied &#10003;':benchBusy==='copyfail'?'Failed':'Copy for Claude'}</button>
+        </div>
+        ${shown.length?shown.map(n=>`<div class="bnote ${n.state}">
+          <div class="bn-hd">
+            <span class="bn-area">${n.area}</span>
+            <span class="bn-kind ${n.kind}">${KINDS.find(k=>k.k===n.kind).l}</span>
+            <span class="bn-at">${new Date(n.at).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</span>
+            <button class="bn-x" data-bdrop="${n.id}">&times;</button>
+          </div>
+          <p class="bn-text">${n.text.replace(/</g,'&lt;')}</p>
+          ${n.shots.length?`<div class="shots">${n.shots.map(sh=>`<div class="shot sm"><img src="${sh.data}" alt=""></div>`).join('')}</div>`:''}
+          ${n.reply?(n.reply.indexOf('__ERR__')===0
+            ? `<div class="bn-err">Could not reach Claude &mdash; ${n.reply.slice(7)}.</div>`
+            : `<div class="bn-reply">${fmtReply(n.reply)}</div>`):''}
+          <div class="bn-foot">
+            ${STATES.map(st=>`<button class="bst ${n.state===st.k?'is':''}" data-bstate="${n.id}:${st.k}">${st.l}</button>`).join('')}
+            <div class="bspacer"></div>
+            <button class="bst read" data-btriage="${n.id}" ${benchBusy===n.id?'disabled':''}>${benchBusy===n.id?'Reading&hellip;':(n.reply?'Again':'Ask Claude')}</button>
+          </div>
+        </div>`).join(''):'<div class="bempty">Nothing here yet.</div>'}
+        <p class="bot-hint">${storageOK===false
+          ? 'Not saving to Airtable &mdash; copy before you close the tab.'
+          : 'Kept between sessions. Screenshots stay here; the copy sends text only.'}</p>
+      </div>`}
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+function render(){
+  const ta=document.getElementById('bn-text'); const keep=ta?ta.value:null;
+  const m={today:vToday,map:vMap,check:vCheck,reports:vReports,report:vReport,time:vTime};
+  document.getElementById('app').innerHTML=m[active]();
+  document.getElementById('bot').innerHTML=botHTML();
+  if(keep!==null){const t2=document.getElementById('bn-text'); if(t2)t2.value=keep;}
+}
+document.addEventListener('click',e=>{
+  const g=e.target.closest('[data-go]'); if(g){go(g.dataset.go);return}
+  const q=e.target.closest('[data-q]'); if(q){quizIx=+q.dataset.q;render();return}
+  const hit=k=>e.target.closest('[data-'+k+']');
+  let t;
+  if(t=hit('bot')){botOpen=(t.dataset.bot==='open');render();
+    if(botOpen)setTimeout(()=>{const el=document.getElementById('bn-text');el&&el.focus()},60);return}
+  if(t=hit('bottab')){botTab=t.dataset.bottab;render();return}
+  if(t=hit('bench')){const k=t.dataset.bench; if(k==='add')benchAdd(); if(k==='copy')benchCopy(); return}
+  if(t=hit('bfilter')){benchFilter=t.dataset.bfilter;render();return}
+  if(t=hit('bstate')){const[i,st]=t.dataset.bstate.split(':');benchSet(+i,'state',st);return}
+  if(t=hit('btriage')){benchTriage(+t.dataset.btriage);return}
+  if(t=hit('bdrop')){benchDrop(+t.dataset.bdrop);return}
+  if(t=hit('unshot')){draftShots.splice(+t.dataset.unshot,1);render();return}
+  if(t=hit('sel')){selStudent=(selStudent===+t.dataset.sel?null:+t.dataset.sel);addingTo=null;render();return}
+  if(t=hit('move')){const[i,z]=t.dataset.move.split(':');moveStudent(+i,+z);return}
+  if(t=hit('drop')){dropStudent(+t.dataset.drop);return}
+  if(t=hit('adding')){intake=+t.dataset.adding;intakeErr=null;selStudent=null;render();
+    setTimeout(()=>{const el=document.getElementById('in-name');el&&el.focus()},40);return}
+  if(t=hit('save')){saveIntake();return}
+  if(t=hit('close')){ if(t.dataset.close==='bg'&&e.target!==t)return; intake=null;intakeErr=null;render();return}
+  if(t=hit('zone')){document.getElementById('in-zone').value=t.dataset.zone;return}
+  if(t=hit('prog')){selProgram=+t.dataset.prog;render();return}
+  if(t=hit('freq')){const[i,fq]=t.dataset.freq.split(':');PROGRAMS[+i].freq=fq;render();return}
+  if(t=hit('inv')){const[i,z]=t.dataset.inv.split(':').map(Number);
+    const ch=PROGRAMS[i].ch, k=ch.indexOf(z); k>-1?ch.splice(k,1):ch.push(z); ch.sort(); render();return}
+  if(t=hit('pdone')){const el=document.getElementById('pn'+t.dataset.pdone);
+    if(el&&el.value.trim())PROGRAMS[+t.dataset.pdone].name=el.value.trim();
+    selProgram=null;render();return}
+  if(t=hit('pdrop')){PROGRAMS.splice(+t.dataset.pdrop,1);selProgram=null;render();return}
+  if(t=hit('newprog')){
+    const k=t.dataset.newprog;
+    if(k==='open'){addingProgram=true;render();setTimeout(()=>{const el=document.getElementById('newpr');el&&el.focus()},30);return}
+    if(k==='cancel'){addingProgram=false;render();return}
+    const el=document.getElementById('newpr');
+    if(el&&el.value.trim()){PROGRAMS.push({name:el.value.trim(),freq:'Weekly',n:0,ch:[]});
+      addingProgram=false;selProgram=PROGRAMS.length-1;render()}
+    return}
+  const cc=e.target.closest('[data-coach]');
+  if(cc){
+    const k=cc.dataset.coach;
+    if(k==='run'){runCoach();return}
+    if(k==='ask'){const i=document.getElementById('cq');askCoach(i&&i.value);return}
+    if(k==='names'){CONFIG.sendNames=cc.checked;render();return}
+  }
+  const op=e.target.closest('[data-open]');
+  if(op){openIx=+op.dataset.open;selPhase=null;coachState={loading:false,questions:null,error:null,answer:null,asking:false};active='report';renderTabs();render();window.scrollTo({top:0,behavior:'instant'});return}
+  const ps=e.target.closest('[data-phase]');
+  if(ps){const n=+ps.dataset.phase;selPhase=(selPhase===n?null:n);render();return}
+  const a=e.target.closest('[data-ans]');
+  if(a){answers[quizIx-1]=+a.dataset.ans;quizIx++;
+    if(quizIx-1>=Q.length){
+      const now=new Date(), byPhase={};
+      PHASES.forEach(p=>byPhase[p.n]=Q.filter(q=>q.phase===p.n).map(q=>answers[q.id]||1));
+      REPORTS.push({d:now.toISOString().slice(0,10),
+                    t:String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0'),
+                    r:2, a:byPhase});
+      openIx=REPORTS.length-1; selPhase=null; active='report'; renderTabs(); render();
+      window.scrollTo({top:0,behavior:'instant'});
+    } else render();}
+});
+document.addEventListener('paste',e=>{
+  if(!botOpen||botTab!=='new')return;
+  const items=[...(e.clipboardData&&e.clipboardData.items||[])].filter(i=>i.type.indexOf('image')===0);
+  if(!items.length)return;
+  e.preventDefault(); benchShot(items.map(i=>i.getAsFile()).filter(Boolean));
+});
+document.addEventListener('change',e=>{
+  if(e.target.id==='bn-file'&&e.target.files&&e.target.files.length){benchShot(e.target.files);return}
+  if(e.target.id==='in-came'){
+    const w=document.getElementById('bywrap');
+    if(w)w.style.display=e.target.value==='Invited by a student'?'':'none';
+  }
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&intake!==null){intake=null;intakeErr=null;render();return}
+  if(e.key==='Escape'&&botOpen){botOpen=false;render();return}
+  if(e.key!=='Enter')return;
+  if(e.target.id&&e.target.id.startsWith('in-')){saveIntake();return}
+  if(e.target.id==='cq'){askCoach(e.target.value);return}
+  if(e.target.id==='newpr'){document.querySelector('[data-newprog="go"]').click();return}
+  if(e.target.id&&e.target.id.startsWith('pn')){selProgram=null;render()}
+});
+renderTabs();render();benchLoad();
+</script>
+</body>
+</html>

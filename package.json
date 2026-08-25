@@ -1,0 +1,7 @@
+{
+  "name": "ministry-map-checkup",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Ministry Map + Check-up merge prototype",
+  "engines": { "node": ">=18" }
+}
