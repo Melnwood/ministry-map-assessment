@@ -334,7 +334,6 @@ h2{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.01
 .fab{position:fixed;right:22px;bottom:22px;z-index:70;width:54px;height:54px;border-radius:99px;background:var(--ink);color:var(--surface);box-shadow:0 6px 22px rgba(22,32,46,.28);display:flex;align-items:center;justify-content:center;transition:transform .16s}
 .fab:hover{transform:translateY(-2px) scale(1.04)}
 .fabi{font-size:20px;line-height:1}
-.fabn{position:absolute;top:-3px;right:-3px;min-width:20px;height:20px;border-radius:99px;background:var(--phase);color:#fff;font-family:var(--mono);font-size:10.5px;font-weight:600;display:flex;align-items:center;justify-content:center;padding:0 5px;border:2px solid var(--ground)}
 .botwrap{position:fixed;right:22px;bottom:22px;z-index:70;width:min(370px,calc(100vw - 32px))}
 .bot{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 14px 44px rgba(22,32,46,.24);overflow:hidden;animation:rise .2s cubic-bezier(.2,.7,.3,1) both}
 .bot-hd{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--ink);color:var(--surface)}
@@ -1456,7 +1455,7 @@ let botOpen=false;
 function botHTML(){
   const n=NOTES.length;
   if(!botOpen) return `<button class="fab" data-bot="open" aria-label="Write a note">
-      <span class="fabi">&#9998;</span>${n?`<span class="fabn">${n}</span>`:''}</button>`;
+      <span class="fabi">&#9998;</span></button>`;
 
   return `<div class="botwrap"><div class="bot">
     <div class="bot-hd">
