@@ -330,110 +330,41 @@ h2{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.01
 @media (max-width:900px){.mapstats{grid-template-columns:1fr 1fr}}
 @media (max-width:560px){.mapstats{grid-template-columns:1fr}}
 
-/* floating workbench bot */
-.fab{position:fixed;right:22px;bottom:22px;z-index:70;width:56px;height:56px;border-radius:99px;background:var(--ink);color:var(--surface);box-shadow:0 6px 22px rgba(22,32,46,.28);display:flex;align-items:center;justify-content:center;transition:transform .16s}
+/* floating note bot */
+.fab{position:fixed;right:22px;bottom:22px;z-index:70;width:54px;height:54px;border-radius:99px;background:var(--ink);color:var(--surface);box-shadow:0 6px 22px rgba(22,32,46,.28);display:flex;align-items:center;justify-content:center;transition:transform .16s}
 .fab:hover{transform:translateY(-2px) scale(1.04)}
-.fabi{font-size:21px;line-height:1}
-.fabn{position:absolute;top:-3px;right:-3px;min-width:21px;height:21px;border-radius:99px;background:var(--phase);color:#fff;font-family:var(--mono);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;padding:0 5px;border:2px solid var(--ground)}
-.botwrap{position:fixed;right:22px;bottom:22px;z-index:70;width:min(410px,calc(100vw - 32px))}
+.fabi{font-size:20px;line-height:1}
+.fabn{position:absolute;top:-3px;right:-3px;min-width:20px;height:20px;border-radius:99px;background:var(--phase);color:#fff;font-family:var(--mono);font-size:10.5px;font-weight:600;display:flex;align-items:center;justify-content:center;padding:0 5px;border:2px solid var(--ground)}
+.botwrap{position:fixed;right:22px;bottom:22px;z-index:70;width:min(370px,calc(100vw - 32px))}
 .bot{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 14px 44px rgba(22,32,46,.24);overflow:hidden;animation:rise .2s cubic-bezier(.2,.7,.3,1) both}
-.bot-hd{display:flex;align-items:center;gap:12px;padding:13px 15px;background:var(--ink);color:var(--surface)}
-.bot-hd>div:first-child{min-width:0}
-.bot-hd b{display:block;font-family:var(--display);font-size:15px;font-weight:700;letter-spacing:-.012em}
-.bot-hd span{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:rgba(251,251,250,.5);margin-top:2px}
-.bot-tabs{display:flex;gap:3px;margin-left:auto}
-.btb{font-family:var(--mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;padding:5px 11px;border-radius:99px;color:rgba(251,251,250,.6)}
-.btb:hover{background:rgba(251,251,250,.12);color:var(--surface)}
-.btb.is{background:var(--surface);color:var(--ink);font-weight:600}
-.bot-x{font-size:22px;line-height:1;color:rgba(251,251,250,.55);padding:0 2px}
+.bot-hd{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--ink);color:var(--surface)}
+.bot-hd b{font-family:var(--display);font-size:15px;font-weight:700;letter-spacing:-.012em;margin-right:auto}
+.bot-copy{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:rgba(251,251,250,.6);border:1px solid rgba(251,251,250,.28);border-radius:99px;padding:4px 10px}
+.bot-copy:hover{color:var(--surface);border-color:rgba(251,251,250,.6)}
+.bot-x{font-size:21px;line-height:1;color:rgba(251,251,250,.55)}
 .bot-x:hover{color:var(--surface)}
-.bot-body{padding:15px;max-height:min(66vh,560px);overflow-y:auto}
+.bot-body{padding:14px;max-height:min(64vh,540px);overflow-y:auto}
 .bot-body textarea{width:100%;border:1.5px solid var(--ink-15);border-radius:11px;padding:12px 14px;font:inherit;font-size:14.5px;line-height:1.5;background:var(--ground);color:var(--ink);resize:vertical}
 .bot-body textarea:focus{outline:none;border-color:var(--phase)}
 .bnrow{display:flex;gap:8px;margin-top:10px}
-.bnrow select{flex:1;min-width:0;border:1.5px solid var(--ink-15);border-radius:99px;padding:9px 13px;font:inherit;font-size:13.5px;background:var(--ground);color:var(--ink)}
-.shotbtn{border:1.5px dashed var(--ink-15);border-radius:99px;padding:9px 15px;font-size:13.5px;font-weight:600;color:var(--ink-45);cursor:pointer;white-space:nowrap;display:flex;align-items:center}
+.shotbtn{border:1.5px dashed var(--ink-15);border-radius:99px;padding:10px 16px;font-size:13.5px;font-weight:600;color:var(--ink-45);cursor:pointer;white-space:nowrap;display:flex;align-items:center}
 .shotbtn:hover{border-color:var(--ink);color:var(--ink)}
 .shotbtn input{display:none}
-.bot-hint{font-family:var(--mono);font-size:10px;line-height:1.55;color:var(--ink-45);margin-top:11px}
-.bot-go{width:100%;margin-top:12px;text-align:center;padding:12px}
-.shots{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}
+.bot-go{flex:1;text-align:center;padding:10px}
+.shots{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
 .shot{position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--ground)}
-.shot img{display:block;max-width:110px;max-height:80px;object-fit:cover}
-.shot.sm img{max-width:78px;max-height:56px}
+.shot img{display:block;max-width:104px;max-height:74px;object-fit:cover}
 .shot button{position:absolute;top:3px;right:3px;width:19px;height:19px;border-radius:99px;background:rgba(22,32,46,.8);color:#fff;font-size:13px;line-height:1}
-.bfilters{display:flex;gap:5px;align-items:center;margin-bottom:12px}
-.bspacer{flex:1}
-.bf{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--ink-15);border-radius:99px;padding:5px 10px;color:var(--ink-45)}
-.bf:hover{border-color:var(--ink);color:var(--ink)}
-.bf.is{background:var(--ink);color:var(--surface);border-color:var(--ink)}
-.bnote{border:1px solid var(--line);border-left:3px solid var(--ink-15);border-radius:0 11px 11px 0;padding:12px 14px;margin-bottom:9px}
-.bnote.open{border-left-color:var(--phase)}
-.bnote.doing{border-left-color:var(--z4)}
-.bnote.done{border-left-color:var(--z3);opacity:.62}
-.bn-hd{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
-.bn-area{font-family:var(--display);font-size:13px;font-weight:700}
-.bn-kind{font-family:var(--mono);font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;border-radius:99px;padding:1px 7px;border:1px solid currentColor}
-.bn-kind.bug{color:var(--z5)}.bn-kind.wording{color:var(--z4)}.bn-kind.idea{color:var(--z3)}.bn-kind.question{color:var(--z1)}
-.bn-at{font-family:var(--mono);font-size:9px;color:var(--ink-45);margin-left:auto}
-.bn-x{font-size:16px;line-height:1;color:var(--ink-15)}
-.bn-x:hover{color:var(--z5)}
-.bn-text{font-size:13.5px;line-height:1.5;margin-top:7px;white-space:pre-wrap}
-.bn-reply{background:var(--ink);color:var(--surface);border-radius:9px;padding:12px 14px;margin-top:10px}
-.bn-reply p{font-size:12.5px;line-height:1.6;margin-bottom:9px}
-.bn-reply p:last-child{margin-bottom:0}
-.bn-reply b{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(251,251,250,.55);display:block;margin-bottom:2px}
-.bn-err{background:rgba(176,74,56,.13);border-radius:8px;padding:9px 12px;font-size:12px;margin-top:9px}
-.bn-foot{display:flex;gap:4px;align-items:center;margin-top:10px;padding-top:9px;border-top:1px solid var(--ink-08)}
-.bst{font-family:var(--mono);font-size:9px;letter-spacing:.05em;text-transform:uppercase;border:1px solid var(--ink-15);border-radius:99px;padding:4px 9px;color:var(--ink-45)}
-.bst:hover{border-color:var(--ink);color:var(--ink)}
-.bst.is{background:var(--ink-08);color:var(--ink);border-color:transparent;font-weight:600}
-.bst.read{color:var(--phase);border-color:var(--phase)}
-.bempty{text-align:center;color:var(--ink-45);font-size:13.5px;padding:26px 0}
+.bot-hint{font-family:var(--mono);font-size:10px;line-height:1.5;color:var(--ink-45);margin-top:10px}
+.bot-hint.warn{color:var(--z5)}
+.bot-list{margin-top:16px;padding-top:14px;border-top:1px solid var(--ink-08)}
+.bl{position:relative;padding:9px 22px 9px 0;border-bottom:1px solid var(--ink-08)}
+.bl:last-child{border-bottom:none}
+.bl-t{font-size:13.5px;line-height:1.45;white-space:pre-wrap}
+.bl-m{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;color:var(--ink-45);margin-top:4px}
+.bl-x{position:absolute;top:8px;right:0;font-size:15px;line-height:1;color:var(--ink-15)}
+.bl-x:hover{color:var(--z5)}
 @media (max-width:560px){.botwrap{right:10px;left:10px;bottom:10px;width:auto}.fab{right:16px;bottom:16px}}
-
-.bnew{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px;margin-top:26px}
-.bnew textarea{width:100%;border:1.5px solid var(--ink-15);border-radius:11px;padding:13px 15px;font:inherit;font-size:15.5px;line-height:1.5;background:var(--ground);color:var(--ink);resize:vertical}
-.bnew textarea:focus{outline:none;border-color:var(--phase)}
-.bnrow{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-top:14px}
-.bnrow .fld{margin-top:0;flex:1;min-width:150px}
-.shotbtn{border:1.5px dashed var(--ink-15);border-radius:99px;padding:11px 18px;font-size:14px;font-weight:600;color:var(--ink-45);cursor:pointer;white-space:nowrap}
-.shotbtn:hover{border-color:var(--ink);color:var(--ink)}
-.shotbtn input{display:none}
-.shots{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
-.shot{position:relative;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:var(--ground)}
-.shot img{display:block;max-width:190px;max-height:130px;object-fit:cover}
-.shot button{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:99px;background:rgba(22,32,46,.78);color:#fff;font-size:15px;line-height:1}
-.bfilters{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin:26px 0 14px}
-.bspacer{flex:1}
-.bf{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--ink-15);border-radius:99px;padding:7px 14px;color:var(--ink-45)}
-.bf:hover{border-color:var(--ink);color:var(--ink)}
-.bf.is{background:var(--ink);color:var(--surface);border-color:var(--ink)}
-.bnote{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--ink-15);border-radius:0 var(--r) var(--r) 0;padding:17px 20px;margin-bottom:11px}
-.bnote.open{border-left-color:var(--phase)}
-.bnote.doing{border-left-color:var(--z4)}
-.bnote.done{border-left-color:var(--z3);opacity:.6}
-.bn-hd{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.bn-area{font-family:var(--display);font-size:15px;font-weight:700;letter-spacing:-.012em}
-.bn-kind{font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;border-radius:99px;padding:2px 9px;border:1px solid currentColor}
-.bn-kind.bug{color:var(--z5)}.bn-kind.wording{color:var(--z4)}.bn-kind.idea{color:var(--z3)}.bn-kind.question{color:var(--z1)}
-.bn-at{font-family:var(--mono);font-size:10px;color:var(--ink-45);margin-left:auto}
-.bn-x{font-size:19px;line-height:1;color:var(--ink-15);padding:0 3px}
-.bn-x:hover{color:var(--z5)}
-.bn-text{font-size:15.5px;line-height:1.55;margin-top:9px;white-space:pre-wrap}
-.bn-reply{background:var(--ink);color:var(--surface);border-radius:11px;padding:15px 18px;margin-top:14px}
-.bn-reply p{font-size:14px;line-height:1.6;margin-bottom:10px}
-.bn-reply p:last-child{margin-bottom:0}
-.bn-reply b{font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;color:rgba(251,251,250,.55);display:block;margin-bottom:3px}
-.bn-err{background:rgba(176,74,56,.13);border-radius:9px;padding:11px 14px;font-size:13px;margin-top:12px}
-.bn-foot{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px solid var(--ink-08)}
-.bst{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--ink-15);border-radius:99px;padding:5px 12px;color:var(--ink-45)}
-.bst:hover{border-color:var(--ink);color:var(--ink)}
-.bst.is{background:var(--ink-08);color:var(--ink);border-color:transparent;font-weight:600}
-.bst.read{color:var(--phase);border-color:var(--phase)}
-.bst.read:disabled{opacity:.5}
-.bempty{background:var(--surface);border:1px dashed var(--line);border-radius:var(--r);padding:34px;text-align:center;color:var(--ink-45);font-size:15px}
-@media (max-width:640px){.bnrow{flex-direction:column;align-items:stretch}.bnrow .btn,.shotbtn{text-align:center}}
 
 /* intake sheet */
 .sheet{position:fixed;inset:0;background:rgba(22,32,46,.5);z-index:80;display:flex;align-items:flex-start;justify-content:center;padding:34px 18px;overflow-y:auto;animation:fade .18s both}
@@ -1456,10 +1387,8 @@ function vTime(){
    ============================================================ */
 const SCREENS={today:'Today',map:'Your map',check:'Check-up',reports:'Reports',report:'A report',time:'The year'};
 const screenNow=()=>SCREENS[active]||'Somewhere';
-const KINDS=[{k:'bug',l:'Broken'},{k:'wording',l:'Wording is off'},{k:'idea',l:'Idea'},{k:'question',l:'Question'}];
-const STATES=[{k:'open',l:'Open'},{k:'doing',l:'Working on it'},{k:'done',l:'Settled'}];
 
-let NOTES=[], draftShots=[], benchFilter='open', storageOK=null, benchBusy=null;
+let NOTES=[], draftShots=[], storageOK=null, benchBusy=null;
 
 async function benchLoad(){
   try{ const r=await fetch(CONFIG.notesEndpoint);
@@ -1484,9 +1413,9 @@ function benchAdd(){
   if(!t||!t.value.trim())return;
   NOTES.push({id:Date.now(), text:t.value.trim(),
     area:screenNow(),
-    kind:document.getElementById('bn-kind').value,
+    kind:'idea',
     shots:draftShots.slice(), state:'open', at:new Date().toISOString(), reply:null});
-  draftShots=[]; botTab='list'; render(); benchSave(NOTES[NOTES.length-1]);
+  draftShots=[]; t.value=''; render(); benchSave(NOTES[NOTES.length-1]);
 }
 function benchShot(files){
   [...files].slice(0,3).forEach(file=>{
@@ -1495,35 +1424,14 @@ function benchShot(files){
     r.readAsDataURL(file);
   });
 }
-function benchSet(id,k,v){const n=NOTES.find(x=>x.id===id);if(n){n[k]=v;render();benchSave(n)}}
 async function benchDrop(id){const n=NOTES.find(x=>x.id===id);NOTES=NOTES.filter(x=>x.id!==id);render();
   try{await fetch(CONFIG.notesEndpoint+'?id='+encodeURIComponent(n&&n.rec||id),{method:'DELETE'})}catch(e){}}
 
-async function benchTriage(id){
-  const n=NOTES.find(x=>x.id===id); if(!n)return;
-  benchBusy=id; render();
-  try{
-    const content=[];
-    n.shots.forEach(sh=>{ const m=/^data:([^;]+);base64,(.*)$/.exec(sh.data);
-      if(m)content.push({type:'image',source:{type:'base64',media_type:m[1],data:m[2]}}); });
-    content.push({type:'text',text:'Screen: '+n.area+'\nKind: '+KINDS.find(k=>k.k===n.kind).l+'\n\nWhat I noticed:\n'+n.text});
-    const r=await fetch(CONFIG.coachEndpoint,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,
-        system:"You are helping build a ministry app for youth leaders, working inside Josiah Venture's Five Phases framework. The user logs problems as they test it, sometimes with a screenshot.\nRead the note and any image. Reply in three short labelled parts, plain text, no markdown:\nWHAT I THINK YOU MEAN - one sentence restating the problem. If the note is ambiguous, say which reading you picked and what the other one was.\nWHY IT MATTERS - one or two sentences on what it costs a youth leader if left alone. If it is cosmetic, say so plainly rather than inflating it.\nWHAT I WOULD CHANGE - the smallest change that fixes it, and anything it would knock over elsewhere.\nBe direct. If the note describes a symptom of a deeper problem, say that instead of fixing the symptom. If you do not have enough to go on, say what you would need rather than guessing.",
-        messages:[{role:'user',content:content}]})});
-    if(!r.ok)throw new Error('HTTP '+r.status);
-    const d=await r.json();
-    n.reply=(d.content||[]).filter(x=>x.type==='text').map(x=>x.text).join('\n');
-  }catch(err){ n.reply='__ERR__'+(err.message||err); }
-  benchBusy=null; render(); benchSave(n);
-}
-
 function benchText(){
-  const open=NOTES.filter(n=>n.state!=='done');
-  return 'WORKBENCH \u2014 '+open.length+' open of '+NOTES.length+'\n\n'+
-    NOTES.map(n=>'['+n.area+' \u2014 '+KINDS.find(k=>k.k===n.kind).l+' \u2014 '+n.state+']\n'+
-      new Date(n.at).toLocaleString('en-GB')+(n.shots.length?' \u2014 '+n.shots.length+' screenshot(s), not included in this text':'')+'\n'+
-      n.text+'\n').join('\n');
+  return 'NOTES \u2014 '+NOTES.length+'\n\n'+NOTES.map(n=>
+    '['+n.area+' \u2014 '+new Date(n.at).toLocaleString('en-GB')+
+    (n.shots.length?' \u2014 '+n.shots.length+' screenshot(s), not included in this text':'')+']\n'+
+    n.text+'\n').join('\n');
 }
 function benchCopy(){
   const t=benchText();
@@ -1532,91 +1440,46 @@ function benchCopy(){
     .catch(function(){benchBusy='copyfail';render()});
 }
 
-/* Split on the labels wherever they appear, so a reply that comes back
-   as one paragraph reads the same as one that comes back as three. */
-function fmtReply(txt){
-  const LB=['WHAT I THINK YOU MEAN','WHY IT MATTERS','WHAT I WOULD CHANGE'];
-  const re=new RegExp('('+LB.join('|')+')\\s*[:\\-\\u2014]?\\s*','gi');
-  const parts=[]; let m,last=0,cur=null;
-  while((m=re.exec(txt))!==null){
-    if(cur)parts.push({lab:cur,body:txt.slice(last,m.index).trim()});
-    cur=m[1].toUpperCase(); last=re.lastIndex;
-  }
-  if(cur)parts.push({lab:cur,body:txt.slice(last).trim()});
-  if(!parts.length) return txt.split('\n').filter(Boolean).map(p=>`<p>${p}</p>`).join('');
-  return parts.map(p=>`<p><b>${p.lab}</b>${p.body}</p>`).join('');
-}
-
-let botOpen=false, botTab='new';
+let botOpen=false;
 
 function botHTML(){
-  const openN=NOTES.filter(n=>n.state!=='done').length;
-  if(!botOpen) return `<button class="fab" data-bot="open" aria-label="Log a problem">
-      <span class="fabi">&#9998;</span>${openN?`<span class="fabn">${openN}</span>`:''}</button>`;
+  const n=NOTES.length;
+  if(!botOpen) return `<button class="fab" data-bot="open" aria-label="Write a note">
+      <span class="fabi">&#9998;</span>${n?`<span class="fabn">${n}</span>`:''}</button>`;
 
-  const shown=NOTES.filter(n=>benchFilter==='all'?true:benchFilter==='open'?n.state!=='done':n.state==='done')
-                   .sort((a,b)=>b.id-a.id);
-  return `<div class="botwrap">
-    <div class="bot">
-      <div class="bot-hd">
-        <div><b>Workbench</b><span>on ${screenNow()}</span></div>
-        <div class="bot-tabs">
-          <button class="btb ${botTab==='new'?'is':''}" data-bottab="new">Log</button>
-          <button class="btb ${botTab==='list'?'is':''}" data-bottab="list">List${openN?' ('+openN+')':''}</button>
-        </div>
-        <button class="bot-x" data-bot="close" aria-label="Close">&times;</button>
-      </div>
-
-      ${botTab==='new'?`
-      <div class="bot-body">
-        <textarea id="bn-text" placeholder="What felt wrong on this screen? Say it the way you would say it out loud." rows="4"></textarea>
-        <div class="bnrow">
-          <select id="bn-kind">${KINDS.map(k=>`<option value="${k.k}">${k.l}</option>`).join('')}</select>
-          <label class="shotbtn">Screenshot<input type="file" accept="image/*" multiple id="bn-file"></label>
-        </div>
-        ${draftShots.length?`<div class="shots">${draftShots.map((sh,i)=>
-          `<div class="shot"><img src="${sh.data}" alt=""><button data-unshot="${i}">&times;</button></div>`).join('')}</div>`:''}
-        <p class="bot-hint">Paste an image straight in with &#8984;V. This screen is tagged automatically.</p>
-        <button class="btn bot-go" data-bench="add">Log it</button>
-      </div>`:`
-      <div class="bot-body list">
-        <div class="bfilters">
-          ${[{k:'open',l:'Open'},{k:'done',l:'Settled'},{k:'all',l:'All'}].map(fl=>
-            `<button class="bf ${benchFilter===fl.k?'is':''}" data-bfilter="${fl.k}">${fl.l}</button>`).join('')}
-          <div class="bspacer"></div>
-          <button class="bf" data-bench="copy">${benchBusy==='copied'?'Copied &#10003;':benchBusy==='copyfail'?'Failed':'Copy for Claude'}</button>
-        </div>
-        ${shown.length?shown.map(n=>`<div class="bnote ${n.state}">
-          <div class="bn-hd">
-            <span class="bn-area">${n.area}</span>
-            <span class="bn-kind ${n.kind}">${KINDS.find(k=>k.k===n.kind).l}</span>
-            <span class="bn-at">${new Date(n.at).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</span>
-            <button class="bn-x" data-bdrop="${n.id}">&times;</button>
-          </div>
-          <p class="bn-text">${n.text.replace(/</g,'&lt;')}</p>
-          ${n.shots.length?`<div class="shots">${n.shots.map(sh=>`<div class="shot sm"><img src="${sh.data}" alt=""></div>`).join('')}</div>`:''}
-          ${n.reply?(n.reply.indexOf('__ERR__')===0
-            ? `<div class="bn-err">Could not reach Claude &mdash; ${n.reply.slice(7)}.</div>`
-            : `<div class="bn-reply">${fmtReply(n.reply)}</div>`):''}
-          <div class="bn-foot">
-            ${STATES.map(st=>`<button class="bst ${n.state===st.k?'is':''}" data-bstate="${n.id}:${st.k}">${st.l}</button>`).join('')}
-            <div class="bspacer"></div>
-            <button class="bst read" data-btriage="${n.id}" ${benchBusy===n.id?'disabled':''}>${benchBusy===n.id?'Reading&hellip;':(n.reply?'Again':'Ask Claude')}</button>
-          </div>
-        </div>`).join(''):'<div class="bempty">Nothing here yet.</div>'}
-        <p class="bot-hint">${storageOK===false
-          ? 'Not saving to Airtable &mdash; copy before you close the tab.'
-          : 'Kept between sessions. Screenshots stay here; the copy sends text only.'}</p>
-      </div>`}
+  return `<div class="botwrap"><div class="bot">
+    <div class="bot-hd">
+      <b>Notes</b>
+      ${n?`<button class="bot-copy" data-bench="copy">${benchBusy==='copied'?'Copied &#10003;':benchBusy==='copyfail'?'Failed':'Copy all'}</button>`:''}
+      <button class="bot-x" data-bot="close" aria-label="Close">&times;</button>
     </div>
-  </div>`;
+    <div class="bot-body">
+      <textarea id="bn-text" placeholder="What felt wrong?" rows="4"></textarea>
+      ${draftShots.length?`<div class="shots">${draftShots.map((sh,i)=>
+        `<div class="shot"><img src="${sh.data}" alt=""><button data-unshot="${i}">&times;</button></div>`).join('')}</div>`:''}
+      <div class="bnrow">
+        <label class="shotbtn">Screenshot<input type="file" accept="image/*" multiple id="bn-file"></label>
+        <button class="btn bot-go" data-bench="add">Log it</button>
+      </div>
+      <p class="bot-hint">&#8984;V pastes a screenshot straight in.</p>
+
+      ${n?`<div class="bot-list">
+        ${NOTES.slice().reverse().map(x=>`<div class="bl">
+          <div class="bl-t">${x.text.replace(/</g,'&lt;')}</div>
+          <div class="bl-m">${x.area}${x.shots.length?` &middot; ${x.shots.length} shot${x.shots.length>1?'s':''}`:''}</div>
+          <button class="bl-x" data-bdrop="${x.id}" aria-label="Delete">&times;</button>
+        </div>`).join('')}
+      </div>`:''}
+      ${storageOK===false&&n?'<p class="bot-hint warn">Not saving &mdash; copy before you close.</p>':''}
+    </div>
+  </div></div>`;
 }
 
 /* ============================================================
    BOOT
    ============================================================ */
 function render(){
-  const ta=document.getElementById('bn-text'); const keep=ta?ta.value:null;
+  const ta=document.getElementById('bn-text'); const keep=(ta&&ta.value)?ta.value:null;
   const m={today:vToday,map:vMap,check:vCheck,reports:vReports,report:vReport,time:vTime};
   document.getElementById('app').innerHTML=m[active]();
   document.getElementById('bot').innerHTML=botHTML();
@@ -1629,11 +1492,7 @@ document.addEventListener('click',e=>{
   let t;
   if(t=hit('bot')){botOpen=(t.dataset.bot==='open');render();
     if(botOpen)setTimeout(()=>{const el=document.getElementById('bn-text');el&&el.focus()},60);return}
-  if(t=hit('bottab')){botTab=t.dataset.bottab;render();return}
   if(t=hit('bench')){const k=t.dataset.bench; if(k==='add')benchAdd(); if(k==='copy')benchCopy(); return}
-  if(t=hit('bfilter')){benchFilter=t.dataset.bfilter;render();return}
-  if(t=hit('bstate')){const[i,st]=t.dataset.bstate.split(':');benchSet(+i,'state',st);return}
-  if(t=hit('btriage')){benchTriage(+t.dataset.btriage);return}
   if(t=hit('bdrop')){benchDrop(+t.dataset.bdrop);return}
   if(t=hit('unshot')){draftShots.splice(+t.dataset.unshot,1);render();return}
   if(t=hit('sel')){selStudent=(selStudent===+t.dataset.sel?null:+t.dataset.sel);addingTo=null;render();return}
@@ -1684,7 +1543,7 @@ document.addEventListener('click',e=>{
     } else render();}
 });
 document.addEventListener('paste',e=>{
-  if(!botOpen||botTab!=='new')return;
+  if(!botOpen)return;
   const items=[...(e.clipboardData&&e.clipboardData.items||[])].filter(i=>i.type.indexOf('image')===0);
   if(!items.length)return;
   e.preventDefault(); benchShot(items.map(i=>i.getAsFile()).filter(Boolean));
