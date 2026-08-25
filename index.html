@@ -339,8 +339,6 @@ h2{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.01
 .bot{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 14px 44px rgba(22,32,46,.24);overflow:hidden;animation:rise .2s cubic-bezier(.2,.7,.3,1) both}
 .bot-hd{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--ink);color:var(--surface)}
 .bot-hd b{font-family:var(--display);font-size:15px;font-weight:700;letter-spacing:-.012em;margin-right:auto}
-.bot-copy{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:rgba(251,251,250,.6);border:1px solid rgba(251,251,250,.28);border-radius:99px;padding:4px 10px}
-.bot-copy:hover{color:var(--surface);border-color:rgba(251,251,250,.6)}
 .bot-x{font-size:21px;line-height:1;color:rgba(251,251,250,.55)}
 .bot-x:hover{color:var(--surface)}
 .bot-body{padding:14px;max-height:min(64vh,540px);overflow-y:auto}
@@ -357,16 +355,7 @@ h2{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.01
 .shot button{position:absolute;top:3px;right:3px;width:19px;height:19px;border-radius:99px;background:rgba(22,32,46,.8);color:#fff;font-size:13px;line-height:1}
 .bot-hint{font-family:var(--mono);font-size:10px;line-height:1.5;color:var(--ink-45);margin-top:10px}
 .bot-hint.warn{color:var(--z5)}
-.bot-list{margin-top:16px;padding-top:14px;border-top:1px solid var(--ink-08)}
-.bl{position:relative;padding:9px 22px 9px 0;border-bottom:1px solid var(--ink-08)}
-.bl:last-child{border-bottom:none}
-.bl-t{font-size:13.5px;line-height:1.45;white-space:pre-wrap}
-.bl-m{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;color:var(--ink-45);margin-top:4px}
-.shots.sm{margin-top:8px;gap:5px}
-.blshot{display:block;max-width:88px;max-height:62px;object-fit:cover;border:1px solid var(--line);border-radius:6px;background:var(--ground)}
-.bl-nos{font-family:var(--mono);font-size:9.5px;color:var(--z5)}
-.bl-x{position:absolute;top:8px;right:0;font-size:15px;line-height:1;color:var(--ink-15)}
-.bl-x:hover{color:var(--z5)}
+.bot-hint.ok{color:var(--z3)}
 @media (max-width:560px){.botwrap{right:10px;left:10px;bottom:10px;width:auto}.fab{right:16px;bottom:16px}}
 
 /* intake sheet */
@@ -1391,34 +1380,54 @@ function vTime(){
 const SCREENS={today:'Today',map:'Your map',check:'Check-up',reports:'Reports',report:'A report',time:'The year'};
 const screenNow=()=>SCREENS[active]||'Somewhere';
 
-let NOTES=[], draftShots=[], storageOK=null, benchBusy=null;
+let NOTES=[], draftShots=[], storageOK=null, saveErr=null, justSaved=false;
 
 async function benchLoad(){
   try{ const r=await fetch(CONFIG.notesEndpoint);
-       if(!r.ok)throw new Error('HTTP '+r.status);
-       NOTES=await r.json(); storageOK=true; }
-  catch(err){ storageOK=false; }
+       const body=await r.text();
+       if(!r.ok)throw new Error(explain(r.status,body));
+       NOTES=JSON.parse(body); storageOK=true; saveErr=null; }
+  catch(err){ storageOK=false; saveErr=String(err.message||err); }
   render();
+}
+
+/* Turn a status code into the thing that is actually wrong. */
+function explain(status,body){
+  let msg=''; try{ const j=JSON.parse(body); msg=(j.error&&(j.error.message||j.error))||j.message||''; }catch(e){ msg=(body||'').slice(0,120); }
+  if(status===404&&/function/i.test(body||'')) return 'The /api/notes function is not deployed.';
+  if(status===404) return 'Table not found in that base \u2014 check AIRTABLE_NOTES_TABLE and AIRTABLE_BASE_ID.';
+  if(status===401||status===403) return 'Airtable rejected the key \u2014 check AIRTABLE_API_KEY and that the token can access this base.';
+  if(status===422) return 'A field name does not match the table \u2014 '+msg;
+  if(status===500&&/env vars/i.test(msg)) return 'Environment variables are not set on this deploy.';
+  return 'HTTP '+status+(msg?' \u2014 '+msg:'');
 }
 async function benchSave(note){
   try{
     const r=await fetch(CONFIG.notesEndpoint,{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify(note)});
-    if(!r.ok)throw new Error('HTTP '+r.status);
-    const saved=await r.json();
+    const body=await r.text();
+    if(!r.ok)throw new Error(explain(r.status,body));
+    const saved=JSON.parse(body);
     const i=NOTES.findIndex(n=>n.id===note.id); if(i>-1)NOTES[i]=saved;
-    storageOK=true;
-  }catch(err){ storageOK=false; }
+    storageOK=true; saveErr=null;
+  }catch(err){ storageOK=false; saveErr=String(err.message||err); }
   render();
 }
-function benchAdd(){
+async function benchAdd(){
   const t=document.getElementById('bn-text');
   if(!t||!t.value.trim())return;
-  NOTES.push({id:Date.now(), text:t.value.trim(),
-    area:screenNow(),
-    kind:'idea',
-    shots:draftShots.slice(), state:'open', at:new Date().toISOString(), reply:null});
-  draftShots=[]; t.value=''; render(); benchSave(NOTES[NOTES.length-1]);
+  const note={id:Date.now(), text:t.value.trim(), area:screenNow(), kind:'idea',
+    shots:draftShots.slice(), state:'open', at:new Date().toISOString(), reply:null};
+  NOTES.push(note);
+  const kept=t.value, keptShots=draftShots.slice();
+  draftShots=[]; t.value=''; justSaved=false; render();
+  await benchSave(note);
+  if(saveErr){                       /* put it back so nothing is lost */
+    NOTES=NOTES.filter(x=>x.id!==note.id); draftShots=keptShots; render();
+    const t2=document.getElementById('bn-text'); if(t2)t2.value=kept;
+  }else{
+    justSaved=true; render(); setTimeout(()=>{justSaved=false;render()},2600);
+  }
 }
 function benchShot(files){
   [...files].slice(0,3).forEach(file=>{
@@ -1427,21 +1436,7 @@ function benchShot(files){
     r.readAsDataURL(file);
   });
 }
-async function benchDrop(id){const n=NOTES.find(x=>x.id===id);NOTES=NOTES.filter(x=>x.id!==id);render();
-  try{await fetch(CONFIG.notesEndpoint+'?id='+encodeURIComponent(n&&n.rec||id),{method:'DELETE'})}catch(e){}}
 
-function benchText(){
-  return 'NOTES \u2014 '+NOTES.length+'\n\n'+NOTES.map(n=>
-    '['+n.area+' \u2014 '+new Date(n.at).toLocaleString('en-GB')+
-    (n.shots.length?' \u2014 '+n.shots.length+' screenshot(s), not included in this text':'')+']\n'+
-    n.text+'\n').join('\n');
-}
-function benchCopy(){
-  const t=benchText();
-  if(!navigator.clipboard){benchBusy='copyfail';render();return}
-  navigator.clipboard.writeText(t).then(function(){benchBusy='copied';render();setTimeout(function(){benchBusy=null;render()},1600)})
-    .catch(function(){benchBusy='copyfail';render()});
-}
 
 let botOpen=false;
 
@@ -1453,7 +1448,6 @@ function botHTML(){
   return `<div class="botwrap"><div class="bot">
     <div class="bot-hd">
       <b>Notes</b>
-      ${n?`<button class="bot-copy" data-bench="copy">${benchBusy==='copied'?'Copied &#10003;':benchBusy==='copyfail'?'Failed':'Copy all'}</button>`:''}
       <button class="bot-x" data-bot="close" aria-label="Close">&times;</button>
     </div>
     <div class="bot-body">
@@ -1464,21 +1458,11 @@ function botHTML(){
         <label class="shotbtn">Screenshot<input type="file" accept="image/*" multiple id="bn-file"></label>
         <button class="btn bot-go" data-bench="add">Log it</button>
       </div>
-      <p class="bot-hint">&#8984;V pastes a screenshot straight in.</p>
-
-      ${n?`<div class="bot-list">
-        ${NOTES.slice().reverse().map(x=>`<div class="bl">
-          <div class="bl-t">${x.text.replace(/</g,'&lt;')}</div>
-          ${x.shots.length?`<div class="shots sm">${x.shots.map(sh=>sh.data
-            ?`<img src="${sh.data}" alt="" class="blshot">`
-            :'<span class="bl-nos">image too large to keep</span>').join('')}</div>`:''}
-          <div class="bl-m">${x.area}</div>
-          <button class="bl-x" data-bdrop="${x.id}" aria-label="Delete">&times;</button>
-        </div>`).join('')}
-      </div>`:''}
-      ${storageOK===false&&n?`<p class="bot-hint warn">${location.protocol==='file:'
-        ? 'Opened as a local file, so there is no server to save to. Notes last until you close the tab &mdash; use Copy all.'
-        : 'Not reaching Airtable, so notes last until you close the tab &mdash; use Copy all.'}</p>`:''}
+      ${saveErr
+        ? `<p class="bot-hint warn">Not saved &mdash; ${saveErr}<br>Your note is still in the box; nothing was lost.</p>`
+        : justSaved
+          ? `<p class="bot-hint ok">Saved. ${n} note${n===1?'':'s'} so far.</p>`
+          : `<p class="bot-hint">&#8984;V pastes a screenshot straight in.</p>`}
     </div>
   </div></div>`;
 }
@@ -1500,8 +1484,7 @@ document.addEventListener('click',e=>{
   let t;
   if(t=hit('bot')){botOpen=(t.dataset.bot==='open');render();
     if(botOpen)setTimeout(()=>{const el=document.getElementById('bn-text');el&&el.focus()},60);return}
-  if(t=hit('bench')){const k=t.dataset.bench; if(k==='add')benchAdd(); if(k==='copy')benchCopy(); return}
-  if(t=hit('bdrop')){benchDrop(+t.dataset.bdrop);return}
+  if(t=hit('bench')){if(t.dataset.bench==='add')benchAdd(); return}
   if(t=hit('unshot')){draftShots.splice(+t.dataset.unshot,1);render();return}
   if(t=hit('sel')){selStudent=(selStudent===+t.dataset.sel?null:+t.dataset.sel);addingTo=null;render();return}
   if(t=hit('move')){const[i,z]=t.dataset.move.split(':');moveStudent(+i,+z);return}

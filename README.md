@@ -10,20 +10,44 @@ about named minors. That is not a footnote.
 
 ## Deploy
 
-1. Push this folder to a GitHub repo.
-2. Netlify > Add new site > Import an existing project > pick the repo.
-   Build command: none. Publish directory: `.`
-3. Site settings > Environment variables — add the four from
-   `.env.example`. **The build will deploy without them; the coach and the
-   workbench will simply fail closed.**
+Netlify > Add new site > **Import an existing project** > GitHub >
+`Melnwood/ministry-map-assessment`.
+
+- Build command: **leave blank**
+- Publish directory: **`.`**
+- Functions directory is set by `netlify.toml`; do not override it.
+
+Then Site configuration > Environment variables, add all four from
+`.env.example`, then Deploys > Trigger deploy > **Clear cache and deploy
+site** (env vars are not picked up by an already-finished build).
+
+The site deploys fine without the keys. It fails closed: the app renders,
+the notes bot says why it cannot save, and the coach reports it cannot
+connect. Nothing breaks silently.
 
 Local: `npx netlify dev` from this folder, which serves the functions too.
-Opening `index.html` on its own works, but `/api/*` will 404, so the coach
-and workbench will report they cannot connect.
+Opening `index.html` directly also works, but `/api/*` will 404 and the bot
+will tell you so.
+
+### The Airtable token
+
+At airtable.com/create/tokens the token needs **both**:
+
+- scopes `data.records:read` and `data.records:write`
+- the **Ministry Map — Workbench** base explicitly added under Access
+
+Right scopes with no base added returns 403. Airtable shows a PAT once.
 
 ## Airtable — Workbench table
 
-One table, named `Workbench` (or set `AIRTABLE_NOTES_TABLE`):
+**Already created:** base `applBnNxBseAJT5kO` ("Ministry Map — Workbench"),
+table `Workbench`, in Mel's Workspace. Set `AIRTABLE_BASE_ID` to that id.
+
+It is deliberately a *separate* base from Ministry Map: build notes are not
+ministry data, and mixing them would put dev chatter in the same base as
+student records.
+
+Fields, for reference:
 
 | Field       | Type              | Notes                                    |
 |-------------|-------------------|------------------------------------------|
