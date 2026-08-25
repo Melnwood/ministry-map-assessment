@@ -47,7 +47,9 @@ It is deliberately a *separate* base from Ministry Map: build notes are not
 ministry data, and mixing them would put dev chatter in the same base as
 student records.
 
-Fields, for reference:
+Fields, for reference. **`Who` must be added by hand** — the app sends it,
+and the function saves the note without it if the column is missing rather
+than failing:
 
 | Field       | Type              | Notes                                    |
 |-------------|-------------------|------------------------------------------|

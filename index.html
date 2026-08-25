@@ -356,6 +356,11 @@ h2{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.01
 .bot-hint{font-family:var(--mono);font-size:10px;line-height:1.5;color:var(--ink-45);margin-top:10px}
 .bot-hint.warn{color:var(--z5)}
 .bot-hint.ok{color:var(--z3)}
+.wholine{font-family:var(--mono);font-size:10px;letter-spacing:.05em;color:var(--ink-45);margin-bottom:9px;display:flex;gap:8px;align-items:baseline}
+.wholine b{font-family:var(--body);font-size:12.5px;letter-spacing:0;color:var(--ink);font-weight:700}
+.wholine button{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--phase);margin-left:auto}
+.whogate .fld{margin-top:0}
+.whogate .bot-go{width:100%;margin-top:11px}
 @media (max-width:560px){.botwrap{right:10px;left:10px;bottom:10px;width:auto}.fab{right:16px;bottom:16px}}
 
 /* intake sheet */
@@ -1381,6 +1386,14 @@ const SCREENS={today:'Today',map:'Your map',check:'Check-up',reports:'Reports',r
 const screenNow=()=>SCREENS[active]||'Somewhere';
 
 let NOTES=[], draftShots=[], storageOK=null, saveErr=null, justSaved=false;
+let WHO=null, askingWho=false;
+try{ WHO=localStorage.getItem('workbench-who')||null }catch(e){ WHO=null }
+function setWho(v){
+  v=(v||'').trim(); if(!v)return;
+  WHO=v; try{ localStorage.setItem('workbench-who',v) }catch(e){}
+  askingWho=false; render();
+  setTimeout(()=>{const t=document.getElementById('bn-text');t&&t.focus()},40);
+}
 
 async function benchLoad(){
   try{ const r=await fetch(CONFIG.notesEndpoint);
@@ -1416,7 +1429,7 @@ async function benchSave(note){
 async function benchAdd(){
   const t=document.getElementById('bn-text');
   if(!t||!t.value.trim())return;
-  const note={id:Date.now(), text:t.value.trim(), area:screenNow(), kind:'idea',
+  const note={id:Date.now(), who:WHO||'Unknown', text:t.value.trim(), area:screenNow(), kind:'idea',
     shots:draftShots.slice(), state:'open', at:new Date().toISOString(), reply:null};
   NOTES.push(note);
   const kept=t.value, keptShots=draftShots.slice();
@@ -1451,14 +1464,22 @@ function botHTML(){
       <button class="bot-x" data-bot="close" aria-label="Close">&times;</button>
     </div>
     <div class="bot-body">
-      <textarea id="bn-text" placeholder="What felt wrong?" rows="4"></textarea>
+      ${(!WHO||askingWho)?`<div class="whogate">
+        <label class="fld"><span>${WHO?'Change who is logging':'Who is logging notes?'}</span>
+          <input id="bn-who" placeholder="First name" value="${WHO||''}" autofocus></label>
+        <button class="btn bot-go" data-who="set">${WHO?'Save':'Start'}</button>
+        <p class="bot-hint">Kept on this device so you only say it once. It goes on every note so we know who found what.</p>
+      </div>`:`
+      <div class="wholine">Logging as <b>${WHO}</b><button data-who="ask">change</button></div>
+      <textarea id="bn-text" placeholder="What felt wrong?" rows="4"></textarea>`}
+      ${(!WHO||askingWho)?'':`
       ${draftShots.length?`<div class="shots">${draftShots.map((sh,i)=>
         `<div class="shot"><img src="${sh.data}" alt=""><button data-unshot="${i}">&times;</button></div>`).join('')}</div>`:''}
       <div class="bnrow">
         <label class="shotbtn">Screenshot<input type="file" accept="image/*" multiple id="bn-file"></label>
         <button class="btn bot-go" data-bench="add">Log it</button>
-      </div>
-      ${saveErr
+      </div>`}
+      ${(!WHO||askingWho)?'':saveErr
         ? `<p class="bot-hint warn">Not saved &mdash; ${saveErr}<br>Your note is still in the box; nothing was lost.</p>`
         : justSaved
           ? `<p class="bot-hint ok">Saved. ${n} note${n===1?'':'s'} so far.</p>`
@@ -1483,7 +1504,10 @@ document.addEventListener('click',e=>{
   const hit=k=>e.target.closest('[data-'+k+']');
   let t;
   if(t=hit('bot')){botOpen=(t.dataset.bot==='open');render();
-    if(botOpen)setTimeout(()=>{const el=document.getElementById('bn-text');el&&el.focus()},60);return}
+    if(botOpen)setTimeout(()=>{const el=document.getElementById(WHO?'bn-text':'bn-who');el&&el.focus()},60);return}
+  if(t=hit('who')){
+    if(t.dataset.who==='ask'){askingWho=true;render();setTimeout(()=>{const el=document.getElementById('bn-who');el&&el.focus()},40);return}
+    setWho(document.getElementById('bn-who').value); return}
   if(t=hit('bench')){if(t.dataset.bench==='add')benchAdd(); return}
   if(t=hit('unshot')){draftShots.splice(+t.dataset.unshot,1);render();return}
   if(t=hit('sel')){selStudent=(selStudent===+t.dataset.sel?null:+t.dataset.sel);addingTo=null;render();return}

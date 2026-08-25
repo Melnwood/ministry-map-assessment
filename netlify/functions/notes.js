@@ -18,6 +18,7 @@ const out = (rec) => {
   return {
     rec: rec.id,
     id: Number(f.LocalId) || Date.parse(f.LoggedAt) || Date.now(),
+    who: f.Who || 'Unknown',
     text: f.Note || '', area: f.Screen || '', kind: f.Kind || 'idea',
     state: f.State || 'open', at: f.LoggedAt || new Date().toISOString(),
     reply: f.ClaudeRead || null, shots
@@ -43,16 +44,33 @@ exports.handler = async (event) => {
         shotsJson = JSON.stringify((n.shots || []).map(s => ({ name: s.name, data: null, tooBig: true })));
       }
       const fields = {
+        Who: n.who || 'Unknown',
         LocalId: String(n.id), Note: n.text || '', Screen: n.area || '',
         Kind: n.kind || 'idea', State: n.state || 'open',
         LoggedAt: n.at || new Date().toISOString(),
         ClaudeRead: n.reply || '', Shots: shotsJson
       };
       const has = n.rec;
-      const r = await fetch(has ? url('/' + n.rec) : url(), {
-        method: has ? 'PATCH' : 'POST', headers: H, body: JSON.stringify({ fields })
+      const send = (body) => fetch(has ? url('/' + n.rec) : url(), {
+        method: has ? 'PATCH' : 'POST', headers: H, body: JSON.stringify(body)
       });
-      const d = await r.json();
+
+      let r = await send({ fields });
+      let d = await r.json();
+
+      // The Who column is optional. If the base does not have it yet, save the
+      // note anyway rather than losing it — better a note without a name than
+      // no note at all. Everything else still fails loudly.
+      if (!r.ok && r.status === 422 && /unknown field name/i.test(JSON.stringify(d))) {
+        const { Who, ...rest } = fields;
+        r = await send({ fields: rest });
+        d = await r.json();
+        if (r.ok) {
+          const rec = out(d); rec.who = n.who || 'Unknown'; rec.whoNotStored = true;
+          return { statusCode: 200, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(rec) };
+        }
+      }
+
       if (!r.ok) return { statusCode: r.status, body: JSON.stringify(d) };
       return { statusCode: 200, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(out(d)) };
     }
