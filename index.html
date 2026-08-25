@@ -212,13 +212,15 @@ h2{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.01
 .pips{display:inline-flex;gap:3px;flex-shrink:0}
 .pips i{width:15px;height:8px;border-radius:2px;background:var(--ink-08)}
 .true .pips i.on{background:var(--z3)} .part .pips i.on{background:var(--z4)} .not .pips i.on{background:var(--phase)}
-.tb-words{margin-top:18px;display:grid;gap:2px}
+.tb-scale{font-family:var(--mono);font-size:10px;line-height:1.5;color:var(--ink-45);margin-top:14px}
+.tb-words{margin-top:10px;display:grid;gap:2px}
 .tw{display:flex;align-items:center;gap:14px;padding:8px 0;border-bottom:1px solid var(--ink-08)}
 .tw:last-child{border-bottom:none}
 .tw-w{min-width:112px;font-family:var(--display);font-size:16px;font-weight:700;letter-spacing:-.01em}
-.tw-v{font-size:14px;font-weight:600;min-width:118px}
+.tw-v{font-size:14px;font-weight:600;min-width:210px}
 .tw.true .tw-v{color:var(--z3)} .tw.part .tw-v{color:var(--z4)} .tw.not .tw-v{color:var(--phase)}
 .tw-n{font-family:var(--mono);font-size:10.5px;color:var(--ink-45);margin-left:auto}
+@media (max-width:700px){.tw{flex-wrap:wrap;gap:8px 12px}.tw-v{min-width:0;flex:1}.tw-n{width:100%;margin-left:0}}
 @media (max-width:560px){.tb-acr{font-size:24px}.tw-w{min-width:88px;font-size:14px}}
 
 /* today: cake + climb */
@@ -655,6 +657,17 @@ const BANDS=[{m:3.5,l:'Consistently true',s:'consistent',k:'true'},
              {m:1.5,l:'Starting',         s:'starting',  k:'part'},
              {m:0,  l:'Not yet',          s:'not yet',   k:'not'}];
 const band=v=>BANDS.find(b=>v>=b.m);
+/* The band labels answer "is this statement true of us?" — right for the
+   statements, wrong for the tool letters, which are practices. A letter needs
+   to say how often you actually do it. */
+const DOING={'consistent':'You do this consistently',
+             'mostly':'You do this most of the time',
+             'starting':'You have started doing this',
+             'not yet':'You are not doing this yet'};
+const SHORT={'consistent':'consistently','mostly':'most of the time',
+             'starting':'only just started','not yet':'not doing this yet'};
+const doingBand=v=>DOING[band(v).s];
+const shortBand=v=>SHORT[band(v).s];
 const pips=v=>{const f=Math.round(v);return `<span class="pips">${[1,2,3,4].map(i=>`<i class="${i<=f?'on':''}"></i>`).join('')}</span>`};
 const fmtDate=r=>new Date(r.d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
 
@@ -687,6 +700,21 @@ function renderTabs(){
     `<button class="tab" role="tab" aria-selected="${v.id===active||(v.id==='reports'&&active==='report')}" data-go="${v.id}">${v.label}</button>`).join('');
 }
 function go(id){active=id;selPhase=null;selStudent=null;intake=null;intakeErr=null;addingTo=null;selProgram=null;addingProgram=false;coachState={loading:false,questions:null,error:null,answer:null,asking:false};if(id==='check'){quizIx=0;answers={}}renderTabs();render();window.scrollTo({top:0,behavior:'instant'})}
+
+/* What a report says that the Today screen does not already show.
+   Same shape every time: the weakest letter of the tool for your phase,
+   and how many actions the report is putting in front of you. */
+function reportGist(R){
+  const sc=scoresOf(R), ph=currentPhase(sc), cats=catScores(R), cov=coverage();
+  const T=TOOLS[PHASES[ph-1].tool];
+  const letters=T.words.map(w=>[w,cats[w]]).filter(x=>x[1]).sort((a,b)=>a[1].v-b[1].v);
+  const weakest=letters[0];
+  let n=1;                                   /* the weakest-area action always fires */
+  if(ZONES.some(z=>{const p=cov[z.n];return p.length&&Math.max(...p.map(x=>FREQ_RANK[x.freq]))===1}))n++;
+  if(ZONES.some(z=>!cov[z.n].length))n++;
+  return {phase:ph, tool:PHASES[ph-1].tool, weakest:weakest?weakest[0]:null,
+          band:weakest?shortBand(weakest[1].v):null, actions:n};
+}
 
 /* ---------- TODAY ---------- */
 function vToday(){
@@ -733,7 +761,8 @@ function vToday(){
       <div class="rc-date"><span class="d">${fmtDate(L)}</span><span class="t">${L.t}</span></div>
       <div class="rc-mid">
         <div class="rc-phase"><i></i>Your latest report</div>
-        <div class="rc-delta">${c[3]+c[4]} ready to fish or being sent &middot; ${REPORTS.length} check-ups kept</div>
+        <div class="rc-delta">${(()=>{const g=reportGist(L);
+          return `${g.actions} thing${g.actions===1?'':'s'} to do next &middot; weakest link in ${g.tool}: <b class="dn">${g.weakest} &mdash; ${g.band}</b>`})()}</div>
       </div>
       <div class="rc-n"><b>${tot}</b><span>students</span></div>
       <div class="rc-go">Open &rarr;</div>
@@ -970,8 +999,9 @@ function vReports(){
       else if(ph<pph) bits.push(`<b class="dn">back to ${pname(PHASES[ph-1])}</b>`);
       else bits.push('same phase');
       if(dt>0) bits.push(`+${dt} students`); else if(dt<0) bits.push(`${dt} students`);
+      const g=reportGist(r); if(g.weakest) bits.push(`weakest: ${g.weakest}`);
       delta=bits.join(' · ');
-    } else delta='first check-up';
+    } else { const g0=reportGist(r); delta='first check-up'+(g0.weakest?` &middot; weakest: ${g0.weakest}`:''); }
     return {r,i,sc,ph,tot,delta};
   }).reverse();
 
@@ -1047,9 +1077,10 @@ function vReport(){
       <div class="sec-hd"><h2>How ${pname(PHASES[ph-1])} works</h2><span class="n">JV TRAINING TOOL</span></div>
       <div class="toolbox">
         <div class="tb-head"><span class="tb-acr">${tk}</span><p>${T.line}</p></div>
+        <p class="tb-scale">How often each part of ${tk} actually happens, read from your own answers.</p>
         <div class="tb-words">
           ${parts.map(x=>{const b=band(x[1].v);return `<div class="tw ${b.k}"><div class="tw-w">${x[0]}</div>
-            ${pips(x[1].v)}<div class="tw-v">${b.l}</div>
+            ${pips(x[1].v)}<div class="tw-v">${doingBand(x[1].v)}</div>
             <div class="tw-n">${x[1].n} statement${x[1].n>1?'s':''}</div></div>`}).join('')}
         </div>
       </div>
