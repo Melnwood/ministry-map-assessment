@@ -456,6 +456,10 @@ button.prow:hover{border-color:var(--ink)}
 .cnt-ask{font-size:13px;color:var(--ink-70);margin-top:3px}
 .cnt-set{display:flex;align-items:center;gap:12px;flex:none}
 .cnt-set b{font-family:var(--mono);font-size:24px;font-weight:600;color:var(--zc);min-width:2ch;text-align:center}
+.cnv{font-family:var(--mono);font-size:24px;font-weight:600;color:var(--zc);width:3.2ch;text-align:center;
+     background:transparent;border:0;border-bottom:1.5px solid transparent;padding:0 0 2px;border-radius:0}
+.cnv:hover{border-bottom-color:var(--ink-15)}
+.cnv:focus{outline:none;border-bottom-color:var(--zc)}
 .stp{width:30px;height:30px;border-radius:99px;border:1px solid var(--line);background:var(--surface);
      font-size:17px;line-height:1;color:var(--ink-70)}
 .stp:hover{background:var(--ink-08)}
@@ -796,6 +800,7 @@ function blanks(ci){
   return {n:c[biggest],
     line:`${c[biggest]} of your students ${one(c[biggest],'has','have')} gone no further than ${plain(ZONES[biggest].name)}.`};
 }
+const MAP_BLANK_NOTE='This is your group as a number. With names, it could tell you who has not moved since spring.';
 const blanksHTML=(b,note)=>!b?'':`<div class="blanks">
   <p class="bl-line">${b.line}</p>
   <div class="bl-row">${Array.from({length:Math.min(b.n,6)},()=>'<i></i>').join('')}${b.n>6?`<span class="bl-more">and ${b.n-6} more</span>`:''}</div>
@@ -1068,14 +1073,15 @@ function vMapOpen(){
         <div class="cnt-hd"><div class="cnt-nm">${z.name}</div><div class="cnt-ask">${z.ask}</div></div>
         <div class="cnt-set">
           <button class="stp" data-cnt="${i}:-1" aria-label="One fewer">&minus;</button>
-          <b>${c[i]}</b>
+          <input class="cnv" id="cnv${i}" data-cntv="${i}" type="text" inputmode="numeric"
+                 value="${c[i]}" aria-label="How many at ${plain(z.name)}">
           <button class="stp" data-cnt="${i}:1" aria-label="One more">+</button>
         </div>
       </div>`).join('')}
-      <div class="cnt-tot">${tot} students in your group</div>
+      <div class="cnt-tot" id="cnt-tot">${tot} students in your group</div>
     </div>
 
-    ${blanksHTML(b,'This is your group as a number. With names, it could tell you who has not moved since spring.')}
+    <div id="blanks-slot">${blanksHTML(b,MAP_BLANK_NOTE)}</div>
 
     ${askHTML()}
 
@@ -1085,6 +1091,17 @@ function vMapOpen(){
 
 /* The ask. Once, here, at the moment he is looking at the blanks and
    wishing he could type a name. Never repeated elsewhere. */
+/* Typing a number re-renders nothing. A full render would rebuild the
+   input under the cursor and throw the caret to the end on every key, so
+   only the two things derived from the counts are refreshed in place. */
+function refreshCounts(){
+  const c=zoneCounts(NOW);
+  const tot=document.getElementById('cnt-tot');
+  if(tot) tot.textContent=`${c.reduce((a,b)=>a+b,0)} students in your group`;
+  const slot=document.getElementById('blanks-slot');
+  if(slot) slot.innerHTML=blanksHTML(blanks(NOW),MAP_BLANK_NOTE);
+}
+
 function askHTML(){
   if(askedCoach) return `<div class="ask done">
     <p>Someone from Josiah Venture in your country will be in touch. Nothing changes here until you have spoken to them.</p></div>`;
@@ -1762,6 +1779,10 @@ function render(){
   if(keep!==null){const t2=document.getElementById('bn-text'); if(t2)t2.value=keep;}
 }
 document.addEventListener('click',e=>{
+  /* Clicking into a count selects it, so a leader types over the number
+     rather than appending to it. focusin covers tabbing in; click covers
+     the way anyone actually does it. Deliberately does not return. */
+  const cv=e.target.closest('[data-cntv]'); if(cv&&cv.select) cv.select();
   const g=e.target.closest('[data-go]'); if(g){go(g.dataset.go);return}
   const cn=e.target.closest('[data-cnt]'); if(cn){const [ix,dv]=cn.dataset.cnt.split(':').map(Number);
     COUNTS[NOW][ix]=Math.max(0,COUNTS[NOW][ix]+dv); render(); return}
@@ -1829,6 +1850,21 @@ document.addEventListener('paste',e=>{
   const items=[...(e.clipboardData&&e.clipboardData.items||[])].filter(i=>i.type.indexOf('image')===0);
   if(!items.length)return;
   e.preventDefault(); benchShot(items.map(i=>i.getAsFile()).filter(Boolean));
+});
+document.addEventListener('input',e=>{
+  const el=e.target.closest('[data-cntv]'); if(!el)return;
+  const clean=el.value.replace(/\D/g,'').slice(0,3);
+  if(clean!==el.value) el.value=clean;          /* only rewrite when we changed it */
+  COUNTS[NOW][+el.dataset.cntv]=clean===''?0:+clean;
+  refreshCounts();
+});
+document.addEventListener('focusin',e=>{
+  const el=e.target.closest('[data-cntv]');
+  if(el&&el.select) el.select();               /* type over it, do not append to it */
+});
+document.addEventListener('focusout',e=>{
+  const el=e.target.closest('[data-cntv]');
+  if(el&&el.value==='') {el.value='0'; refreshCounts()}
 });
 document.addEventListener('change',e=>{
   if(e.target.id==='bn-file'&&e.target.files&&e.target.files.length){benchShot(e.target.files);return}
