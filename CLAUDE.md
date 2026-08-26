@@ -168,6 +168,80 @@ group-level movement over time without a single name — "you had 6 at
 Repent & Believe in March, 9 now." A leader who keeps using it sees more
 each time. That is a better reason to stay than any teaser.
 
+### Where the line falls, and why it holds
+
+Activation is **signing up for coaching** with the national organisation.
+It is free. It is a person, not a form.
+
+The open tier can tell a leader **what is true of his ministry**. It
+cannot tell him **who**. Every open-tier insight is about the group — your
+phase, your weakest part, nobody is ever sent out to lead, six said yes to
+Repent & Believe. What a leader does on Tuesday is have a conversation
+with *one student*, and the framework is invitations made to people. So a
+map without names can only ever say "someone".
+
+That is why the line is not arbitrary. It is the point where the app stops
+being about ministry-in-general and starts being about people — the same
+point where coaching starts. **The boundary and the product are the same
+boundary.** Anyone tempted to move the line should have to explain why
+those two things should come apart.
+
+### Show the blanks
+
+Nothing is withheld. The open tier knows the counts, so it can say
+something wholly true about his group with the names missing:
+
+> Three of your students have said yes to helping you reach others.
+> None of them has been sent.
+>
+> **_____ · _____ · _____**
+
+He never gave those names, so nothing is being kept back — but he knows
+exactly who they are, and the app has just shown him that it does not.
+That gap is the pitch. It needs no persuasion attached.
+
+The same move works once on the coach: his real open-tier question reads
+"What stops you from asking more often?" With a map it would read "Vojta,
+Anička and Klára said yes months ago — what has stopped you asking them?"
+Shown side by side, once, the difference argues for itself.
+
+### The framing, which is also true
+
+**The map is a burden without a coach.** Entering two dozen students and
+keeping them current is real work. Done because someone will sit down and
+go through it with you, it is worth doing. Done alone it is admin, and he
+will stop in three weeks. So never write "sign up to unlock the map".
+Write the reason:
+
+> The map is not for us. It's for the conversation you'll have about it.
+
+### The words
+
+At the blanks, once, quietly:
+
+> This is your group as a number. With names, it could tell you who hasn't
+> moved since spring.
+
+The ask:
+
+> Would you like someone to walk through this with you? It's free.
+
+### What would kill it
+
+- **"Unlock", "upgrade", "premium", padlocks, greyed-out sections.** The
+  audience is 18–30, mostly not native English speakers, in ministry.
+  Commercial SaaS language reads as slightly insulting to them.
+- **Asking twice.** One moment, maximum relevance, then stop. A second ask
+  turns a diagnosis into a sales funnel.
+- **An open tier that feels crippled.** If it does not stand alone, the
+  whole thing reads as bait. It does stand alone — "nobody is ever sent
+  out to lead" is the most confronting thing this app says, and it is
+  free.
+
+One sentence, if it is ever needed outside this repo: *the check-up tells
+you what is true of your ministry; coaching is where it becomes about
+people, and that is where the names live.*
+
 ## Architecture
 
 Deliberately boring. One HTML file, two Netlify functions, Airtable.
