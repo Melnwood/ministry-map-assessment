@@ -38,21 +38,46 @@ Each phase has a JV training tool. The 35 statements are tagged to the
 letters of that tool, so a low letter points at the part of a tool the
 leader is skipping — not at a personal failing.
 
-| # | Phase | Tool | Letters | Typical | Aimed at |
-|---|-------|------|---------|---------|----------|
-| 1 | Preparation | CCE | Character, Calling, Empower | 30 years | Everyone |
-| 2 | Foundation | SIX* | Prayer, Relationship, God's Word, Vision, Love, Christ | 1.5 years | Disciples |
-| 3 | Ministry Training | TAR | Teach, Act, Reflect | 6–9 months | Workers |
-| 4 | Expansion | CPR | Cultivate, Plant, Reap | ongoing | Workers |
-| 5 | Leadership Multiplication | REST | Re-structure, Entrust, Support, Train | 1.5 years | Leaders |
+| # | Phase | Tool | Scored categories | Typical | Aimed at |
+|---|-------|------|-------------------|---------|----------|
+| 1 | Preparation | CCE | Call, Character, Empowerment | 30 years | Everyone |
+| 2 | Foundation | the six | Relationships, Love, Vision, Jesus, Prayer, Bible | 1.5 years | Disciples |
+| 3 | Ministry Training | TAR | **TAR**, Serve, Evangelize, Shepherd | 6–9 months | Workers |
+| 4 | Expansion | CPR | **CPR**, Expansion, Team | ongoing | Workers |
+| 5 | Leadership Multiplication | REST | **Restructure, Entrust, Support, Train**, Multiplication | 1.5 years | Leaders |
+
+**The tool is not always a breakdown of the phase.** For Preparation,
+Foundation and Leadership Multiplication the tool's letters *are* the
+scored categories. For Ministry Training and Expansion they are not: the
+source scores TAR and CPR each as a **single** category and measures
+other things beside them. Write "part", not "letter", for phases 3 and 4.
+Bold above = the categories that spell the tool.
 
 The spans trace Jesus' own ministry. Phase 3 is **Ministry Training**, not
-"Equipping". Phase 5 is **Leadership Multiplication**.
+"Equipping". Phase 5 is **Leadership Multiplication**. The M-Lens source
+itself says "Equipping" and "Multiplication"; Mel's names win, and the
+code says so at the `PHASES` definition.
 
-\* `SIX` is an unverified reading of a hand-drawn diagram. Confirm with Mel.
+The Foundation six are confirmed — the source docx names them
+"Relationships, God's Word, Love, Vision, Christ, Prayer", which is the
+same six. `SIX` was never an acronym in the source, just a count.
 
 Your phase is the **first one scoring below 7/10**. Everything before it is
 cleared; everything after is not yet your turn.
+
+**The later phases are graded harder, on purpose.** "Mostly true" is worth
+8 in Preparation and Foundation but only 6 from Ministry Training on, so a
+leader who answers "mostly true" straight down clears Preparation (8.0) and
+does not clear Ministry Training (6.0). Confirmed by Mel: the later phases
+*are* harder, and the source grades them that way.
+
+Two consequences the code holds to. **Store the answer, not the score** —
+`REPORTS[].a` holds 0-3, and `worth(a, phase)` derives the rest, so
+retuning the grading never touches stored data. And **a category label
+reports what the leader said, never what it was worth** — the same two
+clicks must read the same words in every phase. The harder grading belongs
+to the phase score alone. `HARDER_FROM` and the `early`/`late` columns in
+`SCALE` are the whole mechanism.
 
 ---
 
@@ -99,6 +124,50 @@ Before any figure ships, state what would falsify it. Two live examples:
 
 ---
 
+## Two tiers — open and activated
+
+**Decided 26 Aug 2026 by Mel.** A leader can sign up themselves and start.
+A leader passing the link to another leader is the way this is meant to
+spread, and nothing should get in the way of that. What gates is not
+signing up — it is entering a child's name.
+
+| | Open (self-signup, verified email) | Activated (by JV or the national org) |
+|---|---|---|
+| The 35-statement check-up | yes | yes |
+| Phase, tool, categories, coach | yes | yes |
+| **Counts** per challenge | yes | yes |
+| Programmes tagged to challenges | yes | yes |
+| Change in counts between check-ups | yes | yes |
+| **Named students** | **no** | yes |
+| Who moved, who is stuck, how long each took | no | yes |
+| Feeds JV's key results | no | yes |
+
+**Nothing in the open tier is personal data about a student.** Counts and
+programmes describe a ministry, not a person. That is why the open tier
+can be genuinely open.
+
+This is not an invention — it is the source instrument's own shape. The
+M-Lens docx asks for counts per challenge and for programmes tagged to
+challenges, and asks for names in exactly two questions. The open tier is
+M-Lens minus those two questions.
+
+Activation is where every decision above attaches: country type assigned,
+export shape chosen from it, translated privacy notice in place *before* a
+student is entered. It is a person from JV making contact, not a form.
+
+**Voice rule for the open tier.** It must never read as an advert. No
+"unlock", no "upgrade", no counting down what they are missing. The app
+shows what it can from what it was given and says plainly what it would
+need in order to say more — once, quietly, where it is relevant:
+
+> This is your group as a number. With names, it could tell you who has
+> not moved since spring.
+
+**The open tier gets better on its own.** Two check-ups' counts give
+group-level movement over time without a single name — "you had 6 at
+Repent & Believe in March, 9 now." A leader who keeps using it sees more
+each time. That is a better reason to stay than any teaser.
+
 ## Architecture
 
 Deliberately boring. One HTML file, two Netlify functions, Airtable.
@@ -141,23 +210,23 @@ back twice from an issue tracker with kinds, states, filters and triage.
 
 ## Open — real work, in rough priority
 
-1. **The 35 statements are placeholder wording I wrote.** The real ones are
-   in `ministrydiagnostic.zip` (Mel), along with which statement maps to
-   which tool letter. The mapping is currently my guess; wrong tags produce
-   confidently wrong numbers.
-2. **No auth.** Any visitor sees everything. Must land before a real
-   roster does.
-3. **No authorisation.** Every student needs `org_id` / `group_id`,
+1. **No auth.** Any visitor sees everything. Must land before a real
+   roster does. Shape is decided — see "Two tiers" above: open self-signup
+   for the check-up, activation required before a student can be entered.
+2. **No authorisation.** Every student needs `org_id` / `group_id`,
    filtered **in the function, never the browser.** Do this in the same
    sitting as multi-tenant work, not as a later audit.
-4. **No retention policy.** Students who leave never age out; an erasure
-   request cannot be satisfied in one action.
-5. **Student names go to Anthropic** in the coach prompt. There is a
+3. **Retention is decided, not built.** Three states — Active, Dormant,
+   Left — with 18 months of dormancy before a person confirms the move to
+   Left, at which point the identity is deleted and an anonymous journey
+   is kept. Full rationale and the trade it makes are in
+   `DATA-PROTECTION.md`. Erasure still cannot be satisfied in one action.
+4. **Student names go to Anthropic** in the coach prompt. There is a
    toggle; it defaults to on. Mel's decision, not a default to inherit.
-6. **Screenshots mostly do not save.** Stored as base64 in a text field,
+5. **Screenshots mostly do not save.** Stored as base64 in a text field,
    capped near 95k characters; a real screenshot is far bigger, so the
    function drops it to a marker. Fix is Airtable attachments.
-7. **Students, programmes and check-ups are in-memory demo data.** Wiring
+6. **Students, programmes and check-ups are in-memory demo data.** Wiring
    them to the Ministry Map base is the next real build.
 
 ---

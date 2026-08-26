@@ -495,7 +495,9 @@ const plain=t=>t.replace(/&amp;/g,'&');
 
 /* ---- Five Phases of a Disciplemaking Ministry ----
    Names, spans, audiences and per-phase tools read from Mel's
-   chalkboard diagram. The spans trace Jesus' own ministry. ---- */
+   chalkboard diagram. The spans trace Jesus' own ministry.
+   The M-Lens source calls phase 3 "Equipping" and phase 5
+   "Multiplication"; Mel's names are used, as corrected by him. ---- */
 const PHASES=[
  {n:1,name:'Preparation',            span:'30 years',    who:'Everyone', tool:'CCE'},
  {n:2,name:'Foundation',             span:'1.5 years',   who:'Disciples',tool:'SIX'},
@@ -507,75 +509,120 @@ PHASES[4].tool='REST';
 const pname=p=>p.short||p.name;
 
 /* ============================================================
-   QUESTION BANK — PLACEHOLDER WORDING
-   Structure is real: 5 phases x 7 statements, 4-point scale,
-   each statement tagged to a scoring category.
-   Swap `t` strings for the verbatim docx statements; keep `cat`.
+   QUESTION BANK — the real M-Lens instrument
+   Statements verbatim from `M lens diagnostic - personal.docx`;
+   `cat` is the source's own Category column from
+   `M Lens Diagnostic v2.xlsx`, not a guess. 5 phases x 7.
    ============================================================ */
-const SCALE=[{k:'A',t:'Not yet true of us',v:1},{k:'B',t:'Starting to be true',v:2},{k:'C',t:'Mostly true',v:3},{k:'D',t:'Consistently true',v:4}];
+
+/* An answer and what an answer is worth are two different things, and
+   this instrument is the reason to keep them apart.
+
+   WHAT THE LEADER SAYS is one of four, the same four on every screen.
+   Stored as 0-3. The source's own labels are "Not at all / A Little /
+   Some / Much"; the truth labels below are kept over them, because a
+   statement takes a truth label.
+
+   WHAT IT IS WORTH depends on the phase. The source scores "Some" as 8
+   in Preparation and Foundation but 6 from Ministry Training on — the
+   later phases are graded harder, because they are harder. A leader who
+   is "mostly true" across the board clears Preparation and does not
+   clear Ministry Training. That is the instrument working, not a bug.
+
+   Storing the answer and deriving the worth means this stays one table
+   to edit. Nothing has to be migrated if the grading is ever retuned. */
+const A_NONE=0, A_LITTLE=1, A_MOSTLY=2, A_ALWAYS=3;
+const A_TRUE=A_MOSTLY;              /* at or above this, a statement counts as true of you */
+const SCALE=[{k:'A',t:'Not yet true of us', v:A_NONE,   early:0, late:0},
+             {k:'B',t:'Starting to be true',v:A_LITTLE, early:4, late:4},
+             {k:'C',t:'Mostly true',        v:A_MOSTLY, early:8, late:6},
+             {k:'D',t:'Consistently true',  v:A_ALWAYS, early:10,late:10}];
+const HARDER_FROM=3;                /* this phase onward is graded on `late` */
+const worth=(a,phase)=>SCALE[a][phase>=HARDER_FROM?'late':'early'];
 const Q=[
- [1,'Calling',  'I know why God has put me with these young people.'],
- [1,'Calling',  'I can say out loud what I believe God wants this ministry to become.'],
- [1,'Calling',  'I have prayed specifically for young people in this town by name.'],
- [1,'Character','People close to me would say my private life matches my public one.'],
- [1,'Character','When I fail, I go back and make it right rather than move on.'],
- [1,'Character','I am not carrying this alone — someone knows how I actually am.'],
- [1,'Empower',  'I have the blessing of my church leadership to lead this group.'],
+ /* ---- 1 · Preparation · C.C.E ---- */
+ [1,'Call',       'I understand that my mission is to make disciples. I prioritize disciple-making in my schedule and time.'],
+ [1,'Empowerment','I am motivated to do ministry by love for God and love for people.'],
+ [1,'Call',       'I know I have been called by God into his mission, and want to serve out of obedience to him, not just because I was asked to take a role by someone else.'],
+ [1,'Character',  'As I look back over the last year I can see I am steadily growing in wisdom and favor with God and people.'],
+ [1,'Empowerment','I feel empowered to serve others because of relationship with Jesus, with the Spirit and with the Father.'],
+ [1,'Character',  'I am a disciple of Jesus and want to see others come to know him and grow in their relationship with him.'],
+ [1,'Call',       'I am willing to take the burden and privilege of serving as a shepherd of part of God’s flock, under the great shepherd.'],
 
- [2,'Prayer',      'We pray together for people who are far from God.'],
- [2,'Relationship','Students would say an adult here knows them well.'],
- [2,'Relationship','I meet with students outside of the program itself.'],
- [2,'God’s Word',  'We open the Bible together in a way students can follow.'],
- [2,'Vision',      'Our students could say what this group is for.'],
- [2,'Love',        'New students are noticed and welcomed within their first visit.'],
- [2,'Christ',      'Students hear the gospel clearly, not just good advice.'],
+ /* ---- 2 · Foundation · the six ---- */
+ [2,'Relationships','I spend time with students in a variety of settings outside of youth group meetings. I know what is going on in their world and am engaged in it.'],
+ [2,'Love',         'Our youth group deeply loves and cares for each other. New people feel welcome, and group members intentionally reach out to each other. There is a minimum of gossip, relational competition, or cliques.'],
+ [2,'Vision',       'Our youth group has a feeling of expectation. The leaders have vision for the future and communicate it often to the students. We see potential in them and speak it to them.'],
+ [2,'Jesus',        'The students know who Jesus is, what he has done for them, and who they are because of him. Their view of Jesus isn’t heavily distorted by current culture or church legalism.'],
+ [2,'Prayer',       'The youth leader(s) pray often for their group, and students see them model prayer in front of them. They set aside time to cover our ministry in prayer.'],
+ [2,'Bible',        'Our youth group regularly opens God’s Word and studies it together. We don’t just talk about our opinions on spiritual and relational topics, but instead, open God’s Word and let it speak.'],
+ [2,'All',          'Our youth group is a healthy environment where people steadily grow in their relationships with God and with others.'],
 
- [3,'Teach',  'We have a way of teaching students to feed themselves spiritually.'],
- [3,'Teach',  'I am investing in a few students on purpose, not just the crowd.'],
- [3,'Act',    'Students are given real responsibility, not just tasks.'],
- [3,'Act',    'A student here could lead a small group without me in the room.'],
- [3,'Act',    'I give away things I could do better myself.'],
- [3,'Reflect','Our leaders meet to talk about students, not just logistics.'],
- [3,'Reflect','After we serve together, we stop and talk about what God did.'],
+ /* ---- 3 · Ministry Training · T.A.R ---- */
+ [3,'Serve',     'Students in our group are asking how they can serve and beginning to take ownership for the health of our group.'],
+ [3,'TAR',       'A smaller team within our youth group is being regularly and purposefully equipped to do the work of ministry.'],
+ [3,'Evangelize','This ministry team knows how to do personal evangelism, and are practicing how to do it with their friends.'],
+ [3,'TAR',       'There is an intentional strategy for how to train the ministry team, including good teaching, carefully crafted experiences, and intentional reflection.'],
+ [3,'Shepherd',  'Some of the ministry team members are discipling individuals or leading small groups. They are helping shepherd young people in an ongoing way toward spiritual maturity.'],
+ [3,'TAR',       'The ministry team members are given specific responsibilities in the youth group to purposefully develop their character and skills.'],
+ [3,'TAR',       'I am spending more time with a few so that I can reach and shepherd more young people through them.'],
 
- [4,'Cultivate','Our group regularly meets young people who are far from God.'],
- [4,'Cultivate','We are present somewhere students already are — school, sport, music.'],
- [4,'Cultivate','Our students invite their friends without being asked.'],
- [4,'Plant',    'We have a program built for students who do not yet believe.'],
- [4,'Plant',    'Our team can name who we are trying to reach next.'],
- [4,'Reap',     'We know what happens to a new believer in their first month.'],
- [4,'Reap',     'Growth would not break how we are currently organised.'],
+ /* ---- 4 · Expansion · C.P.R ---- */
+ [4,'CPR',      'Our youth group has frequent and regular events focused on group evangelism, where the ministry team is mobilized to share the gospel.'],
+ [4,'CPR',      'Every month our group is in contact with more non-Christian young people.'],
+ [4,'Expansion','Unbelievers are regularly coming to Christ and becoming a part of our ministry.'],
+ [4,'Expansion','News about the impact of our ministry and lives that are being changed is spreading on its own.'],
+ [4,'Team',     'Our team is being stretched to reach into new areas and try new ways of reaching the lost.'],
+ [4,'Team',     'Our team has learned how to handle persecution, failure and opposition without stopping or giving up.'],
+ [4,'Expansion','Our ministry is experiencing steady growth, both internally and externally.'],
 
- [5,'Re-structure','This ministry would continue if I left tomorrow.'],
- [5,'Re-structure','Our vision is bigger than our own group.'],
- [5,'Entrust',     'Leaders we raised are now leading something we do not control.'],
- [5,'Entrust',     'We celebrate people leaving us more than people staying.'],
- [5,'Support',     'We help other youth groups, not only our own.'],
- [5,'Support',     'We have sent someone out of this group into ministry elsewhere.'],
- [5,'Train',       'A second generation of leaders is being raised by the first.']
+ /* ---- 5 · Leadership Multiplication · R.E.S.T ---- */
+ [5,'Train',         'Our leaders have identified and invited a select few to be trained and equipped for current and future leadership, based on their fruitfulness as ministry team members.'],
+ [5,'Entrust',       'The main leader has entrusted parts of the ministry to emerging leaders.'],
+ [5,'Restructure',   'The ministry has been restructured for multiplication with new systems and subgroups to increase shepherding effectiveness.'],
+ [5,'Support',       'The leader is supporting and training these new leaders through ongoing equipping and care.'],
+ [5,'Train',         'The leadership team is learning to pay the personal price of leadership multiplication, as they follow Jesus into personal sacrifice that brings life to others.'],
+ [5,'Multiplication','We are beginning to send out leaders to start ministries in other places or serve in other ministries and churches.'],
+ [5,'Multiplication','It is hard to keep up with everything that is happening — the Spirit seems to be expanding the ministry in ways we hadn’t anticipated.']
 ].map((r,i)=>({id:i,phase:r[0],cat:r[1],t:r[2]}));
 
 /* ============================================================
-   JV TRAINING TOOLS
-   These categories are not abstract — each is a tool JV already
-   teaches. A low score is not a diagnosis, it is a pointer to the
-   tool you already have. `full` needs the expansion from the docx.
+   JV TRAINING TOOLS + the categories each phase is scored on
+   `words` is the source's own Category column for that phase — what
+   actually gets a subtotal. `letters` is the subset that spells the
+   phase's JV tool.
+   For Preparation, Foundation and Leadership Multiplication those are
+   the same list. For Ministry Training and Expansion they are NOT: the
+   source scores TAR and CPR each as ONE category and measures other
+   things beside them. The tool is a part of the phase, not a
+   breakdown of it. A low score is still a pointer, not a diagnosis.
    ============================================================ */
 const TOOLS={
- CCE: {phase:1, words:['Character','Calling','Empower'],
+ CCE: {phase:1, words:['Call','Character','Empowerment'],
+       letters:['Call','Character','Empowerment'],
        line:'What God settles in the leader before there is a ministry to lead.'},
- SIX: {phase:2, words:['Prayer','Relationship','God\u2019s Word','Vision','Love','Christ'],
+ SIX: {phase:2, words:['Relationships','Love','Vision','Jesus','Prayer','Bible'],
+       letters:['Relationships','Love','Vision','Jesus','Prayer','Bible'],
        line:'The six things a group is built on before it is built out.'},
- TAR: {phase:3, words:['Teach','Act','Reflect'],
+ TAR: {phase:3, words:['Serve','TAR','Evangelize','Shepherd'],
+       letters:['TAR'],
        line:'The training loop. You teach it, they do it, then you sit down and talk about what happened.'},
- CPR: {phase:4, words:['Cultivate','Plant','Reap'],
+ CPR: {phase:4, words:['CPR','Expansion','Team'],
+       letters:['CPR'],
        line:'How ground that is not yours yet becomes ground where something grows.'},
- REST:{phase:5, words:['Re-structure','Entrust','Support','Train'],
+ REST:{phase:5, words:['Restructure','Entrust','Support','Train','Multiplication'],
+       letters:['Restructure','Entrust','Support','Train'],
        line:'How you hand a ministry to the leaders you raised without dropping it.'}
 };
 const toolFor=n=>Object.entries(TOOLS).find(([k,v])=>v.phase===n);
-const LETTERS={};Object.values(TOOLS).forEach(t=>t.words.forEach(w=>LETTERS[w]=t));
-const isTool=c=>!!LETTERS[c];
+/* every measured category -> the phase it belongs to (drives the "your phase" tag) */
+const CAT_PHASE={};Object.values(TOOLS).forEach(t=>t.words.forEach(w=>CAT_PHASE[w]=t.phase));
+/* only the categories that actually spell the acronym (drives the acronym tag) */
+const CAT_TOOL={};Object.entries(TOOLS).forEach(([k,t])=>t.letters.forEach(w=>CAT_TOOL[w]=k));
+const isTool=c=>!!CAT_TOOL[c];
+/* Statement 14 measures Foundation as a whole and gets no subtotal of its own
+   in the source. It counts toward the phase score, not toward a category. */
+const NO_SUBTOTAL=new Set(['All']);
 
 /* ============================================================
    DEMO DATA — stands in for the live Airtable base
@@ -638,23 +685,32 @@ const PROGRAMS=[
    A leader can take this as often as they like; the roster only
    changes when they update it, so the two move at their own pace.
    ============================================================ */
+/* `a` holds what the leader answered, 0-3 — not what it scored. */
 const REPORTS=[
- {d:'2025-10-12',t:'19:40',r:0,a:{1:[4,3,4,3,3,3,3],2:[3,3,3,2,3,2,2],3:[2,2,2,2,2,2,1],4:[1,1,2,1,2,1,1],5:[1,1,1,1,1,1,1]}},
- {d:'2026-03-08',t:'20:05',r:1,a:{1:[4,4,4,3,4,3,3],2:[4,3,4,3,3,3,3],3:[3,2,3,2,3,2,2],4:[2,1,2,1,2,2,1],5:[1,1,1,1,1,1,1]}},
- {d:'2026-08-02',t:'09:14',r:2,a:{1:[4,4,4,3,4,3,3],2:[4,3,4,3,4,3,3],3:[3,3,3,3,3,3,2],4:[3,3,2,1,2,1,1],5:[1,1,1,1,1,1,1]}},
- {d:'2026-08-05',t:'21:30',r:2,a:{1:[4,4,4,3,4,3,3],2:[4,4,4,3,4,3,3],3:[3,3,3,3,3,3,2],4:[3,3,3,1,2,1,1],5:[1,1,1,1,1,1,1]}}
+ {d:'2025-10-12',t:'19:40',r:0,a:{1:[3,2,3,2,2,2,2],2:[2,2,2,1,2,1,1],3:[1,1,1,1,1,1,0],4:[0,0,1,0,1,0,0],5:[0,0,0,0,0,0,0]}},
+ {d:'2026-03-08',t:'20:05',r:1,a:{1:[3,3,3,2,3,2,2],2:[3,2,3,2,2,2,2],3:[2,1,2,1,2,1,1],4:[1,0,1,0,1,1,0],5:[0,0,0,0,0,0,0]}},
+ {d:'2026-08-02',t:'09:14',r:2,a:{1:[3,3,3,2,3,2,2],2:[3,2,3,2,3,2,2],3:[2,2,2,2,2,2,1],4:[2,2,1,0,1,0,0],5:[0,0,0,0,0,0,0]}},
+ {d:'2026-08-05',t:'21:30',r:2,a:{1:[3,3,3,2,3,2,2],2:[3,3,3,2,3,2,2],3:[2,2,2,2,2,2,1],4:[2,2,2,0,1,0,0],5:[0,0,0,0,0,0,0]}}
 ];
 const qIx=q=>Q.filter(x=>x.phase===q.phase).indexOf(q);
 const ansIn=(rep,q)=>rep.a[q.phase][qIx(q)];
-const scoresOf=rep=>{const o={};PHASES.forEach(p=>o[p.n]=Math.round((rep.a[p.n].reduce((a,b)=>a+b,0)/28)*100)/10);return o};
-/* categories report the mean of their statements on the 1-4 scale,
-   never a rescaled decimal — some letters rest on two questions and
-   a tenth of a point is precision the instrument does not have */
-const catScores=rep=>{const g={};Q.forEach(q=>{(g[q.cat]=g[q.cat]||[]).push(ansIn(rep,q))});
+/* A phase score is the mean of what its answers are WORTH in that phase,
+   on the source's 0-10 scale. This is where the harder grading bites. */
+const scoresOf=rep=>{const o={};PHASES.forEach(p=>{const v=rep.a[p.n].map(a=>worth(a,p.n));
+  o[p.n]=Math.round((v.reduce((x,y)=>x+y,0)/v.length)*10)/10});return o};
+/* Categories report the mean of what the leader ANSWERED, 0-3 — never
+   what it was worth. A category label says what you said about yourself,
+   so the same two clicks must read the same in every phase. The harder
+   grading belongs to the phase score, not to the words on a row.
+   Never a rescaled decimal either: some categories rest on one or two
+   statements, and a tenth of a point is precision this does not have. */
+const catScores=rep=>{const g={};Q.forEach(q=>{if(NO_SUBTOTAL.has(q.cat))return;(g[q.cat]=g[q.cat]||[]).push(ansIn(rep,q))});
   const o={};for(const k in g)o[k]={v:g[k].reduce((a,b)=>a+b,0)/g[k].length,n:g[k].length};return o};
-const BANDS=[{m:3.5,l:'Consistently true',s:'consistent',k:'true'},
-             {m:2.5,l:'Mostly true',      s:'mostly',    k:'true'},
-             {m:1.5,l:'Starting',         s:'starting',  k:'part'},
+/* Band edges sit midway between the four answers, so a category answered
+   the same way every time lands in its own band. */
+const BANDS=[{m:2.5,l:'Consistently true',s:'consistent',k:'true'},
+             {m:1.5,l:'Mostly true',      s:'mostly',    k:'true'},
+             {m:0.5,l:'Starting',         s:'starting',  k:'part'},
              {m:0,  l:'Not yet',          s:'not yet',   k:'not'}];
 const band=v=>BANDS.find(b=>v>=b.m);
 /* The band labels answer "is this statement true of us?" — right for the
@@ -668,7 +724,8 @@ const SHORT={'consistent':'consistently','mostly':'most of the time',
              'starting':'only just started','not yet':'not doing this yet'};
 const doingBand=v=>DOING[band(v).s];
 const shortBand=v=>SHORT[band(v).s];
-const pips=v=>{const f=Math.round(v);return `<span class="pips">${[1,2,3,4].map(i=>`<i class="${i<=f?'on':''}"></i>`).join('')}</span>`};
+const pipLevel=v=>Math.round(v)+1;
+const pips=v=>{const f=pipLevel(v);return `<span class="pips">${[1,2,3,4].map(i=>`<i class="${i<=f?'on':''}"></i>`).join('')}</span>`};
 const fmtDate=r=>new Date(r.d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
 
 const FREQ_RANK={'Weekly':3,'Monthly':2,'Yearly':1};
@@ -762,7 +819,10 @@ function vToday(){
       <div class="rc-mid">
         <div class="rc-phase"><i></i>Your latest report</div>
         <div class="rc-delta">${(()=>{const g=reportGist(L);
-          return `${g.actions} thing${g.actions===1?'':'s'} to do next &middot; weakest link in ${g.tool}: <b class="dn">${g.weakest} &mdash; ${g.band}</b>`})()}</div>
+          /* the weakest category is not always part of the phase's tool —
+             for Ministry Training and Expansion the tool is one category
+             among several, so name the season, not the acronym */
+          return `${g.actions} thing${g.actions===1?'':'s'} to do next &middot; weakest part of ${pname(PHASES[g.phase-1])}: <b class="dn">${g.weakest} &mdash; ${g.band}</b>`})()}</div>
       </div>
       <div class="rc-n"><b>${tot}</b><span>students</span></div>
       <div class="rc-go">Open &rarr;</div>
@@ -1034,14 +1094,13 @@ function vReport(){
   const pph=prev?currentPhase(scoresOf(prev)):null;
   const ranked=Object.entries(cats).sort((a,b)=>a[1].v-b[1].v);
   const low=ranked.slice(0,3);
-  const toolFlags=ranked.filter(k=>isTool(k[0])&&k[1]<8);
 
   const weakFreq=ZONES.map(z=>({z,best:Math.max(0,...cov[z.n].map(p=>FREQ_RANK[p.freq]))})).filter(x=>x.best===1)[0];
   const gapZone=ZONES.find(z=>!cov[z.n].length);
   const acts=[];
   if(weakFreq){const wz=weakFreq.z, only=cov[wz.n][0];
     acts.push({b:`<b>Students are only ${wz.verb} once a year.</b> ${c[wz.n-1]+c[0]} of them have not been asked yet, and ${only.name} is the only time it happens. That invitation does not need a programme — it needs someone willing to make it more often than once a year.`,
-    w:`instrument: <span>Cultivate &mdash; ${band(cats.Cultivate.v).s}</span> &middot; map: ${only.name} runs ${only.freq.toLowerCase()}`});}
+    w:`instrument: <span>CPR &mdash; ${band(cats.CPR.v).s}</span> &middot; map: ${only.name} runs ${only.freq.toLowerCase()}`});}
   if(gapZone) acts.push({b:`<b>You never actually ask anyone to go.</b> ${c[4]} student has been sent, and ${STUDENTS.filter(x=>x.hist[R.r]===4).length} more have already said yes to helping you reach others &mdash; but none of them has been asked to lead something of their own. That is a conversation, not a programme.`,
     w:`instrument: <span>Entrust &mdash; ${band(cats.Entrust.v).s}</span> &middot; map: ${STUDENTS.filter(x=>x.hist[R.r]===4).length} said yes, none sent`});
   const used=acts.map(a=>a.w).join(' ');
@@ -1078,14 +1137,18 @@ function vReport(){
       <div class="sec-hd"><h2>How ${pname(PHASES[ph-1])} works</h2><span class="n">JV TRAINING TOOL</span></div>
       <div class="toolbox">
         <div class="tb-head"><span class="tb-acr">${tk}</span><p>${T.line}</p></div>
-        <p class="tb-scale">How often each part of ${tk} actually happens, read from your own answers.</p>
+        <p class="tb-scale">How often each part of this season actually happens, read from your own answers.</p>
         <div class="tb-words">
-          ${parts.map(x=>{const b=band(x[1].v);return `<div class="tw ${b.k}"><div class="tw-w">${x[0]}</div>
+          ${parts.map(x=>{const b=band(x[1].v);return `<div class="tw ${b.k}"><div class="tw-w">${x[0]}${isTool(x[0])&&T.letters.length===1?` <span class="acrtag mine">${tk}</span>`:''}</div>
             ${pips(x[1].v)}<div class="tw-v">${doingBand(x[1].v)}</div>
             <div class="tw-n">${x[1].n} statement${x[1].n>1?'s':''}</div></div>`}).join('')}
         </div>
       </div>
-      <p class="note" style="margin-top:12px">${parts.length?`Weakest letter: <b>${parts.slice().sort((a,b)=>a[1].v-b[1].v)[0][0]}</b>. The tool is the answer, not the diagnosis &mdash; ${tk} is already trained, so this is a pointer to the part of it you are skipping.`:''}</p>
+      ${(()=>{const w=parts.slice().sort((a,b)=>a[1].v-b[1].v)[0];
+        if(!w) return '';
+        return `<p class="note" style="margin-top:12px">Weakest part: <b>${w[0]}</b>. ${isTool(w[0])
+          ? `${tk} is the tool for this season, and this is the part of it you are skipping. The tool is the answer, not the diagnosis.`
+          : `${tk} is the tool for this season. This part is measured beside it, and it is the one you are furthest from.`}</p>`})()}
     </div>`})()}
 
     <div class="sec">
@@ -1110,8 +1173,8 @@ function vReport(){
 
     <div class="sec">
       <div class="sec-hd"><h2>Every category</h2><span class="n">${ranked.length} MEASURED</span></div>
-      ${ranked.map(k=>{const b=band(k[1].v),T=LETTERS[k[0]],mine=T&&T.phase===ph;
-        return `<div class="bar ${b.k}"><div class="lb">${k[0]}${T?`<span class="acrtag ${mine?'mine':''}">${Object.keys(TOOLS).find(x=>TOOLS[x]===T)}</span>`:''}${mine?'<span class="tag">your phase</span>':''}</div>${pips(k[1].v)}<div class="vl">${b.l}</div></div>`}).join('')}
+      ${ranked.map(k=>{const b=band(k[1].v),acr=CAT_TOOL[k[0]],mine=CAT_PHASE[k[0]]===ph;
+        return `<div class="bar ${b.k}"><div class="lb">${k[0]}${acr?`<span class="acrtag ${mine?'mine':''}">${acr}</span>`:''}${mine?'<span class="tag">your phase</span>':''}</div>${pips(k[1].v)}<div class="vl">${b.l}</div></div>`}).join('')}
     </div>
   </div></div>`;
 }
@@ -1156,9 +1219,9 @@ function phaseWhy(n,cur,R){
   const p=PHASES[n-1], st=STORY[n];
   const qs=Q.filter(q=>q.phase===n).map(q=>({...q,a:ansIn(R,q)}));
   const tiers=[
-    {k:'true', hd:'True of you',        list:qs.filter(q=>q.a>=3)},
-    {k:'part', hd:'Starting to be true',list:qs.filter(q=>q.a===2)},
-    {k:'not',  hd:'Not yet true',       list:qs.filter(q=>q.a===1)}
+    {k:'true', hd:'True of you',        list:qs.filter(q=>q.a>=A_TRUE)},
+    {k:'part', hd:'Starting to be true',list:qs.filter(q=>q.a===A_LITTLE)},
+    {k:'not',  hd:'Not yet true',       list:qs.filter(q=>q.a===A_NONE)}
   ];
   const prev=n>1?Q.filter(q=>q.phase===n-1).map(q=>({...q,a:ansIn(R,q)})).sort((a,b)=>b.a-a.a).slice(0,2):[];
 
@@ -1174,7 +1237,7 @@ function phaseWhy(n,cur,R){
       <div class="ph-stance">${stance}</div>
     </div>
     <div class="ph-meta">
-      <span><b>${tk}</b>${T.words.join(' &middot; ')}</span>
+      <span><b>${tk}</b>${T.letters.join(' &middot; ')}</span>
       <span><b>Aimed at</b>${p.who}</span>
       <span><b>Typically</b>${p.span}</span>
     </div>
@@ -1218,9 +1281,10 @@ function coachPayload(){
   return {
     takenAt:R.d+' '+R.t,
     phase:P.name, aimedAt:P.who,
-    tool:{acronym:P.tool, letters:T.words.map(w=>cats[w]?`${w}: ${band(cats[w].v).l.toLowerCase()} (from ${cats[w].n} statements)`:w)},
-    trueOfUs:Q.filter(q=>q.phase===ph&&ansIn(R,q)>=3).map(q=>q.t),
-    notYetTrue:Q.filter(q=>q.phase===ph&&ansIn(R,q)<2).map(q=>q.t),
+    tool:{acronym:P.tool, isLetterOfTool:T.letters,
+          parts:T.words.map(w=>cats[w]?`${w}: ${band(cats[w].v).l.toLowerCase()} (from ${cats[w].n} statement${cats[w].n>1?'s':''})`:w)},
+    trueOfUs:Q.filter(q=>q.phase===ph&&ansIn(R,q)>=A_TRUE).map(q=>q.t),
+    notYetTrue:Q.filter(q=>q.phase===ph&&ansIn(R,q)===A_NONE).map(q=>q.t),
     furthestInvitationSaidYesTo:ZONES.map((z,i)=>({invitation:plain(z.name),means:plain(z.ask),students:c[i]})),
     programs:PROGRAMS.map(p=>({name:p.name,runs:p.freq,wheretheseinvitationsgetmade:p.ch.map(x=>plain(ZONES[x-1].name))})),
     invitationsNeverMade:ZONES.filter(z=>!cov[z.n].length).map(z=>plain(z.name)),
@@ -1319,9 +1383,9 @@ function vTime(){
   const furthest=advanced.slice().sort((a,b)=>(b.hist[L.r]-b.hist[F.r])-(a.hist[L.r]-a.hist[F.r]))[0];
 
   /* --- instrument --- */
-  const became=Q.filter(q=>ansIn(F,q)<3&&ansIn(L,q)>=3);
+  const became=Q.filter(q=>ansIn(F,q)<A_TRUE&&ansIn(L,q)>=A_TRUE);
   const slipped=Q.filter(q=>ansIn(L,q)<ansIn(F,q));
-  const frozen=Q.filter(q=>ansIn(F,q)===1&&ansIn(L,q)===1);
+  const frozen=Q.filter(q=>ansIn(F,q)===A_NONE&&ansIn(L,q)===A_NONE);
 
   /* --- time spent in each phase, from the reports themselves --- */
   const legs=[];
@@ -1580,7 +1644,7 @@ document.addEventListener('click',e=>{
   if(a){answers[quizIx-1]=+a.dataset.ans;quizIx++;
     if(quizIx-1>=Q.length){
       const now=new Date(), byPhase={};
-      PHASES.forEach(p=>byPhase[p.n]=Q.filter(q=>q.phase===p.n).map(q=>answers[q.id]||1));
+      PHASES.forEach(p=>byPhase[p.n]=Q.filter(q=>q.phase===p.n).map(q=>answers[q.id]??A_NONE));
       REPORTS.push({d:now.toISOString().slice(0,10),
                     t:String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0'),
                     r:2, a:byPhase});

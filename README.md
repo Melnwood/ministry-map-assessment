@@ -71,11 +71,11 @@ Ministry Map base, which this prototype does not yet write to.
 
 ## Still open
 
-- The 35 statements are placeholder wording. The real ones are in
-  `ministrydiagnostic.zip`, along with which statement maps to which tool
-  letter (TAR / CPR / REST / CCE / the six of Foundation).
-- The Foundation acronym is read as `SIX` from the chalkboard diagram.
-  Unverified.
+- The 35 statements are now verbatim from `ministrydiagnostic.zip`, and
+  each is tagged with the source's own Category, not a guess. The scoring
+  runs on the source's 0 / 4 / 8 / 10 scale.
+- One scale question is still open — see `CLAUDE.md` "Open", item 1.
 - Students, programmes and check-ups are in-memory demo data. Wiring them
   to the Ministry Map base is the next real build, and the point at which
-  `org_id` filtering stops being optional.
+  `org_id` filtering stops being optional. Authorisation is a requirement
+  *on* that build, not a task after it.
