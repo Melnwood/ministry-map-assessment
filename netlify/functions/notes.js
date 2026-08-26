@@ -3,6 +3,8 @@
 // hosting, and they never leave the base. Airtable caps a cell at 100k
 // characters, so oversized shots are dropped with a marker rather than
 // silently corrupting the record.
+const { refuse } = require('./lib/guard');
+
 const BASE  = process.env.AIRTABLE_BASE_ID;
 const TABLE = process.env.AIRTABLE_NOTES_TABLE || 'Workbench';
 const KEY   = process.env.AIRTABLE_API_KEY;
@@ -26,6 +28,10 @@ const out = (rec) => {
 };
 
 exports.handler = async (event) => {
+  // GET returns every note in the base, so this runs before anything else.
+  const no = refuse(event);
+  if (no) return no;
+
   if (!BASE || !KEY) return { statusCode: 500, body: JSON.stringify({ error: 'Airtable env vars not set' }) };
 
   try {

@@ -247,11 +247,24 @@ people, and that is where the names live.*
 Deliberately boring. One HTML file, two Netlify functions, Airtable.
 
 ```
-index.html                    the whole app: markup, styles, logic
-netlify/functions/claude.js   proxies the model; pins the model server-side
-netlify/functions/notes.js    workbench notes -> Airtable
-netlify.toml                  /api/* redirects, security headers
+index.html                     the whole app: markup, styles, logic
+netlify/functions/claude.js    proxies the model; pins the model server-side
+netlify/functions/notes.js     workbench notes -> Airtable
+netlify/functions/lib/guard.js the front door both functions call first
+netlify.toml                   /api/* redirects, security headers
 ```
+
+**`guard.js` is not authentication and must never be described as such.**
+It checks the request came from this site, rate limits per IP, and caps
+model calls per day. A determined person can set an Origin header. It
+exists to stop drive-by traffic, to cap what a runaway costs, and to keep
+the two functions from drifting apart in what they allow.
+
+Until a real login lands, the gate is **Netlify's site password**, which
+does cover function endpoints. If password protection is ever turned off
+while the app still has no login, `/api/notes` returns every note in the
+base to anyone who asks. That happened once, on 26 Aug 2026, for about a
+day.
 
 - **No build step.** No framework, no bundler. Publish directory is `.`
 - **The browser never holds a key.** Zero direct calls to
