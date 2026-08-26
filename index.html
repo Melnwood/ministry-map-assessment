@@ -446,6 +446,41 @@ button.prow:hover{border-color:var(--ink)}
   .known-k{min-width:0}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---- open tier: counts editor, the blanks, the ask, build switch ---- */
+.cnted{display:grid;gap:9px;margin-top:22px}
+.cnt{display:flex;align-items:center;gap:16px;background:var(--surface);border:1px solid var(--line);
+     border-left:3px solid var(--zc);border-radius:0 11px 11px 0;padding:14px 18px}
+.cnt-hd{flex:1;min-width:0}
+.cnt-nm{font-family:var(--display);font-size:16px;font-weight:700}
+.cnt-ask{font-size:13px;color:var(--ink-70);margin-top:3px}
+.cnt-set{display:flex;align-items:center;gap:12px;flex:none}
+.cnt-set b{font-family:var(--mono);font-size:24px;font-weight:600;color:var(--zc);min-width:2ch;text-align:center}
+.stp{width:30px;height:30px;border-radius:99px;border:1px solid var(--line);background:var(--surface);
+     font-size:17px;line-height:1;color:var(--ink-70)}
+.stp:hover{background:var(--ink-08)}
+.cnt-tot{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;
+         color:var(--ink-45);text-align:right;padding-top:4px}
+
+.blanks{margin-top:26px;padding:20px 22px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+.bl-line{font-family:var(--display);font-size:19px;font-weight:700;letter-spacing:-.012em;line-height:1.32}
+.bl-row{display:flex;align-items:center;gap:10px;margin-top:16px;flex-wrap:wrap}
+.bl-row i{width:74px;height:2px;background:var(--ink-15);border-radius:2px}
+.bl-more{font-family:var(--mono);font-size:12px;color:var(--ink-45)}
+.bl-note{font-size:13.5px;color:var(--ink-70);margin-top:16px;max-width:56ch}
+
+.ask{margin-top:14px;padding:20px 22px;border:1px solid var(--line);border-radius:var(--r);background:var(--phase-08)}
+.ask-why{font-family:var(--display);font-size:15px;font-weight:600;color:var(--ink);margin-bottom:14px}
+.ask-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.ask-row span{font-size:14.5px;color:var(--ink-70)}
+.ask.done p{font-size:14.5px;color:var(--ink-70)}
+
+.tiersw{margin-left:auto;display:flex;align-items:center;gap:6px}
+.tiersw span{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-45)}
+.tiersw button{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;padding:4px 9px;border-radius:99px;
+                border:1px solid var(--line);color:var(--ink-45);background:transparent}
+.tiersw button.is{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+@media(max-width:640px){.cnt{flex-wrap:wrap;gap:10px}.bl-row i{width:56px}}
 </style>
 </head>
 <body>
@@ -456,6 +491,8 @@ button.prow:hover{border-color:var(--ink)}
       <div class="who">Katka &amp; Boža · Czech Republic</div>
     </div>
     <nav class="tabs" id="tabs" role="tablist"></nav>
+    <!-- Build tool, not a feature. Delete when auth decides the tier. -->
+    <div class="tiersw" id="tiersw"></div>
   </div>
 </header>
 <main id="app"></main>
@@ -731,9 +768,42 @@ const fmtDate=r=>new Date(r.d).toLocaleDateString('en-GB',{day:'numeric',month:'
 const FREQ_RANK={'Weekly':3,'Monthly':2,'Yearly':1};
 
 /* ---- derived helpers ---- */
-const zoneCounts=di=>{const c=[0,0,0,0,0];STUDENTS.forEach(s=>{const z=s.hist[di];if(z)c[z-1]++});return c};
+const zoneCounts=di=>hasNames()
+  ? (()=>{const c=[0,0,0,0,0];STUDENTS.forEach(s=>{const z=s.hist[di];if(z)c[z-1]++});return c})()
+  : COUNTS[di].slice();
 const totalAt=di=>zoneCounts(di).reduce((a,b)=>a+b,0);
 const currentPhase=s=>{for(const p of PHASES){if(s[p.n]<7)return p.n}return 5};
+
+/* THE BLANKS.
+   Pick the most confronting true thing the counts alone can say, and show
+   the shape of the names that are missing. Nothing is withheld — an open
+   tier leader never gave these names. He knows exactly who they are, and
+   the app has just shown him that it does not. See CLAUDE.md, "Two tiers".
+   Never turn this into an advert. */
+function blanks(ci){
+  const c=zoneCounts(ci);
+  const one=(n,a,b)=>n===1?a:b;
+  if(c[3]>0&&c[4]===0) return {n:c[3],
+    line:`${c[3]} of your students ${one(c[3],'has','have')} said yes to helping you reach others. ${one(c[3],'That student has not','None of them has')} been sent.`};
+  if(c[0]>0&&c[1]===0) return {n:c[0],
+    line:`${c[0]} ${one(c[0],'student is','students are')} coming and looking at Jesus. ${one(c[0],'That student has not','None of them has')} been asked to give their life to Christ.`};
+  const biggest=c.indexOf(Math.max(...c));
+  if(c[biggest]<1) return null;
+  /* "gone no further than I Am Sending You" is not a criticism, it is the
+     top of the map. Say the good version of it. */
+  if(biggest===ZONES.length-1) return {n:c[biggest],
+    line:`${c[biggest]} of your students ${one(c[biggest],'has','have')} been sent out to lead.`};
+  return {n:c[biggest],
+    line:`${c[biggest]} of your students ${one(c[biggest],'has','have')} gone no further than ${plain(ZONES[biggest].name)}.`};
+}
+const blanksHTML=(b,note)=>!b?'':`<div class="blanks">
+  <p class="bl-line">${b.line}</p>
+  <div class="bl-row">${Array.from({length:Math.min(b.n,6)},()=>'<i></i>').join('')}${b.n>6?`<span class="bl-more">and ${b.n-6} more</span>`:''}</div>
+  ${note?`<p class="bl-note">${note}</p>`:''}
+</div>`;
+
+/* students at Follow Me or beyond — the only movement counts can show */
+const deeper=ci=>{const c=zoneCounts(ci);return c[2]+c[3]+c[4]};
 
 const coverage=()=>{const c={1:[],2:[],3:[],4:[],5:[]};PROGRAMS.forEach(p=>p.ch.forEach(x=>c[x].push(p)));return c};
 const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
@@ -749,7 +819,7 @@ const VIEWS=[
  {id:'reports', label:'Reports'},
  {id:'time',    label:'The year'}
 ];
-let active='today', quizIx=0, answers={}, selPhase=null, openIx=REPORTS.length-1;
+let active='today', quizIx=0, answers={}, selPhase=null, openIx=REPORTS.length-1, askedCoach=false;
 const rep=()=>REPORTS[openIx];
 
 function renderTabs(){
@@ -781,7 +851,16 @@ function vToday(){
   let chg=null;
   for(let i=REPORTS.length-2;i>=0;i--){ if(currentPhase(scoresOf(REPORTS[i]))!==ph){chg=REPORTS[i];break} }
   const c=zoneCounts(L.r), tot=c.reduce((a,b)=>a+b,0), mx=Math.max(...c);
-  const moved=STUDENTS.filter(s=>s.hist[2]>s.hist[1]&&s.hist[1]>0).length;
+  /* Counts cannot tell you who moved: six at Come & See in March and six
+     now could be the same six, or six who left and six who arrived. Only
+     a roster knows. So the open tier says the honest smaller thing. */
+  const moved=hasNames()?STUDENTS.filter(s=>s.hist[2]>s.hist[1]&&s.hist[1]>0).length:null;
+  const d=deeper(2)-deeper(1);
+  const head=hasNames()
+    ? `${moved} students moved forward<br>since <em>the spring</em>.`
+    : d>0 ? `${d} more student${d===1?'':'s'} ${d===1?'has':'have'} gone further<br>than in <em>the spring</em>.`
+    : d<0 ? `${-d} fewer student${d===-1?'':'s'} ${d===-1?'is':'are'} further on<br>than in <em>the spring</em>.`
+    : `Your group is the same shape<br>as it was in <em>the spring</em>.`;
 
   /* the cake — widest tier is where most students are, so a healthy
      pipeline makes a cake and an unhealthy one visibly does not */
@@ -789,14 +868,14 @@ function vToday(){
 
   return `<div class="view"><div class="wrap">
     <div class="eyebrow">CB Fr&yacute;dlant youth &middot; ${fmtDate(L)}</div>
-    <h1>${moved} students moved forward<br>since <em>the spring</em>.</h1>
+    <h1>${head}</h1>
 
     <div class="duo">
       <div class="duo-half">
         <div class="eyebrow">Where your students are</div>
         <div class="big-n">${tot}<em>students</em></div>
         <div class="duo-vis"><div class="cake">${tiers}</div></div>
-        <div class="plinth">Each student sits at the furthest invitation they have said yes to</div>
+        <div class="plinth">${hasNames()?'Each student sits at the furthest invitation they have said yes to':'Each number is how many have said yes to that invitation, and no further'}</div>
       </div>
       <div class="duo-rule"></div>
       <div class="duo-half">
@@ -853,6 +932,26 @@ function cakeHTML(ri,small){
    auto-fill all follow. */
 let selStudent=null, addingTo=null, selProgram=null, addingProgram=false;
 const NOW=2;                       /* the current roster snapshot */
+
+/* ============================================================
+   TIER — what this leader has actually given us
+   `open`      signed up on their own. Counts and programmes. There is no
+               roster, so there are no names to hide — the app is honest
+               about what it cannot see rather than greying it out.
+   `activated` signed up for coaching with the national organisation and
+               had their group activated. The roster exists.
+   Wire this to the session when auth lands. Until then it is a switch,
+   and the switch in the masthead is a build tool, not a feature.
+   ============================================================ */
+let TIER='open';
+const hasNames=()=>TIER==='activated';
+
+/* What an open-tier leader types in: how many students at each
+   invitation, at each check-up. In the activated tier the same numbers
+   are counted off the roster instead, so the two can never disagree.
+   Seeded from the demo roster here so both tiers show the same group. */
+const COUNTS=DATES.map((d,di)=>{const c=[0,0,0,0,0];
+  STUDENTS.forEach(st=>{const z=st.hist[di];if(z)c[z-1]++});return c});
 const FREQS=['Weekly','Monthly','Termly','Yearly'];
 
 function moveStudent(id,z){
@@ -923,7 +1022,82 @@ function intakeHTML(){
   </div></div>`;
 }
 
-function vMap(){
+/* Programmes carry no student data — a name-free view, so both tiers
+   get it unchanged. This is most of what makes the open tier worth
+   using: "nobody is ever sent out to lead" needs no roster at all. */
+function programsHTML(){
+  return `<div class="sec">
+      <div class="sec-hd"><h2>Where each invitation gets made</h2><span class="n">TAP TO EDIT</span></div>
+      <div class="proglist">
+        ${PROGRAMS.map((p,pi)=>selProgram===pi
+          ? `<div class="prow open">
+              <input class="pnin" id="pn${pi}" value="${p.name}">
+              <div class="pfreq">${FREQS.map(fq=>`<button class="fq ${fq===p.freq?'is':''}" data-freq="${pi}:${fq}">${fq}</button>`).join('')}</div>
+              <div class="pinv">${ZONES.map(z=>`<button class="inv ${p.ch.includes(z.n)?'on':''}" style="--zc:var(${z.v})" data-inv="${pi}:${z.n}">${z.name}</button>`).join('')}</div>
+              <div class="chip-act"><span>Which invitations actually get made here</span><button class="prim" data-pdone="${pi}">Done</button><button data-pdrop="${pi}">Remove</button></div>
+            </div>`
+          : `<button class="prow" data-prog="${pi}">
+              <span class="pname">${p.name}</span>
+              <span class="pfr ${p.freq==='Yearly'?'rare':''}">${p.freq}</span>
+              <span class="ptags">${p.ch.length?p.ch.map(x=>`<i style="background:var(${ZONES[x-1].v})" title="${plain(ZONES[x-1].name)}"></i>`).join(''):'<em>no invitation made here</em>'}</span>
+            </button>`).join('')}
+        ${addingProgram
+          ? `<div class="prow open"><input class="pnin" id="newpr" placeholder="Programme name" autofocus>
+             <div class="chip-act"><button class="prim" data-newprog="go">Add</button><button data-newprog="cancel">Cancel</button></div></div>`
+          : `<button class="prow addch" data-newprog="open">+ Add a programme</button>`}
+      </div>
+      <p class="note" style="margin-top:12px">This page is the only place to keep your group up to date. Everything else you see is built from it.</p>
+    </div>`;
+}
+
+function vMap(){ return hasNames()?vMapNamed():vMapOpen() }
+
+/* ---------- THE OPEN TIER MAP ----------
+   Counts, programmes, and an honest account of what is missing. No
+   greyed-out roster, no padlocks: there is genuinely no roster here. */
+function vMapOpen(){
+  const c=zoneCounts(NOW), tot=c.reduce((a,b)=>a+b,0);
+  const b=blanks(NOW);
+  return `<div class="view"><div class="wrap">
+    <div class="eyebrow">Five Challenges of Christ</div>
+    <h1>How many students have<br>said yes to <em>each invitation</em></h1>
+    <p class="lede">The five challenges are things you ask a student, not places you put them. Count the students who have said yes to each one, and no further. If you have not asked, the answer is nobody &mdash; that is worth seeing.</p>
+
+    <div class="cnted">
+      ${ZONES.map((z,i)=>`<div class="cnt" style="--zc:var(${z.v})">
+        <div class="cnt-hd"><div class="cnt-nm">${z.name}</div><div class="cnt-ask">${z.ask}</div></div>
+        <div class="cnt-set">
+          <button class="stp" data-cnt="${i}:-1" aria-label="One fewer">&minus;</button>
+          <b>${c[i]}</b>
+          <button class="stp" data-cnt="${i}:1" aria-label="One more">+</button>
+        </div>
+      </div>`).join('')}
+      <div class="cnt-tot">${tot} students in your group</div>
+    </div>
+
+    ${blanksHTML(b,'This is your group as a number. With names, it could tell you who has not moved since spring.')}
+
+    ${askHTML()}
+
+    ${programsHTML()}
+  </div></div>`;
+}
+
+/* The ask. Once, here, at the moment he is looking at the blanks and
+   wishing he could type a name. Never repeated elsewhere. */
+function askHTML(){
+  if(askedCoach) return `<div class="ask done">
+    <p>Someone from Josiah Venture in your country will be in touch. Nothing changes here until you have spoken to them.</p></div>`;
+  return `<div class="ask">
+    <p class="ask-why">The map is not for us. It&rsquo;s for the conversation you&rsquo;ll have about it.</p>
+    <div class="ask-row">
+      <span>Would you like someone to walk through this with you? It&rsquo;s free.</span>
+      <button class="cbtn solid" data-ask="go">Yes, get in touch</button>
+    </div>
+  </div>`;
+}
+
+function vMapNamed(){
   const c=zoneCounts(NOW);
   return `<div class="view"><div class="wrap">
     <div class="eyebrow">Five Challenges of Christ</div>
@@ -976,28 +1150,7 @@ function vMap(){
         </div>`}).join('')}
     </div>
 
-    <div class="sec">
-      <div class="sec-hd"><h2>Where each invitation gets made</h2><span class="n">TAP TO EDIT</span></div>
-      <div class="proglist">
-        ${PROGRAMS.map((p,pi)=>selProgram===pi
-          ? `<div class="prow open">
-              <input class="pnin" id="pn${pi}" value="${p.name}">
-              <div class="pfreq">${FREQS.map(fq=>`<button class="fq ${fq===p.freq?'is':''}" data-freq="${pi}:${fq}">${fq}</button>`).join('')}</div>
-              <div class="pinv">${ZONES.map(z=>`<button class="inv ${p.ch.includes(z.n)?'on':''}" style="--zc:var(${z.v})" data-inv="${pi}:${z.n}">${z.name}</button>`).join('')}</div>
-              <div class="chip-act"><span>Which invitations actually get made here</span><button class="prim" data-pdone="${pi}">Done</button><button data-pdrop="${pi}">Remove</button></div>
-            </div>`
-          : `<button class="prow" data-prog="${pi}">
-              <span class="pname">${p.name}</span>
-              <span class="pfr ${p.freq==='Yearly'?'rare':''}">${p.freq}</span>
-              <span class="ptags">${p.ch.length?p.ch.map(x=>`<i style="background:var(${ZONES[x-1].v})" title="${plain(ZONES[x-1].name)}"></i>`).join(''):'<em>no invitation made here</em>'}</span>
-            </button>`).join('')}
-        ${addingProgram
-          ? `<div class="prow open"><input class="pnin" id="newpr" placeholder="Programme name" autofocus>
-             <div class="chip-act"><button class="prim" data-newprog="go">Add</button><button data-newprog="cancel">Cancel</button></div></div>`
-          : `<button class="prow addch" data-newprog="open">+ Add a programme</button>`}
-      </div>
-      <p class="note" style="margin-top:12px">This page is the only place to keep your group up to date. Everything else you see is built from it.</p>
-    </div>
+    ${programsHTML()}
   </div></div>${intake?intakeHTML():''}`;
 }
 
@@ -1006,8 +1159,8 @@ function vMap(){
    used to ask a leader to fill in by hand, answered from the map. */
 function vCheck(){
   const c=zoneCounts(2), tot=c.reduce((a,b)=>a+b,0);
-  const ready=STUDENTS.filter(s=>s.hist[2]>=4).length;
-  const lead=STUDENTS.filter(s=>s.hist[2]===5).length;
+  /* both of these are just the counts — no roster needed either way */
+  const ready=c[3]+c[4], lead=c[4];
 
   if(quizIx===0){
     return `<div class="view"><div class="wrap"><div class="q-shell">
@@ -1101,8 +1254,8 @@ function vReport(){
   if(weakFreq){const wz=weakFreq.z, only=cov[wz.n][0];
     acts.push({b:`<b>Students are only ${wz.verb} once a year.</b> ${c[wz.n-1]+c[0]} of them have not been asked yet, and ${only.name} is the only time it happens. That invitation does not need a programme — it needs someone willing to make it more often than once a year.`,
     w:`instrument: <span>CPR &mdash; ${band(cats.CPR.v).s}</span> &middot; map: ${only.name} runs ${only.freq.toLowerCase()}`});}
-  if(gapZone) acts.push({b:`<b>You never actually ask anyone to go.</b> ${c[4]} student has been sent, and ${STUDENTS.filter(x=>x.hist[R.r]===4).length} more have already said yes to helping you reach others &mdash; but none of them has been asked to lead something of their own. That is a conversation, not a programme.`,
-    w:`instrument: <span>Entrust &mdash; ${band(cats.Entrust.v).s}</span> &middot; map: ${STUDENTS.filter(x=>x.hist[R.r]===4).length} said yes, none sent`});
+  if(gapZone) acts.push({b:`<b>You never actually ask anyone to go.</b> ${c[4]} student has been sent, and ${c[3]} more have already said yes to helping you reach others &mdash; but none of them has been asked to lead something of their own. That is a conversation, not a programme.`,
+    w:`instrument: <span>Entrust &mdash; ${band(cats.Entrust.v).s}</span> &middot; map: ${zoneCounts(R.r)[3]} said yes, none sent`});
   const used=acts.map(a=>a.w).join(' ');
   const fresh=low.find(k=>!used.includes(k[0]))||low[0];
   acts.push({b:`<b>${fresh[0]} is your weakest untouched area &mdash; ${band(fresh[1].v).s}.</b> That is the work of ${PHASES[ph-1].name} &mdash; the phase you have just entered, not a failure of the one you left.`,
@@ -1288,8 +1441,13 @@ function coachPayload(){
     furthestInvitationSaidYesTo:ZONES.map((z,i)=>({invitation:plain(z.name),means:plain(z.ask),students:c[i]})),
     programs:PROGRAMS.map(p=>({name:p.name,runs:p.freq,wheretheseinvitationsgetmade:p.ch.map(x=>plain(ZONES[x-1].name))})),
     invitationsNeverMade:ZONES.filter(z=>!cov[z.n].length).map(z=>plain(z.name)),
-    movedForwardSinceLastCheckup:STUDENTS.filter(x=>x.hist[1]&&x.hist[R.r]>x.hist[1]).map(anon),
-    notMovedInTenMonths:STUDENTS.filter(x=>x.hist[F.r]&&x.hist[F.r]===x.hist[R.r]).map(anon),
+    ...(hasNames()?{
+      movedForwardSinceLastCheckup:STUDENTS.filter(x=>x.hist[1]&&x.hist[R.r]>x.hist[1]).map(anon),
+      notMovedInTenMonths:STUDENTS.filter(x=>x.hist[F.r]&&x.hist[F.r]===x.hist[R.r]).map(anon)
+    }:{
+      /* Say the absence out loud. Left unsaid, the model invents a student. */
+      noRosterYet:'This leader has given counts, not students. You do not know any student individually, and you must not write as though you do. Ask about the pattern, never about a person.'
+    }),
     language:'English'
   };
 }
@@ -1374,13 +1532,16 @@ function vTime(){
   const t0=totalAt(F.r), t1=totalAt(L.r);
   const months=Math.round((new Date(L.d)-new Date(F.d))/2629800000);
 
-  /* --- people --- */
-  const started=STUDENTS.filter(x=>x.hist[F.r]);
-  const advanced=started.filter(x=>x.hist[L.r]>x.hist[F.r]);
-  const crossings=advanced.reduce((a,x)=>a+(x.hist[L.r]-x.hist[F.r]),0);
-  const stuck=started.filter(x=>x.hist[L.r]===x.hist[F.r]);
-  const joined=STUDENTS.filter(x=>!x.hist[F.r]&&x.hist[L.r]);
-  const furthest=advanced.slice().sort((a,b)=>(b.hist[L.r]-b.hist[F.r])-(a.hist[L.r]-a.hist[F.r]))[0];
+  /* --- people. Only a roster can follow a person across a year; counts
+         can only show the shape changing. Both are true, one is smaller. --- */
+  const named=hasNames();
+  const started=named?STUDENTS.filter(x=>x.hist[F.r]):[];
+  const advanced=named?started.filter(x=>x.hist[L.r]>x.hist[F.r]):[];
+  const crossings=named?advanced.reduce((a,x)=>a+(x.hist[L.r]-x.hist[F.r]),0):0;
+  const stuck=named?started.filter(x=>x.hist[L.r]===x.hist[F.r]):[];
+  const joined=named?STUDENTS.filter(x=>!x.hist[F.r]&&x.hist[L.r]):[];
+  const furthest=named?advanced.slice().sort((a,b)=>(b.hist[L.r]-b.hist[F.r])-(a.hist[L.r]-a.hist[F.r]))[0]:null;
+  const dDeep=deeper(L.r)-deeper(F.r);
 
   /* --- instrument --- */
   const became=Q.filter(q=>ansIn(F,q)<A_TRUE&&ansIn(L,q)>=A_TRUE);
@@ -1408,8 +1569,10 @@ function vTime(){
     <h1>From ${t0} students to ${t1},<br>and Foundation to <em>${pname(PHASES[lPh-1])}</em>.</h1>
 
     <div class="jstats">
-      ${stat('+'+(t1-t0),'more students','${joined.length} joined, none lost'.replace('${joined.length}',joined.length))}
-      ${stat(crossings,'challenges crossed','by '+advanced.length+' of the original '+started.length)}
+      ${stat((t1-t0>=0?'+':'')+(t1-t0),'more students',named?joined.length+' joined, none lost':'net change &mdash; counts cannot show who left')}
+      ${named
+        ? stat(crossings,'challenges crossed','by '+advanced.length+' of the original '+started.length)
+        : stat((dDeep>=0?'+':'')+dDeep,'further on than a year ago','at Follow Me or beyond &mdash; not necessarily the same students')}
       ${stat(became.length+'/35','statements became true','none went backward')}
       ${stat(lPh-fPh,'phases climbed',pname(PHASES[fPh-1])+' &rarr; '+pname(PHASES[lPh-1]))}
     </div>
@@ -1421,7 +1584,7 @@ function vTime(){
         <div class="tn-arrow">&rarr;</div>
         <div class="tn-side"><div class="tn-lab">${fmtDate(L)}<span>${t1} students</span></div><div class="cake">${cakeHTML(L.r,1)}</div></div>
       </div>
-      <p class="note" style="margin-top:14px">The base widened and the top filled in. A year ago nobody was being sent; ${furthest?`${furthest.name} has gone from ${ZONES[furthest.hist[F.r]-1].name.replace(/&amp;/g,'&')} to ${ZONES[furthest.hist[L.r]-1].name.replace(/&amp;/g,'&')}`:'that is still true'}.</p>
+      <p class="note" style="margin-top:14px">The base widened and the top filled in.${furthest?` A year ago nobody was being sent; ${furthest.name} has gone from ${ZONES[furthest.hist[F.r]-1].name.replace(/&amp;/g,'&')} to ${ZONES[furthest.hist[L.r]-1].name.replace(/&amp;/g,'&')}.`:named?' A year ago nobody was being sent, and that is still true.':''}</p>
     </div>
 
     <div class="sec">
@@ -1451,9 +1614,11 @@ function vTime(){
     </div>
 
     <div class="sec">
-      <div class="sec-hd"><h2>Who has not moved</h2><span class="n">${stuck.length} OF THE ORIGINAL ${started.length}</span></div>
-      <div class="stuckrow">${stuck.map(x=>`<span class="sc" style="--zc:var(${ZONES[x.hist[L.r]-1].v})">${x.name}<em>${ZONES[x.hist[L.r]-1].name}</em></span>`).join('')}</div>
-      <p class="note" style="margin-top:12px">Same challenge as ${months} months ago. Not a failure &mdash; but if nobody has had a real conversation with them, this is the list to start from.</p>
+      <div class="sec-hd"><h2>Who has not moved</h2><span class="n">${named?`${stuck.length} OF THE ORIGINAL ${started.length}`:'NOT KNOWN FROM COUNTS'}</span></div>
+      ${named
+        ? `<div class="stuckrow">${stuck.map(x=>`<span class="sc" style="--zc:var(${ZONES[x.hist[L.r]-1].v})">${x.name}<em>${ZONES[x.hist[L.r]-1].name}</em></span>`).join('')}</div>
+           <p class="note" style="margin-top:12px">Same challenge as ${months} months ago. Not a failure &mdash; but if nobody has had a real conversation with them, this is the list to start from.</p>`
+        : blanksHTML(blanks(L.r),`Counts cannot answer this one. The same number at an invitation ${months} months apart can be the same students standing still, or different students passing through. Only names tell them apart.`)}
     </div>
 
     <div class="sec">
@@ -1591,10 +1756,17 @@ function render(){
   const m={today:vToday,map:vMap,check:vCheck,reports:vReports,report:vReport,time:vTime};
   document.getElementById('app').innerHTML=m[active]();
   document.getElementById('bot').innerHTML=botHTML();
+  document.getElementById('tiersw').innerHTML=
+    `<span>viewing as</span>${[['open','Open'],['activated','Activated']].map(([k,l])=>
+      `<button class="${TIER===k?'is':''}" data-tier="${k}">${l}</button>`).join('')}`;
   if(keep!==null){const t2=document.getElementById('bn-text'); if(t2)t2.value=keep;}
 }
 document.addEventListener('click',e=>{
   const g=e.target.closest('[data-go]'); if(g){go(g.dataset.go);return}
+  const cn=e.target.closest('[data-cnt]'); if(cn){const [ix,dv]=cn.dataset.cnt.split(':').map(Number);
+    COUNTS[NOW][ix]=Math.max(0,COUNTS[NOW][ix]+dv); render(); return}
+  const ak=e.target.closest('[data-ask]'); if(ak){askedCoach=true; render(); return}
+  const tg=e.target.closest('[data-tier]'); if(tg){TIER=tg.dataset.tier; selStudent=null; render(); return}
   const q=e.target.closest('[data-q]'); if(q){quizIx=+q.dataset.q;render();return}
   const hit=k=>e.target.closest('[data-'+k+']');
   let t;
