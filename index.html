@@ -275,6 +275,54 @@ h2{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.01
 .phtier.empty{background:none!important;box-shadow:inset 0 0 0 1.5px var(--ink-15);color:var(--ink-45)}
 .phtier.empty b{color:var(--ink-15)}
 /* ============================================================
+   LIKE JESUS — the landing page
+   ============================================================ */
+.jw{max-width:760px}
+.jh{font-size:clamp(38px,6vw,64px);margin-top:6px}
+.jh em{font-style:italic;font-weight:600}
+.jlede{font-family:var(--display);font-size:clamp(17px,2.1vw,21px);line-height:1.5;font-weight:500;
+       color:var(--ink);margin-top:20px;max-width:36em}
+.jp{font-size:15.5px;line-height:1.65;color:var(--ink-70);margin-top:18px;max-width:36em}
+.jp b{color:var(--ink);font-weight:600}
+.jref{font-family:var(--mono);font-size:11.5px;color:var(--ink-45);letter-spacing:.03em;white-space:nowrap}
+
+.jfig{margin:30px 0 6px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px 22px 18px}
+.jfig-hd{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-45);margin-bottom:14px}
+.jroad{width:100%;height:auto;display:block}
+.jr-lab{font-family:var(--mono);font-size:12px;letter-spacing:.11em;fill:var(--ink-45)}
+.jr-end{font-family:var(--display);font-style:italic;font-size:19px;font-weight:600;fill:var(--ink-45)}
+.jr-n{font-family:var(--mono);font-size:13px;font-weight:600;fill:#fff}
+.jfig-names{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:14px}
+.jfig-names span{font-size:11.5px;font-weight:600;line-height:1.25;color:var(--ink-70);display:flex;gap:5px;align-items:baseline}
+.jfig-names i{font-family:var(--mono);font-style:normal;font-size:10px;color:var(--zc);flex:none}
+.jclimb{height:150px;margin-top:4px}
+.jfig-foot{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:8px}
+.jfig-foot span{font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;color:var(--ink-45);text-align:center}
+
+.jlist{margin-top:20px;max-width:36em;display:flex;flex-direction:column;gap:14px;counter-reset:j;list-style:none}
+.jlist li{position:relative;padding-left:40px;font-size:15.5px;line-height:1.55;color:var(--ink-70)}
+.jlist li::before{counter-increment:j;content:counter(j);position:absolute;left:0;top:1px;
+  width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--surface);
+  font-family:var(--mono);font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center}
+.jlist li b{color:var(--ink);font-weight:600}
+.jlist li span{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--ink-45);margin-top:4px}
+
+.jgo{display:flex;gap:10px;flex-wrap:wrap;margin:32px 0 8px}
+/* its own buttons: .cbtn is built for the coach panel's dark ground and
+   turns almost invisible on a light page */
+.jbtn{font:inherit;font-size:14px;font-weight:600;padding:11px 21px;border-radius:99px;cursor:pointer;
+      background:none;color:var(--ink);border:1px solid var(--ink-15);transition:border-color .13s,background .13s}
+.jbtn:hover{border-color:var(--ink)}
+.jbtn.solid{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.jbtn.solid:hover{background:var(--ink-70);border-color:var(--ink-70)}
+
+@media(max-width:640px){
+  .jfig-names{grid-template-columns:repeat(2,1fr)}
+  .jfig{padding:16px 14px 14px}
+}
+
+/* ============================================================
    THE MAP GRID
    One CSS grid for both halves, so the five columns line up across the
    rule — that alignment is the whole information design. Wide content
@@ -295,11 +343,10 @@ h2{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.01
 /* Each column carries a wash of its own colour the whole way down, so the
    eye can follow one challenge from what you run to who is there without
    counting across. Kept very faint — it is a guide, not a highlight. */
-.mg-ch,.mg-num,.mg-cell{background:color-mix(in srgb,var(--zc) 5%,transparent)}
-.mg-num.edit{background:color-mix(in srgb,var(--zc) 5%,transparent)}
+.mg-ch,.mg-num,.mg-cell,.mg-num.edit{background:color-mix(in srgb,var(--zc) 11%,transparent)}
 .mg-ch{padding:14px 12px 12px;border-bottom:1px solid var(--line);font-size:12px;font-weight:600;line-height:1.25;
        display:flex;align-items:flex-start;gap:7px;box-shadow:inset 0 3px 0 var(--zc);
-       background:color-mix(in srgb,var(--zc) 10%,transparent)}
+       background:color-mix(in srgb,var(--zc) 20%,transparent)}
 .mg-ch i{font-family:var(--mono);font-style:normal;font-size:10px;font-weight:600;color:var(--zc);flex:none;margin-top:1px}
 
 /* the number row */
@@ -322,7 +369,7 @@ h2{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.01
 /* a small mark in the challenge's colour, so a name still reads as belonging
    to its column once the pill has gone */
 .pchip::before,.schip::before{content:'';position:absolute;left:5px;top:.62em;width:5px;height:5px;border-radius:50%;background:var(--zc)}
-.pchip:hover,.schip:hover{background:color-mix(in srgb,var(--zc) 14%,transparent)}
+.pchip:hover,.schip:hover{background:color-mix(in srgb,var(--zc) 30%,transparent)}
 .pchip.is,.schip.is{background:var(--zc);color:#fff}
 .pchip.is::before,.schip.is::before{background:#fff}
 .schip .mv{font-family:var(--mono);font-style:normal;font-size:9px;margin-left:auto;opacity:.6;flex:none}
@@ -951,13 +998,14 @@ const el=(h)=>{const d=document.createElement('div');d.innerHTML=h;return d};
    VIEWS
    ============================================================ */
 const VIEWS=[
+ {id:'jesus',   label:'Like Jesus'},
  {id:'today',   label:'Today'},
  {id:'map',     label:'Your map'},
  {id:'check',   label:'Check-up'},
  {id:'reports', label:'Reports'},
  {id:'time',    label:'The year'}
 ];
-let active='today', quizIx=0, answers={}, selPhase=null, openIx=REPORTS.length-1, askedCoach=false;
+let active='jesus', quizIx=0, answers={}, selPhase=null, openIx=REPORTS.length-1, askedCoach=false;
 const rep=()=>REPORTS[openIx];
 
 function renderTabs(){
@@ -979,6 +1027,82 @@ function reportGist(R){
   if(ZONES.some(z=>!cov[z.n].length))n++;
   return {phase:ph, tool:PHASES[ph-1].tool, weakest:weakest?weakest[0]:null,
           band:weakest?shortBand(weakest[1].v):null, actions:n};
+}
+
+/* ---------- LIKE JESUS — the first thing anyone sees ----------
+   Mel's text, close to verbatim. The two diagrams are drawn in the app's
+   own colours rather than pasted as pictures, so the road here is the same
+   road as on Today and the phases the same purple ramp — a leader should
+   recognise the shape when they meet it again with their own numbers on it.
+   Nothing here is data. Nothing is highlighted, because at this point the
+   leader has told us nothing. */
+function vJesus(){
+  return `<div class="view"><div class="wrap jw">
+    <div class="eyebrow">Growing a healthy youth ministry</div>
+    <h1 class="jh">Like <em>Jesus</em></h1>
+
+    <p class="jlede">The young generation is constantly changing, but Jesus remains relevant at all times and in every location. His example can help you grow a healthy youth ministry that changes lives for eternity.</p>
+
+    <p class="jp">When Jesus commissioned his disciples, he told them &ldquo;As the Father sent me, so send I you.&rdquo; <span class="jref">John 20:21</span> Like these early disciples, you also are sent to walk in his steps.</p>
+
+    <p class="jp">A closer look at his life in the gospels shows <b>two patterns</b> you can imitate in your ministry. The first is how he led people from unbelief to maturity. You can trace this path through five specific challenges.</p>
+
+    <div class="jfig">
+      <div class="jfig-hd">Five Challenges of Christ</div>
+      ${challengeRoadSVG()}
+      <div class="jfig-names">${ZONES.map(z=>`<span style="--zc:var(${z.v})"><i>${z.n}</i>${z.name}</span>`).join('')}</div>
+    </div>
+
+    <p class="jp">The second pattern is how he built a ministry that developed leaders and continued to bring fruit even after he left. This is the path of growing a disciple-making ministry through five distinct phases, or seasons &mdash; a chronological view of the life of Christ.</p>
+
+    <div class="jfig">
+      <div class="jfig-hd">Five Phases of a disciplemaking ministry</div>
+      <div class="climb jclimb">
+        ${PHASES.map(p=>`<div class="step" style="--h:${20+p.n*16}%;--t:${(.20+p.n*.09).toFixed(2)}">
+          <div class="riser"></div><div class="slab">${pname(p)}</div></div>`).join('')}
+      </div>
+      <div class="jfig-foot">${PHASES.map(p=>`<span>${p.span}</span>`).join('')}</div>
+    </div>
+
+    <p class="jp">You can use these two &ldquo;like Jesus&rdquo; overviews to do a check-up on your ministry, and know where you are and what to focus on next. The check-up gives you a ministry map that answers two questions.</p>
+
+    <ol class="jlist">
+      <li><b>Where your students are</b> on the path from unbelief to maturity.<span>Five Challenges of Christ</span></li>
+      <li><b>What season your ministry is in</b>, and what to focus on to build a disciplemaking ministry like Jesus.<span>Five Phases of Christ&rsquo;s ministry</span></li>
+    </ol>
+
+    <div class="jgo">
+      <button class="jbtn solid" data-go="check">Start your check-up</button>
+      <button class="jbtn" data-go="map">See the map first</button>
+    </div>
+  </div></div>`;
+}
+
+/* The road, drawn rather than measured: unbelief on the left, maturity on
+   the right, the local church over the middle, and the cross standing at
+   the second challenge because that is where a life turns. Fine strokes and
+   the same zone colours the rest of the app uses. */
+function challengeRoadSVG(){
+  const xs=[132,246,360,474,588];
+  return `<svg class="jroad" viewBox="0 0 720 196" role="img"
+       aria-label="A road from unbelief to maturity through the five challenges, under the local church.">
+    <g fill="none" stroke="var(--ink-15)" stroke-width="1.4">
+      <path d="M196 118 L360 62 L524 118"/>
+      <rect x="336" y="62" width="48" height="40" rx="2"/>
+      <path d="M330 64 L360 44 L390 64"/>
+      <path d="M360 44 L360 26 M352 33 L368 33"/>
+    </g>
+    <text x="286" y="86" class="jr-lab">LOCAL</text>
+    <text x="434" y="86" class="jr-lab" text-anchor="end">CHURCH</text>
+    <path d="M120 150 L600 150" stroke="var(--ink-15)" stroke-width="1.6" stroke-dasharray="3 7"/>
+    <text x="112" y="156" class="jr-end" text-anchor="end">Unbelief</text>
+    <text x="608" y="156" class="jr-end">Maturity</text>
+    <g fill="none" stroke="var(--ink-45)" stroke-width="2.6">
+      <path d="M246 108 L246 138 M236 118 L256 118"/>
+    </g>
+    ${xs.map((x,i)=>`<circle cx="${x}" cy="150" r="14" fill="var(${ZONES[i].v})"/>
+      <text x="${x}" y="156" class="jr-n" text-anchor="middle">${i+1}</text>`).join('')}
+  </svg>`;
 }
 
 /* ---------- TODAY ---------- */
@@ -2065,7 +2189,7 @@ function render(){
         `<button class="${TIER===k?'is':''}" data-tier="${k}">${l}</button>`).join('')}`;
   }catch(err){ console.error('tier switch failed to render', err); }
 
-  const m={today:vToday,map:vMap,check:vCheck,reports:vReports,report:vReport,time:vTime};
+  const m={jesus:vJesus,today:vToday,map:vMap,check:vCheck,reports:vReports,report:vReport,time:vTime};
   try{
     document.getElementById('app').innerHTML=m[active]();
   }catch(err){
