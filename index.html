@@ -295,9 +295,7 @@ button.phtier{cursor:pointer}
 .jr-lab{font-family:var(--mono);font-size:12px;letter-spacing:.11em;fill:var(--ink-45)}
 .jr-end{font-family:var(--display);font-style:italic;font-size:19px;font-weight:600;fill:var(--ink-45)}
 .jr-n{font-family:var(--mono);font-size:13px;font-weight:600;fill:#fff}
-.jfig-names{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:14px}
-.jfig-names span{font-size:11.5px;font-weight:600;line-height:1.25;color:var(--ink-70);display:flex;gap:5px;align-items:baseline}
-.jfig-names i{font-family:var(--mono);font-style:normal;font-size:10px;color:var(--zc);flex:none}
+.jr-name{font-size:13px;font-weight:600;fill:var(--ink-70)}
 .jclimb{height:150px;margin-top:4px}
 .jfig-foot{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:8px}
 .jfig-foot span{font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;color:var(--ink-45);text-align:center}
@@ -409,6 +407,10 @@ button.phtier{cursor:pointer}
 .tn-lab{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-45);
         display:flex;gap:10px;align-items:baseline;margin-bottom:8px}
 .tn-lab span{letter-spacing:.03em}
+.ph-ast{color:var(--z5);font-weight:700;font-size:.7em;margin-left:2px;cursor:help}
+.ph-note{margin-top:16px;padding-top:12px;border-top:1px dashed var(--ink-15);font-size:11.5px;
+         line-height:1.5;color:var(--ink-45)}
+.ph-note b{color:var(--z5)}
 /* the acronym panel */
 .tipwrap{position:fixed;inset:0;z-index:80;background:rgba(22,32,46,.42);display:flex;align-items:center;
          justify-content:center;padding:22px;animation:fade .15s both}
@@ -1096,7 +1098,6 @@ function vJesus(){
     <div class="jfig">
       <div class="jfig-hd">Five Challenges of Christ</div>
       ${challengeRoadSVG()}
-      <div class="jfig-names">${ZONES.map(z=>`<span style="--zc:var(${z.v})"><i>${z.n}</i>${z.name}</span>`).join('')}</div>
     </div>
 
     <p class="jp">The second pattern is how he built a ministry that developed leaders and continued to bring fruit even after he left. This is the path of growing a disciple-making ministry through five distinct phases, or seasons &mdash; a chronological view of the life of Christ.</p>
@@ -1130,7 +1131,21 @@ function vJesus(){
    the same zone colours the rest of the app uses. */
 function challengeRoadSVG(){
   const xs=[132,246,360,474,588];
-  return `<svg class="jroad" viewBox="0 0 720 196" role="img"
+  /* Names sit under their own number rather than in a list below, so the
+     diagram says which challenge is which without the eye counting across.
+     Two balanced lines when a name is too long for one. */
+  const split=t=>{
+    if(t.length<=11) return [t];
+    const w=t.split(' ');
+    let at=1,best=1e9;
+    for(let i=1;i<w.length;i++){
+      const d=Math.abs(w.slice(0,i).join(' ').length-w.slice(i).join(' ').length);
+      if(d<best){best=d;at=i}
+    }
+    return [w.slice(0,at).join(' '), w.slice(at).join(' ')];
+  };
+  const amp=t=>t.replace(/&/g,'&amp;');
+  return `<svg class="jroad" viewBox="0 0 720 214" role="img"
        aria-label="A road from unbelief to maturity through the five challenges, under the local church.">
     <g fill="none" stroke="var(--ink-15)" stroke-width="1.4">
       <path d="M196 118 L360 62 L524 118"/>
@@ -1147,7 +1162,9 @@ function challengeRoadSVG(){
       <path d="M246 108 L246 138 M236 118 L256 118"/>
     </g>
     ${xs.map((x,i)=>`<circle cx="${x}" cy="150" r="14" fill="var(${ZONES[i].v})"/>
-      <text x="${x}" y="156" class="jr-n" text-anchor="middle">${i+1}</text>`).join('')}
+      <text x="${x}" y="156" class="jr-n" text-anchor="middle">${i+1}</text>
+      ${split(plain(ZONES[i].name)).map((ln,j)=>
+        `<text x="${x}" y="${186+j*15}" class="jr-name" text-anchor="middle">${amp(ln)}</text>`).join('')}`).join('')}
   </svg>`;
 }
 
@@ -1280,7 +1297,7 @@ function roadHTML(ri,opts){
     <div class="road-row rail">${ZONES.map((z,i)=>
       `<span class="mile-dot${c[i]?'':' empty'}" style="${c[i]?`background:var(${z.v})`:''}"></span>`).join('')}</div>
     <div class="road-row labs">${ZONES.map((z,i)=>
-      `<div class="lab${c[i]?'':' empty'}"><b>${c[i]}</b>${o.noNames?'':`<span>${z.name}</span>`}</div>`).join('')}</div>
+      `<div class="lab${c[i]?'':' empty'}"><b>${c[i]}</b><span>${z.name}</span></div>`).join('')}</div>
   </div>`;
 }
 
@@ -1795,13 +1812,48 @@ function vReport(){
    of me", not "how did the maths land".
    ============================================================ */
 /* the story of a phase, read from the statements */
-/* Everything on this card is either from the source documents (the phase
-   name, its tool and what the acronym spells, who it is aimed at, how long
-   it typically runs) or from the leader's own answers. There is no written
-   description of a phase here, because the sources do not contain one and
-   inventing one is how the app ends up teaching something JV never said. */
+/* ⚠ PLACEHOLDER. Every string below was written here, not by JV. It is kept
+   because a phase card with nothing on it is worse than one that is honest
+   about where its words came from, and it renders behind an asterisk that
+   says so. Replace it with JV's own material and delete this notice; do not
+   extend it. */
+const STORY={
+ 1:{essence:'Before the ministry, the minister.',
+    about:'Thirty years of preparation for three years of ministry &mdash; that is the proportion Jesus kept, and it is the one this phase refuses to let you skip. Preparation is where God settles your character, your calling, and who has authorised you, so that everything built later has something to stand on.',
+    turn:null,
+    risk:'Skipping it. A ministry can run on gifting alone &mdash; for about two years.',
+    door:'You know your call, someone knows the real you, and your church has blessed you. Then you can start building.'},
+ 2:{essence:'A few students, genuinely known.',
+    about:'Foundation is where a group becomes a place rather than an event. Six things go in the ground here &mdash; prayer, relationship, God&rsquo;s Word, vision, love, and Christ himself &mdash; and none of them can be added later without digging up what you already built.',
+    turn:'You stopped working only on yourself and started working on the room.',
+    risk:'Mistaking a full room for a healthy one.',
+    door:'Students would say an adult here knows them, and they have heard the gospel clearly. Then you have something worth handing to someone.'},
+ 3:{essence:'Teach it, let them do it, then talk about what happened.',
+    about:'Ministry Training is the narrowing. You stop spending yourself evenly across the crowd and start pouring into a handful who can carry what you carry. It is the shortest phase on the board and the one that decides everything after it &mdash; and it only works as a loop, not a course.',
+    turn:'You stopped being the one who does the ministry and became the one who trains it.',
+    risk:'Teaching and acting but never reflecting &mdash; activity without anyone growing.',
+    door:'A student could lead without you in the room, and another leader is growing beside you.'},
+ 4:{essence:'The turn outward.',
+    about:'For three phases the work pointed inward &mdash; your own walk, then your group&rsquo;s health, then a few workers you trained. Expansion is where that trained core stops being the point and becomes the means. The question changes from &ldquo;are our students growing?&rdquo; to &ldquo;who is not here yet?&rdquo;',
+    turn:'You stopped asking whether your students are growing and started asking who is still outside.',
+    risk:'Reaping where nothing was cultivated, or cultivating forever and never reaping. Both feel like work.',
+    door:'Your students bring friends without being asked, you are present where students already are, and you know what happens to a new believer in their first month.'},
+ 5:{essence:'Give it away.',
+    about:'Leadership Multiplication is the bravest phase because it costs you the thing you built. You re-structure so the ministry no longer runs through you, entrust it to leaders you raised, stay close enough to support them, and keep training the generation behind them.',
+    turn:'You stopped growing your ministry and started growing other people&rsquo;s.',
+    risk:'Entrusting without supporting &mdash; which is not releasing people, it is abandoning them.',
+    door:'There is no next door. This is the room.'}
+};
+
+/* the story of a phase, read from the statements */
+
+/* Two kinds of content on this card, and they are marked apart.
+   Sourced: the phase name, its tool and what the acronym spells, who it is
+   aimed at, how long it typically runs, and the leader's own answers.
+   Placeholder: everything from STORY, which was written here. It carries an
+   asterisk and a footnote saying so, so nobody reads it as JV's teaching. */
 function phaseWhy(n,cur,R){
-  const p=PHASES[n-1];
+  const p=PHASES[n-1], st=STORY[n];
   const qs=Q.filter(q=>q.phase===n).map(q=>({...q,a:ansIn(R,q)}));
   const tiers=[
     {k:'true', hd:'True of you',        list:qs.filter(q=>q.a>=A_TRUE)},
@@ -1819,7 +1871,7 @@ function phaseWhy(n,cur,R){
   const tk=p.tool, T=TOOLS[tk];
   return `<div class="why-panel">
     <div class="ph-head">
-      <div class="ph-essence">${p.name}</div>
+      <div class="ph-essence">&ldquo;${st.essence}&rdquo;<sup class="ph-ast" title="Placeholder wording">*</sup></div>
       <div class="ph-stance">${stance} ${sc[n].toFixed(1)} out of 10.</div>
     </div>
     <div class="ph-meta">
@@ -1827,6 +1879,9 @@ function phaseWhy(n,cur,R){
       <span><b>Aimed at</b>${p.who}</span>
       <span><b>Typically</b>${p.span}</span>
     </div>
+
+    <p class="ph-about">${st.about}<sup class="ph-ast">*</sup></p>
+    ${st.turn?`<div class="ph-turn"><span>The turn<sup class="ph-ast">*</sup></span>${st.turn}</div>`:''}
 
     <div class="tf-grid">
       ${tiers.map(t=>`<div>
@@ -1839,6 +1894,13 @@ function phaseWhy(n,cur,R){
       <div class="eyebrow">Strongest in ${pname(PHASES[n-2])}, the phase before</div>
       ${prev.map(q=>`<div class="carry-line">${q.t}</div>`).join('')}
     </div>`:''}
+
+    <div class="ph-foot">
+      <div><div class="eyebrow">Where this goes wrong<sup class="ph-ast">*</sup></div><p>${st.risk}</p></div>
+      <div><div class="eyebrow">${n===5?'When you are here':`How you know you have finished ${pname(p)}`}<sup class="ph-ast">*</sup></div><p>${st.door}</p></div>
+    </div>
+
+    <p class="ph-note"><b>*</b> Placeholder wording, written for this prototype &mdash; not JV&rsquo;s. These parts need the real text.</p>
   </div>`;
 }
 
@@ -2007,7 +2069,7 @@ function vTime(){
       ${(()=>{const mx=Math.max(1,...zoneCounts(F.r),...zoneCounts(L.r));
         return `<div class="tnstack">
           <div class="tn-one"><div class="tn-lab">${fmtDate(F)}<span>${t0} students</span></div>
-            ${roadHTML(F.r,{mx,noNames:true})}</div>
+            ${roadHTML(F.r,{mx})}</div>
           <div class="tn-one now"><div class="tn-lab">${fmtDate(L)}<span>${t1} students</span></div>
             ${roadHTML(L.r,{mx})}</div>
         </div>`})()}
