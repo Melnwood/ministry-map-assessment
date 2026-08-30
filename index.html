@@ -274,6 +274,71 @@ h2{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.01
 .phtier.on{background:var(--phase);box-shadow:0 5px 16px rgba(74,59,174,.26)}
 .phtier.empty{background:none!important;box-shadow:inset 0 0 0 1.5px var(--ink-15);color:var(--ink-45)}
 .phtier.empty b{color:var(--ink-15)}
+/* ============================================================
+   THE MAP GRID
+   One CSS grid for both halves, so the five columns line up across the
+   rule — that alignment is the whole information design. Wide content
+   scrolls inside its own box; the page never scrolls sideways.
+   ============================================================ */
+.mgwrap{margin-top:26px;overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.mgrid{display:grid;grid-template-columns:112px repeat(5,minmax(148px,1fr));min-width:800px;align-items:stretch}
+
+/* left gutter */
+.mg-gut{padding:10px 14px;display:flex;flex-direction:column;justify-content:center;border-right:1px solid var(--line);background:var(--bg)}
+.mg-title{font-family:var(--display);font-size:15px;font-weight:800;letter-spacing:-.01em;padding-top:16px;padding-bottom:14px}
+.mg-count{padding-top:9px;padding-bottom:9px}
+.mg-count b{font-family:var(--mono);font-size:21px;font-weight:600;line-height:1}
+.mg-count span{font-size:10.5px;color:var(--ink-45);margin-top:2px}
+.mg-freq{font-family:var(--mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-45)}
+
+/* the five challenge headings */
+.mg-ch{padding:14px 12px 12px;border-bottom:1px solid var(--line);font-size:12px;font-weight:600;line-height:1.25;
+       display:flex;align-items:flex-start;gap:7px;box-shadow:inset 0 3px 0 var(--zc)}
+.mg-ch i{font-family:var(--mono);font-style:normal;font-size:10px;font-weight:600;color:var(--zc);flex:none;margin-top:1px}
+
+/* the number row */
+.mg-num{padding:9px 12px;font-family:var(--mono);font-size:21px;font-weight:600;border-bottom:1px solid var(--ink-08);
+        display:flex;align-items:center;gap:5px}
+.mg-num.zero{color:var(--ink-15)}
+.mg-num.edit{padding:6px 10px}
+.mg-num.edit .cnv{font-size:21px;width:2.6ch;text-align:left}
+.mg-num.edit .stp{width:22px;height:22px;font-size:14px}
+
+/* programme + name cells */
+.mg-cell{padding:8px 10px;border-bottom:1px solid var(--ink-08);display:flex;flex-wrap:wrap;gap:5px;align-content:flex-start;min-height:44px}
+.mg-dash{color:var(--ink-15);font-size:14px;align-self:center}
+.pchip,.schip{font:inherit;font-size:12px;line-height:1.25;text-align:left;cursor:pointer;border:0;border-radius:7px;
+        padding:5px 9px;background:color-mix(in srgb,var(--zc) 13%,transparent);color:var(--ink);
+        box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--zc) 26%,transparent);transition:background .13s}
+.pchip:hover,.schip:hover{background:color-mix(in srgb,var(--zc) 24%,transparent)}
+.pchip.is,.schip.is{background:var(--zc);color:#fff;box-shadow:none}
+.schip .mv{font-family:var(--mono);font-style:normal;font-size:9px;margin-left:5px;opacity:.65}
+.schip.add{background:none;box-shadow:inset 0 0 0 1px var(--ink-15);color:var(--ink-45);padding:5px 10px}
+.schip.add:hover{color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink-45)}
+
+/* full-width rows inside the grid */
+.mg-wide{grid-column:2 / -1;padding:8px 10px;border-bottom:1px solid var(--ink-08)}
+.mg-addb{font:inherit;font-size:12px;font-weight:600;color:var(--ink-45);background:none;border:0;cursor:pointer;padding:5px 4px}
+.mg-addb:hover{color:var(--ink)}
+.mg-rule{grid-column:1 / -1;height:1px;background:var(--line)}
+
+.mg-note{margin-top:10px;font-size:11.5px;line-height:1.5;color:var(--ink-45)}
+/* the panel under the grid */
+.mdet{margin-top:14px;background:var(--surface);border:1px solid var(--ink);border-radius:12px;
+      padding:15px 17px;box-shadow:0 3px 14px rgba(22,32,46,.07)}
+.mdet-hd{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.mdet-hd>b{font-family:var(--display);font-size:17px;font-weight:800}
+.mdet-hd>span{font-size:12px;color:var(--ink-45);flex:1;min-width:0}
+.mdet-hd .warn{color:var(--z5)}
+.mdet-x{margin-left:auto;background:none;border:0;font-size:20px;line-height:1;color:var(--ink-45);cursor:pointer;padding:0 2px}
+.mdet-x:hover{color:var(--ink)}
+
+@media(max-width:720px){
+  .mgrid{grid-template-columns:92px repeat(5,minmax(132px,1fr));min-width:740px}
+  .mg-title{font-size:13.5px}
+  .mg-count b,.mg-num{font-size:18px}
+}
+
 /* the logged list inside the note bot */
 .nlist{margin-top:16px;border-top:1px solid var(--ink-08);padding-top:12px}
 .nhd{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-45);margin-bottom:8px}
@@ -823,7 +888,7 @@ const pipLevel=v=>Math.round(v)+1;
 const pips=v=>{const f=pipLevel(v);return `<span class="pips">${[1,2,3,4].map(i=>`<i class="${i<=f?'on':''}"></i>`).join('')}</span>`};
 const fmtDate=r=>new Date(r.d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
 
-const FREQ_RANK={'Weekly':3,'Monthly':2,'Yearly':1};
+const FREQ_RANK={'Weekly':4,'Bi-weekly':3,'Monthly':2,'Yearly':1};
 
 /* ---- derived helpers ---- */
 const zoneCounts=di=>hasNames()
@@ -1062,7 +1127,8 @@ const hasNames=()=>TIER==='activated';
    Seeded from the demo roster here so both tiers show the same group. */
 const COUNTS=DATES.map((d,di)=>{const c=[0,0,0,0,0];
   STUDENTS.forEach(st=>{const z=st.hist[di];if(z)c[z-1]++});return c});
-const FREQS=['Weekly','Monthly','Termly','Yearly'];
+/* the four bands the paper Ministry Map uses, in its order */
+const FREQS=['Weekly','Bi-weekly','Monthly','Yearly'];
 
 function moveStudent(id,z){
   const st=STUDENTS.find(x=>x.id===id);if(!st)return;
@@ -1135,29 +1201,101 @@ function intakeHTML(){
 /* Programmes carry no student data — a name-free view, so both tiers
    get it unchanged. This is most of what makes the open tier worth
    using: "nobody is ever sent out to lead" needs no roster at all. */
-function programsHTML(){
-  return `<div class="sec">
-      <div class="sec-hd"><h2>Where each invitation gets made</h2><span class="n">TAP TO EDIT</span></div>
-      <div class="proglist">
-        ${PROGRAMS.map((p,pi)=>selProgram===pi
-          ? `<div class="prow open">
-              <input class="pnin" id="pn${pi}" value="${p.name}">
-              <div class="pfreq">${FREQS.map(fq=>`<button class="fq ${fq===p.freq?'is':''}" data-freq="${pi}:${fq}">${fq}</button>`).join('')}</div>
-              <div class="pinv">${ZONES.map(z=>`<button class="inv ${p.ch.includes(z.n)?'on':''}" style="--zc:var(${z.v})" data-inv="${pi}:${z.n}">${z.name}</button>`).join('')}</div>
-              <div class="chip-act"><span>Which invitations actually get made here</span><button class="prim" data-pdone="${pi}">Done</button><button data-pdrop="${pi}">Remove</button></div>
-            </div>`
-          : `<button class="prow" data-prog="${pi}">
-              <span class="pname">${p.name}</span>
-              <span class="pfr ${p.freq==='Yearly'?'rare':''}">${p.freq}</span>
-              <span class="ptags">${p.ch.length?p.ch.map(x=>`<i style="background:var(${ZONES[x-1].v})" title="${plain(ZONES[x-1].name)}"></i>`).join(''):'<em>no invitation made here</em>'}</span>
-            </button>`).join('')}
-        ${addingProgram
-          ? `<div class="prow open"><input class="pnin" id="newpr" placeholder="Programme name" autofocus>
-             <div class="chip-act"><button class="prim" data-newprog="go">Add</button><button data-newprog="cancel">Cancel</button></div></div>`
-          : `<button class="prow addch" data-newprog="open">+ Add a programme</button>`}
-      </div>
-      <p class="note" style="margin-top:12px">This page is the only place to keep your group up to date. Everything else you see is built from it.</p>
+/* ============================================================
+   THE MAP, in the form the training actually draws it
+   Five challenge columns. Programmes above, people below, sharing the
+   same columns — which is the entire point of the sheet: you can read
+   straight down and see an invitation that has a programme but nobody,
+   or people but no programme that ever makes it.
+   The open tier has no names, so its People half is the number row and
+   stops there. Same form, less in it.
+   ============================================================ */
+function mapGridHTML(){
+  const named=hasNames();
+  const c=zoneCounts(NOW), tot=c.reduce((a,b)=>a+b,0), cov=coverage();
+  const inCell=(zn,fq)=>PROGRAMS.map((p,pi)=>({p,pi})).filter(x=>x.p.ch.includes(zn)&&x.p.freq===fq);
+
+  let h='<div class="mgwrap"><div class="mgrid">';
+
+  h+='<div class="mg-gut mg-title">Programs</div>';
+  h+=ZONES.map(z=>`<div class="mg-ch" style="--zc:var(${z.v})"><i>${z.n}</i>${z.name}</div>`).join('');
+
+  h+=`<div class="mg-gut mg-count"><b>${PROGRAMS.length}</b><span>running</span></div>`;
+  h+=ZONES.map(z=>{const n=cov[z.n].length;
+    return `<div class="mg-num${n?'':' zero'}">${n}</div>`}).join('');
+
+  FREQS.forEach(fq=>{
+    h+=`<div class="mg-gut mg-freq">${fq}</div>`;
+    h+=ZONES.map(z=>{const items=inCell(z.n,fq);
+      return `<div class="mg-cell">${items.length
+        ? items.map(x=>`<button class="pchip${selProgram===x.pi?' is':''}" data-prog="${x.pi}" style="--zc:var(${z.v})">${esc(x.p.name)}</button>`).join('')
+        : '<span class="mg-dash">&ndash;</span>'}</div>`}).join('');
+  });
+  h+='<div class="mg-gut mg-freq"></div>';
+  h+='<div class="mg-wide"><button class="mg-addb" data-newprog="open">+ Add a programme</button></div>';
+
+  h+='<div class="mg-rule"></div>';
+
+  h+='<div class="mg-gut mg-title">People</div>';
+  h+=ZONES.map(z=>`<div class="mg-ch" style="--zc:var(${z.v})"><i>${z.n}</i>${z.name}</div>`).join('');
+
+  h+=`<div class="mg-gut mg-count"><b id="cnt-tot">${tot}</b><span>students</span></div>`;
+  h+=ZONES.map((z,i)=>named
+      ? `<div class="mg-num${c[i]?'':' zero'}">${c[i]}</div>`
+      : `<div class="mg-num edit">
+           <button class="stp" data-cnt="${i}:-1" aria-label="One fewer">&minus;</button>
+           <input class="cnv" id="cnv${i}" data-cntv="${i}" type="text" inputmode="numeric"
+                  value="${c[i]}" aria-label="How many at ${plain(z.name)}">
+           <button class="stp" data-cnt="${i}:1" aria-label="One more">+</button>
+         </div>`).join('');
+
+  if(named){
+    h+='<div class="mg-gut mg-freq">Names</div>';
+    h+=ZONES.map(z=>{const inz=STUDENTS.filter(x=>x.hist[NOW]===z.n);
+      return `<div class="mg-cell">${inz.map(x=>{
+        const d=x.hist[NOW]-(x.hist[1]||x.hist[NOW]);
+        const tag=!x.hist[1]?'<i class="mv">new</i>':d>0?`<i class="mv">+${d}</i>`:d<0?`<i class="mv back">${d}</i>`:'';
+        return `<button class="schip${selStudent===x.id?' is':''}" data-sel="${x.id}" style="--zc:var(${z.v})">${esc(x.name)}${tag}</button>`;
+      }).join('')}<button class="schip add" data-adding="${z.n}" aria-label="Add a student here">+</button></div>`}).join('');
+  }
+
+  h+='</div></div>';
+  /* The two totals do not have to agree and it is not an error: a programme
+     may make two challenges, so the row across can come to more than the
+     number running. The paper form has the same property. */
+  const sum=ZONES.reduce((t,z)=>t+cov[z.n].length,0);
+  h+=`<p class="mg-note">Read down a column: what you run, and who is there.${
+    sum>PROGRAMS.length?' A programme can make two challenges, so the numbers across add up to more than the number running.':''}</p>`;
+  return h;
+}
+
+/* Whatever is open gets a full-width panel under the grid rather than
+   expanding inside a column — a column is 1/5 of the page and a student
+   card does not fit in one without wrecking the alignment above. */
+function mapDetailHTML(){
+  if(selStudent!=null){
+    const x=STUDENTS.find(s2=>s2.id===selStudent);
+    if(x) return `<div class="mdet">
+      <div class="mdet-hd"><b>${esc(x.name)}</b>
+        <span>Coming since ${fmtShort(x.since)} &middot; ${monthsBetween(x.since,new Date().toISOString().slice(0,10))} months${x.knownBy?` &middot; ${esc(x.knownBy)} knows them`:' &middot; <b class="warn">nobody is following them</b>'}</span>
+        <button class="mdet-x" data-sel="${x.id}" aria-label="Close">&times;</button></div>
+      <div class="chip-move">${ZONES.map(t=>`<button class="mvb ${t.n===x.hist[NOW]?'is':''}" style="--zc:var(${t.v})" data-move="${x.id}:${t.n}" title="${plain(t.name)}">${t.n}</button>`).join('')}</div>
+      <div class="chip-act"><span>Move them to the furthest challenge they have reached</span><button data-drop="${x.id}">Remove</button></div>
     </div>`;
+  }
+  if(addingProgram) return `<div class="mdet">
+    <input class="pnin" id="newpr" placeholder="Programme name" autofocus>
+    <div class="chip-act"><button class="prim" data-newprog="go">Add</button><button data-newprog="cancel">Cancel</button></div></div>`;
+  if(selProgram!=null&&PROGRAMS[selProgram]){
+    const p=PROGRAMS[selProgram], pi=selProgram;
+    return `<div class="mdet">
+      <input class="pnin" id="pn${pi}" value="${esc(p.name)}">
+      <div class="pfreq">${FREQS.map(fq=>`<button class="fq ${fq===p.freq?'is':''}" data-freq="${pi}:${fq}">${fq}</button>`).join('')}</div>
+      <div class="pinv">${ZONES.map(z=>`<button class="inv ${p.ch.includes(z.n)?'on':''}" style="--zc:var(${z.v})" data-inv="${pi}:${z.n}">${z.name}</button>`).join('')}</div>
+      <div class="chip-act"><span>Which challenges this programme actually makes</span><button class="prim" data-pdone="${pi}">Done</button><button data-pdrop="${pi}">Remove</button></div>
+    </div>`;
+  }
+  return '';
 }
 
 function vMap(){ return hasNames()?vMapNamed():vMapOpen() }
@@ -1166,31 +1304,18 @@ function vMap(){ return hasNames()?vMapNamed():vMapOpen() }
    Counts, programmes, and an honest account of what is missing. No
    greyed-out roster, no padlocks: there is genuinely no roster here. */
 function vMapOpen(){
-  const c=zoneCounts(NOW), tot=c.reduce((a,b)=>a+b,0);
   const b=blanks(NOW);
   return `<div class="view"><div class="wrap">
-    <div class="eyebrow">Five Challenges of Christ</div>
-    <h1>How many students have<br>said yes to <em>each invitation</em></h1>
-    <p class="lede">The five challenges are things you ask a student, not places you put them. Count the students who have said yes to each one, and no further. If you have not asked, the answer is nobody &mdash; that is worth seeing.</p>
+    <div class="eyebrow">Ministry Map</div>
+    <h1>Everything you run, and<br>everyone you have, <em>side by side</em></h1>
+    <p class="lede">Five challenges across the top. What you run above, who you have below. Read straight down a column and you can see where an invitation is being made with nobody there to hear it &mdash; or where people are waiting and nothing ever asks them.</p>
 
-    <div class="cnted">
-      ${ZONES.map((z,i)=>`<div class="cnt" style="--zc:var(${z.v})">
-        <div class="cnt-hd"><div class="cnt-nm">${z.name}</div><div class="cnt-ask">${z.ask}</div></div>
-        <div class="cnt-set">
-          <button class="stp" data-cnt="${i}:-1" aria-label="One fewer">&minus;</button>
-          <input class="cnv" id="cnv${i}" data-cntv="${i}" type="text" inputmode="numeric"
-                 value="${c[i]}" aria-label="How many at ${plain(z.name)}">
-          <button class="stp" data-cnt="${i}:1" aria-label="One more">+</button>
-        </div>
-      </div>`).join('')}
-      <div class="cnt-tot" id="cnt-tot">${tot} students in your group</div>
-    </div>
+    ${mapGridHTML()}
+    ${mapDetailHTML()}
 
     <div id="blanks-slot">${blanksHTML(b,MAP_BLANK_NOTE)}</div>
 
     ${askHTML()}
-
-    ${programsHTML()}
   </div></div>`;
 }
 
@@ -1202,7 +1327,7 @@ function vMapOpen(){
 function refreshCounts(){
   const c=zoneCounts(NOW);
   const tot=document.getElementById('cnt-tot');
-  if(tot) tot.textContent=`${c.reduce((a,b)=>a+b,0)} students in your group`;
+  if(tot) tot.textContent=String(c.reduce((a,b)=>a+b,0));
   const slot=document.getElementById('blanks-slot');
   if(slot) slot.innerHTML=blanksHTML(blanks(NOW),MAP_BLANK_NOTE);
 }
@@ -1220,11 +1345,10 @@ function askHTML(){
 }
 
 function vMapNamed(){
-  const c=zoneCounts(NOW);
   return `<div class="view"><div class="wrap">
-    <div class="eyebrow">Five Challenges of Christ</div>
-    <h1>The furthest invitation<br>each student has <em>said yes to</em></h1>
-    <p class="lede">The five challenges are things you ask a student, not places you put them. Tap a name to move them — only move someone once you have actually asked, and they have said yes.</p>
+    <div class="eyebrow">Ministry Map</div>
+    <h1>Everything you run, and<br>everyone you have, <em>side by side</em></h1>
+    <p class="lede">Five challenges across the top. What you run above, who you have below. Tap a name to move them &mdash; only once you have actually asked, and they have said so.</p>
 
     ${(()=>{
       const byS=STUDENTS.filter(x=>x.came==='Invited by a student').length;
@@ -1238,41 +1362,20 @@ function vMapNamed(){
       return `<div class="mapstats">
         <div class="ms"><b>${byS}<span class="of">/${STUDENTS.length}</span></b>
           <span>came because another student invited them</span>
-          <em>Your check-up asks whether students invite friends without being asked. This answers it from the roster instead of from memory.</em></div>
+          <em>Your check-up asks whether students invite friends without being asked. This answers it from the map instead of from memory.</em></div>
         <div class="ms ${med>9?'warn':''}"><b>${med===null?'&mdash;':med}<span class="of"> mo</span></b>
           <span>from first coming to being asked to give their life to Christ</span>
           <em>Typical wait across the ${asked.length} students who have been asked. Only the date they first came makes this knowable.</em></div>
         <div class="ms ${waiting.length?'warn':''}"><b>${waiting.length}</b>
           <span>${waiting.length===1?'student has never been asked':'students have never been asked'}</span>
-          <em>${longest?`${longest.name} has been coming ${longest.mo} months.`:'Everyone has been asked.'}</em></div>
+          <em>${longest?`${esc(longest.name)} has been coming ${longest.mo} months.`:'Everyone has been asked.'}</em></div>
         <div class="ms ${unknown.length?'warn':''}"><b>${unknown.length}</b>
           <span>${unknown.length===1?'student nobody is following':'students nobody is following'}</span>
-          <em>${unknown.length?unknown.map(x=>x.name).join(', '):'Every student has a leader who knows them.'}</em></div>
+          <em>${unknown.length?unknown.map(x=>esc(x.name)).join(', '):'Every student has a leader who knows them.'}</em></div>
       </div>`})()}
 
-    <div class="zonebar edit">
-      ${ZONES.map((z,i)=>{
-        const inz=STUDENTS.filter(x=>x.hist[NOW]===z.n);
-        return `<div class="zcol" style="--zc:var(${z.v})">
-          <div class="zhd"><div class="zname">${z.name}</div><div class="zcount">${c[i]}</div><div class="zask">${z.ask}</div></div>
-          <div class="zbody">
-            ${inz.map(x=>{
-              const d=x.hist[NOW]-(x.hist[1]||x.hist[NOW]);
-              const tag=!x.hist[1]?'<span class="mv">new</span>':d>0?`<span class="mv">+${d}</span>`:d<0?`<span class="mv back">${d}</span>`:'';
-              if(selStudent===x.id) return `<div class="chip open">
-                <div class="chip-nm">${x.name}</div>
-                <div class="chip-since">Coming since ${fmtShort(x.since)} &middot; ${monthsBetween(x.since,new Date().toISOString().slice(0,10))} months${x.knownBy?` &middot; ${x.knownBy} knows them`:' &middot; <b>nobody is following them</b>'}</div>
-                <div class="chip-move">${ZONES.map(t=>`<button class="mvb ${t.n===z.n?'is':''}" style="--zc:var(${t.v})" data-move="${x.id}:${t.n}" title="${plain(t.name)}">${t.n}</button>`).join('')}</div>
-                <div class="chip-act"><span>Move to the furthest invitation they have said yes to</span><button data-drop="${x.id}">Remove</button></div>
-              </div>`;
-              return `<button class="chip" data-sel="${x.id}"><span>${x.name}</span>${tag}</button>`;
-            }).join('')}
-            <button class="chip addch" data-adding="${z.n}">+ Add student</button>
-          </div>
-        </div>`}).join('')}
-    </div>
-
-    ${programsHTML()}
+    ${mapGridHTML()}
+    ${mapDetailHTML()}
   </div></div>${intake?intakeHTML():''}`;
 }
 
