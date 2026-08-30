@@ -306,6 +306,21 @@ A pencil, bottom-right, on every screen. Box, screenshot, Log it. It tags
 the screen automatically. **Resist adding to it** — it has already been cut
 back twice from an issue tracker with kinds, states, filters and triage.
 
+**Decided 26 Aug 2026 by Mel, while Dave was testing.** The panel now also
+lists everything logged, newest first, with a tick to mark a note fixed and
+a count of what is still open. That is a deliberate exception to the line
+above, not a drift back toward the tracker: one tick, no kinds, no filters,
+no triage screen. Do not cut it out again on the strength of the old rule.
+
+The tick is optimistic and reconciles — if the save fails it goes back where
+it was, so the list never claims something is fixed that Airtable never
+heard about. Note text is escaped before it reaches `innerHTML`; a tester
+writing "students < 12" would otherwise swallow the rest of the panel.
+
+A new note also emails Mel, via an Airtable automation on the Workbench
+table (`wflOfIn3NJtYD4Gvf`) rather than any code in this repo. If notes stop
+arriving, check that automation is still switched on before looking here.
+
 ---
 
 ## Open — real work, in rough priority
