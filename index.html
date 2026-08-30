@@ -258,7 +258,10 @@ h2{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.01
    challenge cake: width must equal the thing, never a drawn silhouette.
    phtier, not tier — .tier is the challenge cake in the then/now view. */
 .phcake{display:flex;flex-direction:column;align-items:flex-end;gap:4px;width:100%}
-.phtier{border-radius:7px;padding:8px 13px;display:flex;flex-direction:column;align-items:flex-start;gap:1px;color:#fff;min-width:0;transition:transform .16s}
+.phtier{font:inherit;border:0;text-align:left;border-radius:7px;padding:8px 13px;display:flex;flex-direction:column;
+        align-items:flex-start;gap:1px;color:#fff;min-width:0;transition:transform .16s}
+button.phtier{cursor:pointer}
+.phtier.sel{outline:2.5px solid var(--phase);outline-offset:2px}
 .phtier:hover{transform:scale(1.015)}
 /* name on its own line — a duration is far longer than a number was, and
    side by side it squeezed the phase names into ellipses */
@@ -822,18 +825,21 @@ const Q=[
 const TOOLS={
  CCE: {phase:1, words:['Call','Character','Empowerment'],
        letters:['Call','Character','Empowerment'],
+       spells:['Call','Character','Empowerment'],
        line:'What God settles in the leader before there is a ministry to lead.'},
  SIX: {phase:2, words:['Relationships','Love','Vision','Jesus','Prayer','Bible'],
        letters:['Relationships','Love','Vision','Jesus','Prayer','Bible'],
+       spells:['Relationships','Love','Vision','Jesus','Prayer','Bible'],
        line:'The six things a group is built on before it is built out.'},
  TAR: {phase:3, words:['Serve','TAR','Evangelize','Shepherd'],
-       letters:['TAR'],
+       letters:['TAR'], spells:['Teach','Act','Reflect'],
        line:'The training loop. You teach it, they do it, then you sit down and talk about what happened.'},
  CPR: {phase:4, words:['CPR','Expansion','Team'],
-       letters:['CPR'],
+       letters:['CPR'], spells:['Cultivate','Plant','Reap'],
        line:'How ground that is not yours yet becomes ground where something grows.'},
  REST:{phase:5, words:['Restructure','Entrust','Support','Train','Multiplication'],
        letters:['Restructure','Entrust','Support','Train'],
+       spells:['Restructure','Entrust','Support','Train'],
        line:'How you hand a ministry to the leaders you raised without dropping it.'}
 };
 const toolFor=n=>Object.entries(TOOLS).find(([k,v])=>v.phase===n);
@@ -1147,18 +1153,7 @@ function vToday(){
       <div class="duo-half">
         <div class="eyebrow">Ministry phases</div>
         <div class="big-n ph">${pname(PHASES[ph-1])}</div>
-        <div class="duo-vis"><div class="phcake">
-          ${(()=>{const spans=phaseSpans();return [...PHASES].reverse().map(p=>{
-            const st=p.n===ph?'on':(p.n<ph?'done':'ahead'), v=sc[p.n];
-            /* width is the score against the full 0-10 scale, not against the
-               best phase — so a ministry with nothing cleared looks like it */
-            /* 48% floor so the longest phase name still fits in an empty
-               layer — the challenge cake uses a 44% floor for the same reason */
-            const w=48+52*(v/10);
-            return `<div class="phtier ${st} ${v?'':'empty'}" style="width:${w}%">
-              <span class="phn">${pname(p)}</span><b>${spans[p.n]?spanLabel(spans[p.n]):(p.n<ph?'&mdash;':'')}</b></div>`;
-          }).join('')})()}
-        </div></div>
+        <div class="duo-vis">${phaseCakeHTML(sc,ph,false)}</div>
         <div class="plinth">Each layer is how far that phase is cleared</div>
       </div>
     </div>
@@ -1207,6 +1202,23 @@ function phaseSpans(){
   });
   return out;
 }
+/* The phases cake, shared by Today and by a report so the two cannot drift
+   apart. `tappable` makes each layer a button that opens what that season
+   is about; Today just shows it. */
+function phaseCakeHTML(sc,ph,tappable){
+  const spans=phaseSpans();
+  return `<div class="phcake">${[...PHASES].reverse().map(p=>{
+    const st=p.n===ph?'on':(p.n<ph?'done':'ahead'), v=sc[p.n];
+    /* 48% floor so the longest phase name still fits in an empty layer */
+    const w=48+52*(v/10);
+    const cls=`phtier ${st} ${v?'':'empty'}${tappable&&selPhase===p.n?' sel':''}`;
+    const inner=`<span class="phn">${pname(p)}</span><b>${spans[p.n]?spanLabel(spans[p.n]):(p.n<ph?'&mdash;':'')}</b>`;
+    return tappable
+      ? `<button class="${cls}" style="width:${w}%" data-phase="${p.n}" aria-label="${p.name}">${inner}</button>`
+      : `<div class="${cls}" style="width:${w}%">${inner}</div>`;
+  }).join('')}</div>`;
+}
+
 const spanLabel=x=>{
   if(!x) return '';
   const m=x.months;
@@ -1645,11 +1657,11 @@ function vReport(){
     </div>
 
     <div class="sec">
-      <div class="sec-hd"><h2>What season you are in</h2><span class="n">TAP A STEP</span></div>
+      <div class="sec-hd"><h2>What season you are in</h2><span class="n">TAP A LAYER</span></div>
       <div class="card">
-        <div class="stair">${PHASES.map(p=>`<button class="st ${p.n===ph?'on':(p.n<ph?'done':'')} ${p.n===selPhase?'sel':''}" data-phase="${p.n}" style="height:${18+p.n*16}%" aria-label="${p.name}">${p.n===ph?'<span class="youare">YOU ARE HERE</span>':''}</button>`).join('')}</div>
-        <div class="stairlab">${PHASES.map(p=>`<div class="${p.n===ph?'on':''}">${pname(p)}</div>`).join('')}</div>
-        ${selPhase?phaseWhy(selPhase,ph,R):'<p class="note" style="margin-top:16px;text-align:center">Tap any step to read what that season is about, and what is true of you in it.</p>'}
+        ${phaseCakeHTML(sc,ph,true)}
+        <p class="note" style="margin-top:12px">Each layer is how far that phase is cleared. ${selPhase?'':'Tap any layer to read what that season is about, and what is true of you in it.'}</p>
+        ${selPhase?phaseWhy(selPhase,ph,R):''}
       </div>
     </div>
 
@@ -1661,16 +1673,19 @@ function vReport(){
         <div class="tb-head"><span class="tb-acr">${tk}</span><p>${T.line}</p></div>
         <p class="tb-scale">How often each part of this season actually happens, read from your own answers.</p>
         <div class="tb-words">
-          ${parts.map(x=>{const b=band(x[1].v);return `<div class="tw ${b.k}"><div class="tw-w">${x[0]}${isTool(x[0])&&T.letters.length===1?` <span class="acrtag mine">${tk}</span>`:''}</div>
+          ${parts.map(x=>{const b=band(x[1].v);return `<div class="tw ${b.k}"><div class="tw-w">${x[0]}${isTool(x[0])&&T.letters.length===1&&x[0]!==tk?` <span class="acrtag mine">${tk}</span>`:''}</div>
             ${pips(x[1].v)}<div class="tw-v">${doingBand(x[1].v)}</div>
             <div class="tw-n">${x[1].n} statement${x[1].n>1?'s':''}</div></div>`}).join('')}
         </div>
       </div>
       ${(()=>{const w=parts.slice().sort((a,b)=>a[1].v-b[1].v)[0];
         if(!w) return '';
-        return `<p class="note" style="margin-top:12px">Weakest part: <b>${w[0]}</b>. ${isTool(w[0])
-          ? `${tk} is the tool for this season, and this is the part of it you are skipping. The tool is the answer, not the diagnosis.`
-          : `${tk} is the tool for this season. This part is measured beside it, and it is the one you are furthest from.`}</p>`})()}
+        return `<p class="note" style="margin-top:12px">Weakest part: <b>${w[0]}</b>. ${
+          w[0]===tk
+            ? `${tk} is the tool for this season &mdash; ${T.spells.join(', ').toLowerCase()}. You already have it; this is the part of the season you are furthest from, so it is the tool to go back to rather than something new to learn.`
+          : isTool(w[0])
+            ? `That is one part of ${tk}, the tool for this season. The tool is the answer, not the diagnosis.`
+            : `${tk} is the tool for this season. This part is measured beside it, and it is the one you are furthest from.`}</p>`})()}
     </div>`})()}
 
     <div class="sec">
@@ -1759,7 +1774,7 @@ function phaseWhy(n,cur,R){
       <div class="ph-stance">${stance}</div>
     </div>
     <div class="ph-meta">
-      <span><b>${tk}</b>${T.letters.join(' &middot; ')}</span>
+      <span><b>${tk}</b>${T.spells.join(' &middot; ')}</span>
       <span><b>Aimed at</b>${p.who}</span>
       <span><b>Typically</b>${p.span}</span>
     </div>
