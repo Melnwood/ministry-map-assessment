@@ -403,6 +403,40 @@ button.phtier{cursor:pointer}
   .mg-count b,.mg-num{font-size:18px}
 }
 
+/* the acronym panel */
+.tipwrap{position:fixed;inset:0;z-index:80;background:rgba(22,32,46,.42);display:flex;align-items:center;
+         justify-content:center;padding:22px;animation:fade .15s both}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.tip{position:relative;background:var(--surface);border-radius:16px;max-width:560px;width:100%;
+     max-height:min(84vh,720px);overflow-y:auto;padding:24px 26px 22px;box-shadow:0 18px 54px rgba(22,32,46,.3);
+     animation:rise .2s cubic-bezier(.2,.7,.3,1) both}
+.tip-x{position:absolute;top:14px;right:16px;background:none;border:0;font-size:22px;line-height:1;
+       color:var(--ink-45);cursor:pointer}
+.tip-x:hover{color:var(--ink)}
+.tip-hd{font-family:var(--mono);font-size:30px;font-weight:600;letter-spacing:.08em;margin-top:6px}
+.tip-spells{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.tip-spells span{font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px;
+                 background:var(--ink-08);color:var(--ink-70)}
+.tip-line{font-family:var(--display);font-size:15.5px;line-height:1.5;font-weight:500;margin-top:14px}
+.tip-line.quiet{font-family:var(--body);font-size:13px;font-weight:400;color:var(--ink-45)}
+.tip-sec{margin-top:20px;margin-bottom:9px}
+.tip-qs{list-style:none;display:flex;flex-direction:column;gap:9px}
+.tip-qs li{display:grid;grid-template-columns:14px 1fr;gap:9px;font-size:13.5px;line-height:1.45;color:var(--ink-70)}
+.tip-qs i{width:9px;height:9px;border-radius:50%;margin-top:6px;background:var(--ink-15)}
+.tip-qs li.yes i{background:var(--z3)}
+.tip-qs li.part i{background:var(--z4)}
+.tip-qs li.no i{background:var(--z5)}
+.tip-qs em{grid-column:2;font-family:var(--mono);font-style:normal;font-size:10px;letter-spacing:.05em;
+           text-transform:uppercase;color:var(--ink-45);margin-top:3px}
+.tip-do{margin-top:18px;padding-top:14px;border-top:1px solid var(--ink-08);font-size:13.5px;
+        line-height:1.55;color:var(--ink-70)}
+.tip-do b{color:var(--ink)}
+/* the tool panel parts are buttons now */
+button.tw{font:inherit;text-align:left;border:0;width:100%;cursor:pointer}
+button.tw:hover{background:var(--ink-08)}
+.tb-acr{font:inherit;background:none;border:0;cursor:pointer;font-family:var(--mono);font-size:19px;
+        font-weight:600;letter-spacing:.09em;color:var(--z4);padding:0;border-bottom:1.5px dotted var(--z4)}
+.tb-acr:hover{color:var(--ink)}
 /* the logged list inside the note bot */
 .nlist{margin-top:16px;border-top:1px solid var(--ink-08);padding-top:12px}
 .nhd{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-45);margin-bottom:8px}
@@ -685,6 +719,10 @@ button.prow:hover{border-color:var(--ink)}
 </header>
 <main id="app"></main>
 <div id="bot"></div>
+<!-- Outside #app on purpose: .view animates with a transform, and a
+     transformed ancestor becomes the containing block for position:fixed,
+     which pinned this overlay part-way down the page instead of over it. -->
+<div id="tip"></div>
 <script>
 /* ============================================================
    MINISTRY MAP + CHECK-UP — merge prototype
@@ -975,7 +1013,7 @@ function blanks(ci){
   const c=zoneCounts(ci);
   const one=(n,a,b)=>n===1?a:b;
   if(c[3]>0&&c[4]===0) return {n:c[3],
-    line:`${c[3]} of your students ${one(c[3],'has','have')} said yes to helping you reach others. ${one(c[3],'That student has not','None of them has')} been sent.`};
+    line:`${c[3]} of your students ${one(c[3],'has','have')} reached Follow Me &amp; Fish. ${one(c[3],'That student has not','None of them has')} been sent.`};
   if(c[0]>0&&c[1]===0) return {n:c[0],
     line:`${c[0]} ${one(c[0],'student is','students are')} coming and looking at Jesus. ${one(c[0],'That student has not','None of them has')} been asked to give their life to Christ.`};
   const biggest=c.indexOf(Math.max(...c));
@@ -1256,7 +1294,7 @@ function cakeHTML(ri,small){
    in the app reads from it. Moving a student here updates the
    current snapshot, so the cake, the report and the check-up
    auto-fill all follow. */
-let selStudent=null, addingTo=null, selProgram=null, addingProgram=false;
+let selStudent=null, addingTo=null, selProgram=null, addingProgram=false, toolInfo=null;
 const NOW=2;                       /* the current roster snapshot */
 
 /* ============================================================
@@ -1325,7 +1363,7 @@ function intakeHTML(){
       <label class="fld"><span>First came</span><input id="in-since" type="date" value="${today}"></label>
     </div>
 
-    <div class="fld"><span>Furthest invitation they have said yes to</span>
+    <div class="fld"><span>Furthest challenge they have reached</span>
       <div class="zpick">${ZONES.map(z=>`<label class="zp" style="--zc:var(${z.v})">
         <input type="radio" name="in-zone-r" value="${z.n}" ${z.n===intake?'checked':''} data-zone="${z.n}">
         <b>${z.name}</b><em>${z.ask}</em></label>`).join('')}</div>
@@ -1530,6 +1568,44 @@ function vMapNamed(){
   </div></div>${intake?intakeHTML():''}`;
 }
 
+/* What an acronym stands for, and what it is measured by.
+
+   The letters of TAR and CPR are teaching, not measurement: the instrument
+   scores each tool as one category, so there are no per-letter numbers to
+   show and none are invented here. What the panel can honestly show is the
+   statements behind the score and how the leader answered them — the ones
+   that are not yet true are the nearest thing to "what to do next" that this
+   data supports. Fuller teaching for each letter belongs to JV's own
+   training material and should be added here from it, not written by us. */
+function toolInfoHTML(){
+  if(!toolInfo) return '';
+  const R=rep(), isAcr=!!TOOLS[toolInfo];
+  const T=isAcr?TOOLS[toolInfo]:TOOLS[CAT_TOOL[toolInfo]||Object.keys(TOOLS).find(k=>TOOLS[k].words.includes(toolInfo))];
+  if(!T) return '';
+  const acr=Object.keys(TOOLS).find(k=>TOOLS[k]===T);
+  const ph=PHASES[T.phase-1];
+  const qs=Q.filter(q=>isAcr?q.phase===T.phase&&T.words.includes(q.cat):q.cat===toolInfo);
+  const notYet=qs.filter(q=>ansIn(R,q)<A_TRUE);
+  return `<div class="tipwrap" data-tool="close"><div class="tip" role="dialog" aria-label="${isAcr?acr:toolInfo}">
+    <button class="tip-x" data-tool="close" aria-label="Close">&times;</button>
+    <div class="eyebrow">${pname(ph)} &middot; JV training tool</div>
+    <div class="tip-hd">${isAcr?acr:toolInfo}</div>
+    ${isAcr
+      ? `<div class="tip-spells">${T.spells.map(w=>`<span>${w}</span>`).join('')}</div>
+         <p class="tip-line">${T.line}</p>`
+      : `<p class="tip-line quiet">Measured in ${pname(ph)}, alongside ${T.words.filter(w=>w!==toolInfo).join(', ')}.</p>`}
+    <div class="eyebrow tip-sec">${isAcr
+      ? `The ${qs.length} statements of this season`
+      : `${qs.length} statement${qs.length===1?'':'s'} measure${qs.length===1?'s':''} this`}</div>
+    <ul class="tip-qs">${qs.map(q=>{const a=ansIn(R,q);
+      return `<li class="${a>=A_TRUE?'yes':a===A_NONE?'no':'part'}"><i></i><span>${q.t}</span>
+        <em>${isAcr?`${q.cat} &middot; `:''}${SCALE[a].t}</em></li>`}).join('')}</ul>
+    ${notYet.length
+      ? `<p class="tip-do"><b>Where to start.</b> ${notYet.length===1?'This one is':`These ${notYet.length} are`} not yet true of you. ${acr} is the tool you already have for ${notYet.length===1?'it':'them'}.</p>`
+      : `<p class="tip-do"><b>All of these are true of you.</b> Nothing here is the thing holding this season back.</p>`}
+  </div></div>`;
+}
+
 /* ---------- CHECK-UP ----------
    Screen 0 is the whole point of the merge: the sections M-Lens
    used to ask a leader to fill in by hand, answered from the map. */
@@ -1635,8 +1711,8 @@ function vReport(){
   if(weakFreq){const wz=weakFreq.z, only=cov[wz.n][0];
     acts.push({b:`<b>Students are only ${wz.verb} once a year.</b> ${c[wz.n-1]+c[0]} of them have not been asked yet, and ${only.name} is the only time it happens. That invitation does not need a programme — it needs someone willing to make it more often than once a year.`,
     w:`instrument: <span>CPR &mdash; ${band(cats.CPR.v).s}</span> &middot; map: ${only.name} runs ${only.freq.toLowerCase()}`});}
-  if(gapZone) acts.push({b:`<b>You never actually ask anyone to go.</b> ${c[4]} student has been sent, and ${c[3]} more have already said yes to helping you reach others &mdash; but none of them has been asked to lead something of their own. That is a conversation, not a programme.`,
-    w:`instrument: <span>Entrust &mdash; ${band(cats.Entrust.v).s}</span> &middot; map: ${zoneCounts(R.r)[3]} said yes, none sent`});
+  if(gapZone) acts.push({b:`<b>You never actually ask anyone to go.</b> ${c[4]} student has been sent, and ${c[3]} more have reached Follow Me &amp; Fish &mdash; but none of them has been asked to lead something of their own. That is a conversation, not a programme.`,
+    w:`instrument: <span>Entrust &mdash; ${band(cats.Entrust.v).s}</span> &middot; map: ${zoneCounts(R.r)[3]} at Follow Me &amp; Fish, none sent`});
   const used=acts.map(a=>a.w).join(' ');
   const fresh=low.find(k=>!used.includes(k[0]))||low[0];
   acts.push({b:`<b>${fresh[0]} is your weakest untouched area &mdash; ${band(fresh[1].v).s}.</b> That is the work of ${PHASES[ph-1].name} &mdash; the phase you have just entered, not a failure of the one you left.`,
@@ -1650,7 +1726,7 @@ function vReport(){
       <div class="cover-grid">
         <div class="cv"><b>${tot}</b><span>students on the map</span></div>
         <div class="cv"><b class="ph">${pname(PHASES[ph-1])}</b><span>phase ${ph} of 5${prev&&ph>pph?` &middot; up from ${pname(PHASES[pph-1])}`:''}</span></div>
-        <div class="cv"><b>${c[3]+c[4]}</b><span>said yes to helping reach others</span></div>
+        <div class="cv"><b>${c[3]+c[4]}</b><span>at Follow Me &amp; Fish or beyond</span></div>
         <div class="cv"><b>${ZONES.filter(z=>cov[z.n].length).length}<span class="of">/5</span></b><span>invitations your programs make</span></div>
       </div>
       <div class="cover-bar">${c.map((n,i)=>n?`<div style="flex:${n};background:var(${ZONES[i].v})"></div>`:'').join('')}</div>
@@ -1670,12 +1746,12 @@ function vReport(){
       return `<div class="sec">
       <div class="sec-hd"><h2>How ${pname(PHASES[ph-1])} works</h2><span class="n">JV TRAINING TOOL</span></div>
       <div class="toolbox">
-        <div class="tb-head"><span class="tb-acr">${tk}</span><p>${T.line}</p></div>
+        <div class="tb-head"><button class="tb-acr" data-tool="${tk}" title="What ${tk} stands for">${tk}</button><p>${T.line}</p></div>
         <p class="tb-scale">How often each part of this season actually happens, read from your own answers.</p>
         <div class="tb-words">
-          ${parts.map(x=>{const b=band(x[1].v);return `<div class="tw ${b.k}"><div class="tw-w">${x[0]}${isTool(x[0])&&T.letters.length===1&&x[0]!==tk?` <span class="acrtag mine">${tk}</span>`:''}</div>
+          ${parts.map(x=>{const b=band(x[1].v);return `<button class="tw ${b.k}" data-tool="${x[0]}"><div class="tw-w">${x[0]}${isTool(x[0])&&T.letters.length===1&&x[0]!==tk?` <span class="acrtag mine">${tk}</span>`:''}</div>
             ${pips(x[1].v)}<div class="tw-v">${doingBand(x[1].v)}</div>
-            <div class="tw-n">${x[1].n} statement${x[1].n>1?'s':''}</div></div>`}).join('')}
+            <div class="tw-n">${x[1].n} statement${x[1].n>1?'s':''}</div></button>`}).join('')}
         </div>
       </div>
       ${(()=>{const w=parts.slice().sort((a,b)=>a[1].v-b[1].v)[0];
@@ -2197,6 +2273,9 @@ function render(){
   try{ document.getElementById('bot').innerHTML=botHTML(); }
   catch(err){ console.error('note bot failed to render', err); }
 
+  try{ document.getElementById('tip').innerHTML=toolInfoHTML(); }
+  catch(err){ console.error('tool panel failed to render', err); }
+
   try{
     document.getElementById('tiersw').innerHTML=
       `<span>viewing as</span>${[['open','Open'],['activated','Activated']].map(([k,l])=>
@@ -2238,6 +2317,7 @@ document.addEventListener('click',e=>{
     setWho(document.getElementById('bn-who').value); return}
   if(t=hit('bench')){if(t.dataset.bench==='add')benchAdd(); return}
   if(t=hit('fix')){benchFix(Number(t.dataset.fix)); return}
+  if(t=hit('tool')){toolInfo=(t.dataset.tool==='close'||toolInfo===t.dataset.tool)?null:t.dataset.tool;render();return}
   if(t=hit('unshot')){draftShots.splice(+t.dataset.unshot,1);render();return}
   if(t=hit('sel')){selStudent=(selStudent===+t.dataset.sel?null:+t.dataset.sel);addingTo=null;render();return}
   if(t=hit('move')){const[i,z]=t.dataset.move.split(':');moveStudent(+i,+z);return}
