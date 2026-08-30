@@ -460,6 +460,34 @@ button.tw:hover{background:var(--ink-08)}
 .tb-acr{font:inherit;background:none;border:0;cursor:pointer;font-family:var(--mono);font-size:19px;
         font-weight:600;letter-spacing:.09em;color:var(--z4);padding:0;border-bottom:1.5px dotted var(--z4)}
 .tb-acr:hover{color:var(--ink)}
+/* the notes page */
+.tw-notes{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;padding:4px 9px;border-radius:99px;
+  background:none;border:1px solid var(--ink-15);color:var(--ink-45);cursor:pointer;margin-left:10px;
+  display:inline-flex;align-items:center;gap:5px}
+.tw-notes:hover{border-color:var(--ink-45);color:var(--ink)}
+.tw-notes.is{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.tw-notes i{font-style:normal;font-size:9.5px;font-weight:600;background:var(--z5);color:#fff;
+  border-radius:99px;padding:0 5px;line-height:15px}
+.nt-of{font-weight:400;color:var(--ink-45)}
+.nt-sec{margin-top:26px}
+.nt-sec .eyebrow{margin-bottom:10px}
+.nt{display:grid;grid-template-columns:26px 1fr;gap:13px;padding:14px 16px;background:var(--surface);
+  border:1px solid var(--line);border-radius:12px;margin-bottom:7px;align-items:start}
+.nt.done{background:none;border-style:dashed}
+.nt-tick{width:22px;height:22px;margin-top:1px;border-radius:6px;background:none;cursor:pointer;
+  border:1.5px solid var(--ink-15);color:#fff;font-size:13px;line-height:1;display:flex;
+  align-items:center;justify-content:center;flex:none}
+.nt-tick:hover{border-color:var(--ink-45)}
+.nt.done .nt-tick{background:var(--z3);border-color:var(--z3)}
+.nt-text{font-size:14.5px;line-height:1.55;color:var(--ink)}
+.nt.done .nt-text{color:var(--ink-45)}
+.nt-meta{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--ink-45);margin-top:8px}
+.nt-shots{display:flex;flex-wrap:wrap;gap:8px;margin-top:11px}
+.nt-shots img{max-width:220px;max-height:150px;border-radius:7px;border:1px solid var(--line)}
+.nt-shotnote{font-size:11.5px;color:var(--ink-45);margin-top:8px;font-style:italic}
+.nt-empty{margin-top:26px;padding:30px;text-align:center;border:1px dashed var(--ink-15);
+  border-radius:12px;color:var(--ink-45);font-size:14px}
 /* the logged list inside the note bot */
 .bot-hint.quiet{color:var(--ink-45)}
 .nlist{margin-top:16px;border-top:1px solid var(--ink-08);padding-top:12px}
@@ -1100,6 +1128,46 @@ function reportGist(R){
   if(ZONES.some(z=>!cov[z.n].length))n++;
   return {phase:ph, tool:PHASES[ph-1].tool, weakest:weakest?weakest[0]:null,
           band:weakest?shortBand(weakest[1].v):null, actions:n};
+}
+
+/* ---------- NOTES — the same Airtable rows, somewhere you will look ----------
+   Not a second copy: it reads /api/notes like the pencil does, so the base
+   stays the only record. Open ones first, because a list sorted purely by
+   date buries what is still outstanding under what is already done. */
+function vNotes(){
+  const open=NOTES.filter(x=>x.state!=='done').sort((a,b)=>new Date(b.at)-new Date(a.at));
+  const done=NOTES.filter(x=>x.state==='done').sort((a,b)=>new Date(b.at)-new Date(a.at));
+  const row=x=>{
+    const isDone=x.state==='done';
+    return `<div class="nt ${isDone?'done':''}">
+      <button class="nt-tick" data-fix="${x.id}" aria-pressed="${isDone}"
+              title="${isDone?'Mark as not done':'Mark as done'}">${isDone?'&#10003;':''}</button>
+      <div class="nt-body">
+        <div class="nt-text">${esc(x.text).replace(/\n/g,'<br>')}</div>
+        <div class="nt-meta">${esc(x.who||'Unknown')}${x.area?` &middot; ${esc(x.area)}`:''} &middot; ${
+          new Date(x.at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})} &middot; ${
+          new Date(x.at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</div>
+        ${(x.shots||[]).filter(sh=>sh&&sh.data).length
+          ? `<div class="nt-shots">${x.shots.filter(sh=>sh&&sh.data).map(sh=>
+              `<img src="${sh.data}" alt="">`).join('')}</div>`
+          : (x.shots||[]).some(sh=>sh&&sh.tooBig)
+            ? `<div class="nt-shotnote">A screenshot was attached but was too large to store.</div>` : ''}
+      </div>
+    </div>`;
+  };
+  return `<div class="view"><div class="wrap">
+    <div class="eyebrow">Workbench</div>
+    <h1>${NOTES.length ? `${open.length} still open<span class="nt-of">, ${done.length} done</span>` : 'Nothing logged yet'}</h1>
+    <p class="lede">Everything logged from the pencil, from everyone. Tick one when it is dealt with. This reads the same records as the base &mdash; there is no second copy.</p>
+
+    ${!NOTES.length ? `<div class="nt-empty">
+        ${storageOK===false
+          ? 'Notes could not be loaded just now. Try again in a moment.'
+          : 'When someone writes a note with the pencil, bottom right, it appears here.'}
+      </div>` : `
+      ${open.length?`<div class="nt-sec"><div class="eyebrow">Open</div>${open.map(row).join('')}</div>`:''}
+      ${done.length?`<div class="nt-sec"><div class="eyebrow">Done</div>${done.map(row).join('')}</div>`:''}`}
+  </div></div>`;
 }
 
 /* ---------- LIKE JESUS — the first thing anyone sees ----------
@@ -2382,12 +2450,16 @@ function render(){
   catch(err){ console.error('tool panel failed to render', err); }
 
   try{
+    /* The notes page sits with the tier switch, not in the leader nav: both
+       are workbench controls and neither belongs to the product. */
+    const open=NOTES.filter(x=>x.state!=='done').length;
     document.getElementById('tiersw').innerHTML=
       `<span>viewing as</span>${[['open','Open'],['activated','Activated']].map(([k,l])=>
-        `<button class="${TIER===k?'is':''}" data-tier="${k}">${l}</button>`).join('')}`;
+        `<button class="${TIER===k?'is':''}" data-tier="${k}">${l}</button>`).join('')}
+       <button class="tw-notes${active==='notes'?' is':''}" data-go="notes">Notes${open?`<i>${open}</i>`:''}</button>`;
   }catch(err){ console.error('tier switch failed to render', err); }
 
-  const m={jesus:vJesus,today:vToday,map:vMap,check:vCheck,reports:vReports,report:vReport,time:vTime};
+  const m={jesus:vJesus,today:vToday,map:vMap,check:vCheck,reports:vReports,report:vReport,time:vTime,notes:vNotes};
   try{
     document.getElementById('app').innerHTML=m[active]();
   }catch(err){
