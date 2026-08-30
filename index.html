@@ -461,6 +461,7 @@ button.tw:hover{background:var(--ink-08)}
         font-weight:600;letter-spacing:.09em;color:var(--z4);padding:0;border-bottom:1.5px dotted var(--z4)}
 .tb-acr:hover{color:var(--ink)}
 /* the logged list inside the note bot */
+.bot-hint.quiet{color:var(--ink-45)}
 .nlist{margin-top:16px;border-top:1px solid var(--ink-08);padding-top:12px}
 .nhd{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-45);margin-bottom:8px}
 .nhd span{letter-spacing:.04em}
@@ -2184,7 +2185,13 @@ function vTime(){
 const SCREENS={today:'Today',map:'Your map',check:'Check-up',reports:'Reports',report:'A report',time:'The year'};
 const screenNow=()=>SCREENS[active]||'Somewhere';
 
-let NOTES=[], draftShots=[], storageOK=null, saveErr=null, justSaved=false;
+let NOTES=[], draftShots=[], storageOK=null, saveErr=null, loadErr=null, justSaved=false;
+/* fetch rejecting before any response gives a message no tester can act on
+   ("Failed to execute 'fetch' on 'Window'"). Both the load and the save
+   paths hit it, so both translate it here rather than one of them. */
+const netMsg=()=>location.protocol==='file:'
+  ? 'This page was opened as a file, so it cannot reach the server. Open the site by its web address instead.'
+  : 'Could not reach the server. Check your connection and try again.';
 /* Note text is typed by a tester and rendered into innerHTML. A stray < in
    "students < 12" would swallow the rest of the panel. */
 const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -2197,12 +2204,18 @@ function setWho(v){
   setTimeout(()=>{const t=document.getElementById('bn-text');t&&t.focus()},40);
 }
 
+/* Failing to LOAD is not failing to save. It used to set saveErr, so a
+   tester who had typed nothing was told in red that their note was not
+   saved and was still in the box — with an empty box in front of them. */
 async function benchLoad(){
-  try{ const r=await fetch(CONFIG.notesEndpoint);
-       const body=await r.text();
-       if(!r.ok)throw new Error(explain(r.status,body));
-       NOTES=JSON.parse(body); storageOK=true; saveErr=null; }
-  catch(err){ storageOK=false; saveErr=String(err.message||err); }
+  try{
+    let r;
+    try{ r=await fetch(CONFIG.notesEndpoint); }
+    catch(netErr){ throw new Error(netMsg()); }
+    const body=await r.text();
+    if(!r.ok)throw new Error(explain(r.status,body));
+    NOTES=JSON.parse(body); storageOK=true; loadErr=null;
+  }catch(err){ storageOK=false; loadErr=String(err.message||err); }
   render();
 }
 
@@ -2231,14 +2244,7 @@ async function benchSave(note){
     try{
       r=await fetch(CONFIG.notesEndpoint,{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify(note)});
-    }catch(netErr){
-      /* fetch rejects before any response: no connection, or the page was
-         opened straight off disk so a relative /api path has nothing to
-         resolve against. Either way the browser's own wording is unreadable. */
-      throw new Error(location.protocol==='file:'
-        ? 'This page was opened as a file, so it cannot reach the server. Open the site by its web address instead.'
-        : 'Could not reach the server. Check your connection and try again \u2014 your note is safe.');
-    }
+    }catch(netErr){ throw new Error(netMsg()+' Your note is safe.'); }
     const body=await r.text();
     if(!r.ok)throw new Error(explain(r.status,body));
     const saved=JSON.parse(body);
@@ -2304,7 +2310,7 @@ function botHTML(){
         <p class="bot-hint">Kept on this device so you only say it once. It goes on every note so we know who found what.</p>
       </div>`:`
       <div class="wholine">Logging as <b>${WHO}</b><button data-who="ask">change</button></div>
-      <textarea id="bn-text" placeholder="What felt wrong?" rows="4"></textarea>`}
+      <textarea id="bn-text" placeholder="What felt wrong? A new idea? Something confusing?" rows="4"></textarea>`}
       ${(!WHO||askingWho)?'':`
       ${draftShots.length?`<div class="shots">${draftShots.map((sh,i)=>
         `<div class="shot"><img src="${sh.data}" alt=""><button data-unshot="${i}">&times;</button></div>`).join('')}</div>`:''}
@@ -2314,6 +2320,8 @@ function botHTML(){
       </div>`}
       ${(!WHO||askingWho)?'':saveErr
         ? `<p class="bot-hint warn">Not saved &mdash; ${saveErr}<br>Your note is still in the box; nothing was lost.</p>`
+        : loadErr
+        ? `<p class="bot-hint quiet">Earlier notes could not be loaded &mdash; ${loadErr}<br>You can still write one; it will save on its own.</p>`
         : justSaved
           ? `<p class="bot-hint ok">Saved. ${n} note${n===1?'':'s'} so far.</p>`
           : `<p class="bot-hint">&#8984;V pastes a screenshot straight in.</p>`}
