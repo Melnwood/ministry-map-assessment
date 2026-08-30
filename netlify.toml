@@ -18,5 +18,8 @@
   [headers.values]
     X-Frame-Options = "DENY"
     X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "no-referrer"
+    # same-origin, not no-referrer: the app's own reads need a Referer to
+    # identify themselves to netlify/functions/lib/guard.js. Nothing leaks
+    # off-site either way.
+    Referrer-Policy = "same-origin"
     Permissions-Policy = "geolocation=(), microphone=(), camera=()"

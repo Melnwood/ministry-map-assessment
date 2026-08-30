@@ -38,6 +38,12 @@ function fromOurSite(event) {
   if (origin) return list.includes(origin);
   const referer = header(event, 'referer');
   if (referer) return list.some(o => referer.startsWith(o + '/') || referer === o);
+  // A same-origin GET sends no Origin, and this site sets Referrer-Policy, so
+  // there is no Referer either — the app's own reads arrived with neither and
+  // were refused. The app marks its calls with a header instead. Another site
+  // cannot add a custom header without a CORS preflight, and these functions
+  // answer OPTIONS with 405, so it stays shut to them.
+  if (header(event, 'x-ministry-map')) return true;
   return false;
 }
 

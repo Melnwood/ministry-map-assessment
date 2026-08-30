@@ -1962,6 +1962,10 @@ function phaseWhy(n,cur,R){
    In production this call goes through a Netlify function so the key
    stays server-side; set CONFIG.coachEndpoint and it will use that. */
 const CONFIG={coachEndpoint:'/api/claude', notesEndpoint:'/api/notes', sendNames:true};
+/* Marks a request as coming from this app. A same-origin GET sends no Origin
+   header and this site sends no Referer, so without this the front door in
+   netlify/functions/lib/guard.js has nothing to recognise and refuses us. */
+const APP_HDR={'X-Ministry-Map':'1'};
 let coachState={loading:false,questions:null,error:null,answer:null,asking:false};
 
 function coachPayload(){
@@ -2001,7 +2005,7 @@ Return ONLY a JSON array, no preamble and no markdown fences:
 Exactly 3 objects.`;
 
 async function callClaude(system,user,maxTokens){
-  const r=await fetch(CONFIG.coachEndpoint,{method:'POST',headers:{'Content-Type':'application/json'},
+  const r=await fetch(CONFIG.coachEndpoint,{method:'POST',headers:{'Content-Type':'application/json',...APP_HDR},
     body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:maxTokens||1000,system,messages:[{role:'user',content:user}]})});
   if(!r.ok) throw new Error('HTTP '+r.status);
   const d=await r.json();
@@ -2210,7 +2214,7 @@ function setWho(v){
 async function benchLoad(){
   try{
     let r;
-    try{ r=await fetch(CONFIG.notesEndpoint); }
+    try{ r=await fetch(CONFIG.notesEndpoint,{headers:APP_HDR}); }
     catch(netErr){ throw new Error(netMsg()); }
     const body=await r.text();
     if(!r.ok)throw new Error(explain(r.status,body));
@@ -2239,6 +2243,9 @@ function explain(status,body){
   if((status===401||status===403)&&isPage) return 'Your session with the site expired. Reload the page, enter the password again, and your note will still be here.';
   if(status===404&&/function/i.test(body||'')) return 'The /api/notes function is not deployed.';
   if(status===404) return 'Table not found in that base \u2014 check AIRTABLE_NOTES_TABLE and AIRTABLE_BASE_ID.';
+  if((status===401||status===403)&&/not allowed from here/i.test(msg))
+    return 'The front door refused this request \u2014 see netlify/functions/lib/guard.js.';
+  if(status===429) return 'Rate limited by the front door \u2014 too many requests in a minute.';
   if(status===401||status===403) return 'Airtable rejected the key \u2014 check AIRTABLE_API_KEY and that the token can access this base.';
   if(status===422) return 'A field name does not match the table \u2014 '+msg;
   if(status===500&&/env vars/i.test(msg)) return 'Environment variables are not set on this deploy.';
@@ -2248,7 +2255,7 @@ async function benchSave(note){
   try{
     let r;
     try{
-      r=await fetch(CONFIG.notesEndpoint,{method:'POST',headers:{'Content-Type':'application/json'},
+      r=await fetch(CONFIG.notesEndpoint,{method:'POST',headers:{'Content-Type':'application/json',...APP_HDR},
         body:JSON.stringify(note)});
     }catch(netErr){ console.error('note save could not reach the server:', netErr);
       throw new Error(location.protocol==='file:'?'this page was opened as a file':'we could not reach the server'); }
