@@ -1522,8 +1522,6 @@ function vMapNamed(){
    used to ask a leader to fill in by hand, answered from the map. */
 function vCheck(){
   const c=zoneCounts(2), tot=c.reduce((a,b)=>a+b,0);
-  /* both of these are just the counts — no roster needed either way */
-  const ready=c[3]+c[4], lead=c[4];
   /* Every row on this screen claims to come off the map, so every row has to
      be computed. Three of them used to be typed into the HTML by hand. */
   const covC=coverage();
@@ -1538,13 +1536,11 @@ function vCheck(){
       <div class="eyebrow" style="margin-top:26px;margin-bottom:8px">All of this comes off your map</div>
       <div class="known">
         <div class="known-row"><div class="known-k">Students in your group</div><div class="known-v">${tot}</div></div>
-        <div class="known-row stacked"><div class="known-k">Where they are now</div>
+        <div class="known-row stacked"><div class="known-k">People</div>
           <div class="known-v"><div class="chal-stack">${ZONES.map((z,i)=>
             `<div class="chal-row"><span class="chal-dot" style="background:var(${z.v})"></span><span class="chal-n">${z.name}</span><b>${c[i]}</b></div>`).join('')}</div></div></div>
-        <div class="known-row"><div class="known-k">Ready to help reach others</div><div class="known-v">${ready}</div></div>
-        <div class="known-row"><div class="known-k">Sent out to lead</div><div class="known-v">${lead} student${lead===1?'':'s'}</div></div>
-        <div class="known-row"><div class="known-k">Programs running</div><div class="known-v">${PROGRAMS.length}, covering ${madeBy} of the 5 challenges</div></div>
-        <div class="known-row"><div class="known-k">Never asked</div><div class="known-v">${neverMade.length?neverMade.map(z=>z.name).join(' · '):'None — every challenge is covered'}</div></div>
+        <div class="known-row"><div class="known-k">Programs</div><div class="known-v">${PROGRAMS.length} running, covering ${madeBy} of the 5 challenges</div></div>
+        <div class="known-row"><div class="known-k">No programme makes</div><div class="known-v">${neverMade.length?neverMade.map(z=>z.name).join(' · '):'Nothing — every challenge is covered'}</div></div>
       </div>
       <p class="note" style="margin-top:18px">If something is wrong here, change it on your map and it changes here too.</p>
       <div style="margin-top:24px;display:flex;gap:10px">
