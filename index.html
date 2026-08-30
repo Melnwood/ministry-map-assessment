@@ -412,6 +412,7 @@ h2{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.01
 .ntt{font-size:12.5px;line-height:1.35;color:var(--ink);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .nmeta{font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;color:var(--ink-45)}
 .nrow.done .ntt{color:var(--ink-45);text-decoration:line-through}
+.known-why{color:var(--ink-45);font-weight:400}
 .known-row.stacked{align-items:flex-start}
 .chal-stack{display:flex;flex-direction:column;gap:5px;width:100%}
 .chal-row{display:flex;align-items:center;gap:9px;font-size:14px}
@@ -1540,7 +1541,9 @@ function vCheck(){
           <div class="known-v"><div class="chal-stack">${ZONES.map((z,i)=>
             `<div class="chal-row"><span class="chal-dot" style="background:var(${z.v})"></span><span class="chal-n">${z.name}</span><b>${c[i]}</b></div>`).join('')}</div></div></div>
         <div class="known-row"><div class="known-k">Programs</div><div class="known-v">${PROGRAMS.length} running, covering ${madeBy} of the 5 challenges</div></div>
-        <div class="known-row"><div class="known-k">No programme makes</div><div class="known-v">${neverMade.length?neverMade.map(z=>z.name).join(' · '):'Nothing — every challenge is covered'}</div></div>
+        <div class="known-row"><div class="known-k">Not covered</div><div class="known-v">${neverMade.length
+          ? `${neverMade.map(z=>z.name).join(' · ')} <span class="known-why">&mdash; nothing you run asks ${neverMade.length===1?'this':'these'}</span>`
+          : 'Nothing &mdash; every challenge has something that asks it'}</div></div>
       </div>
       <p class="note" style="margin-top:18px">If something is wrong here, change it on your map and it changes here too.</p>
       <div style="margin-top:24px;display:flex;gap:10px">
@@ -1685,7 +1688,7 @@ function vReport(){
       <div class="zonebar">
         ${ZONES.map((z,i)=>`<div class="zcol" style="--zc:var(${z.v})">
           <div class="zhd"><div class="zname">${z.name}</div><div class="zcount">${c[i]}</div></div>
-          <div class="zbody">${cov[z.n].length?cov[z.n].map(p=>`<div class="chip"><span>${p.name}</span><span class="mv ${p.freq==='Yearly'?'back':''}">${p.freq}</span></div>`).join(''):'<div class="chip" style="background:none;box-shadow:inset 0 0 0 1.5px var(--ink-15);color:var(--ink-45);font-style:italic">never asked</div>'}</div>
+          <div class="zbody">${cov[z.n].length?cov[z.n].map(p=>`<div class="chip"><span>${p.name}</span><span class="mv ${p.freq==='Yearly'?'back':''}">${p.freq}</span></div>`).join(''):'<div class="chip" style="background:none;box-shadow:inset 0 0 0 1.5px var(--ink-15);color:var(--ink-45);font-style:italic">not covered</div>'}</div>
         </div>`).join('')}
       </div>
     </div>
