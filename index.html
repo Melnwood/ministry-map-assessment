@@ -292,8 +292,14 @@ h2{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.01
 .mg-freq{font-family:var(--mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-45)}
 
 /* the five challenge headings */
+/* Each column carries a wash of its own colour the whole way down, so the
+   eye can follow one challenge from what you run to who is there without
+   counting across. Kept very faint — it is a guide, not a highlight. */
+.mg-ch,.mg-num,.mg-cell{background:color-mix(in srgb,var(--zc) 5%,transparent)}
+.mg-num.edit{background:color-mix(in srgb,var(--zc) 5%,transparent)}
 .mg-ch{padding:14px 12px 12px;border-bottom:1px solid var(--line);font-size:12px;font-weight:600;line-height:1.25;
-       display:flex;align-items:flex-start;gap:7px;box-shadow:inset 0 3px 0 var(--zc)}
+       display:flex;align-items:flex-start;gap:7px;box-shadow:inset 0 3px 0 var(--zc);
+       background:color-mix(in srgb,var(--zc) 10%,transparent)}
 .mg-ch i{font-family:var(--mono);font-style:normal;font-size:10px;font-weight:600;color:var(--zc);flex:none;margin-top:1px}
 
 /* the number row */
@@ -304,17 +310,25 @@ h2{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.01
 .mg-num.edit .cnv{font-size:21px;width:2.6ch;text-align:left}
 .mg-num.edit .stp{width:22px;height:22px;font-size:14px}
 
-/* programme + name cells */
-.mg-cell{padding:8px 10px;border-bottom:1px solid var(--ink-08);display:flex;flex-wrap:wrap;gap:5px;align-content:flex-start;min-height:44px}
-.mg-dash{color:var(--ink-15);font-size:14px;align-self:center}
-.pchip,.schip{font:inherit;font-size:12px;line-height:1.25;text-align:left;cursor:pointer;border:0;border-radius:7px;
-        padding:5px 9px;background:color-mix(in srgb,var(--zc) 13%,transparent);color:var(--ink);
-        box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--zc) 26%,transparent);transition:background .13s}
-.pchip:hover,.schip:hover{background:color-mix(in srgb,var(--zc) 24%,transparent)}
-.pchip.is,.schip.is{background:var(--zc);color:#fff;box-shadow:none}
-.schip .mv{font-family:var(--mono);font-style:normal;font-size:9px;margin-left:5px;opacity:.65}
-.schip.add{background:none;box-shadow:inset 0 0 0 1px var(--ink-15);color:var(--ink-45);padding:5px 10px}
-.schip.add:hover{color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink-45)}
+/* Programme and name cells read as a list down the column, one per line —
+   the way the paper form lists them. Chips wrapping side by side turned a
+   column of eight students into a block you had to pick apart. */
+.mg-cell{padding:6px 7px;border-bottom:1px solid var(--ink-08);display:flex;flex-direction:column;
+         align-items:stretch;gap:1px;min-height:44px;justify-content:flex-start}
+.mg-dash{color:var(--ink-15);font-size:14px;align-self:flex-start;padding:3px 5px}
+.pchip,.schip{font:inherit;font-size:12.5px;line-height:1.3;text-align:left;cursor:pointer;border:0;border-radius:6px;
+        width:100%;padding:4px 7px 4px 15px;background:none;color:var(--ink);position:relative;
+        display:flex;align-items:baseline;gap:6px;transition:background .12s,color .12s}
+/* a small mark in the challenge's colour, so a name still reads as belonging
+   to its column once the pill has gone */
+.pchip::before,.schip::before{content:'';position:absolute;left:5px;top:.62em;width:5px;height:5px;border-radius:50%;background:var(--zc)}
+.pchip:hover,.schip:hover{background:color-mix(in srgb,var(--zc) 14%,transparent)}
+.pchip.is,.schip.is{background:var(--zc);color:#fff}
+.pchip.is::before,.schip.is::before{background:#fff}
+.schip .mv{font-family:var(--mono);font-style:normal;font-size:9px;margin-left:auto;opacity:.6;flex:none}
+.schip.add{color:var(--ink-45);padding-left:15px;margin-top:3px}
+.schip.add::before{background:none;box-shadow:inset 0 0 0 1px var(--ink-15);border-radius:1px}
+.schip.add:hover{color:var(--ink);background:none}
 
 /* full-width rows inside the grid */
 .mg-wide{grid-column:2 / -1;padding:8px 10px;border-bottom:1px solid var(--ink-08)}
@@ -1222,12 +1236,12 @@ function mapGridHTML(){
 
   h+=`<div class="mg-gut mg-count"><b>${PROGRAMS.length}</b><span>running</span></div>`;
   h+=ZONES.map(z=>{const n=cov[z.n].length;
-    return `<div class="mg-num${n?'':' zero'}">${n}</div>`}).join('');
+    return `<div class="mg-num${n?'':' zero'}" style="--zc:var(${z.v})">${n}</div>`}).join('');
 
   FREQS.forEach(fq=>{
     h+=`<div class="mg-gut mg-freq">${fq}</div>`;
     h+=ZONES.map(z=>{const items=inCell(z.n,fq);
-      return `<div class="mg-cell">${items.length
+      return `<div class="mg-cell" style="--zc:var(${z.v})">${items.length
         ? items.map(x=>`<button class="pchip${selProgram===x.pi?' is':''}" data-prog="${x.pi}" style="--zc:var(${z.v})">${esc(x.p.name)}</button>`).join('')
         : '<span class="mg-dash">&ndash;</span>'}</div>`}).join('');
   });
@@ -1241,8 +1255,8 @@ function mapGridHTML(){
 
   h+=`<div class="mg-gut mg-count"><b id="cnt-tot">${tot}</b><span>students</span></div>`;
   h+=ZONES.map((z,i)=>named
-      ? `<div class="mg-num${c[i]?'':' zero'}">${c[i]}</div>`
-      : `<div class="mg-num edit">
+      ? `<div class="mg-num${c[i]?'':' zero'}" style="--zc:var(${z.v})">${c[i]}</div>`
+      : `<div class="mg-num edit" style="--zc:var(${z.v})">
            <button class="stp" data-cnt="${i}:-1" aria-label="One fewer">&minus;</button>
            <input class="cnv" id="cnv${i}" data-cntv="${i}" type="text" inputmode="numeric"
                   value="${c[i]}" aria-label="How many at ${plain(z.name)}">
@@ -1252,7 +1266,7 @@ function mapGridHTML(){
   if(named){
     h+='<div class="mg-gut mg-freq">Names</div>';
     h+=ZONES.map(z=>{const inz=STUDENTS.filter(x=>x.hist[NOW]===z.n);
-      return `<div class="mg-cell">${inz.map(x=>{
+      return `<div class="mg-cell" style="--zc:var(${z.v})">${inz.map(x=>{
         const d=x.hist[NOW]-(x.hist[1]||x.hist[NOW]);
         const tag=!x.hist[1]?'<i class="mv">new</i>':d>0?`<i class="mv">+${d}</i>`:d<0?`<i class="mv back">${d}</i>`:'';
         return `<button class="schip${selStudent===x.id?' is':''}" data-sel="${x.id}" style="--zc:var(${z.v})">${esc(x.name)}${tag}</button>`;
