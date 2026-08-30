@@ -59,6 +59,13 @@ leader is skipping — not at a personal failing.
 | 4 | Expansion | CPR | **CPR**, Expansion, Team | ongoing | Workers |
 | 5 | Leadership Multiplication | REST | **Restructure, Entrust, Support, Train**, Multiplication | 1.5 years | Leaders |
 
+**The Typical column is not sourced.** Searched 26 Aug 2026: no phase
+duration appears anywhere in the M-Lens docx or either spreadsheet. The five
+spans came from an unverified chalkboard reading, the same provenance as the
+old `SIX` guess, and "ongoing" is not a duration at all. Every place the app
+shows a span marks it with the placeholder asterisk. Do not quote these
+figures, and do not build anything that scales to them.
+
 **The tool is not always a breakdown of the phase.** For Preparation,
 Foundation and Leadership Multiplication the tool's letters *are* the
 scored categories. For Ministry Training and Expansion they are not: the
