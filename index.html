@@ -296,18 +296,15 @@ button.phtier{cursor:pointer}
 .jr-end{font-family:var(--display);font-style:italic;font-size:19px;font-weight:600;fill:var(--ink-45)}
 .jr-n{font-family:var(--mono);font-size:13px;font-weight:600;fill:#fff}
 .jr-name{font-size:13px;font-weight:600;fill:var(--ink-70)}
-/* right-aligned so the ends line up and the eye compares lengths, not starts */
-.jstack{display:flex;flex-direction:column;gap:5px;margin-top:4px}
-.jsrow{display:grid;grid-template-columns:150px 1fr;align-items:center;gap:12px}
-.jslab{font-size:12px;font-weight:600;text-align:right;line-height:1.2}
-.jslab em{display:block;font-family:var(--mono);font-style:normal;font-size:9.5px;font-weight:400;
-          letter-spacing:.04em;color:var(--ink-45);margin-top:2px}
-.jsbar{display:flex;justify-content:flex-end;height:22px}
-.jsbar i{display:block;height:100%;border-radius:5px;background:rgba(74,59,174,var(--t))}
-.jsbar i.open{background:repeating-linear-gradient(90deg,rgba(74,59,174,.26) 0 9px,transparent 9px 16px);
-              border-radius:5px 0 0 5px}
-.jstack-note{font-size:11.5px;line-height:1.5;color:var(--ink-45);margin-top:12px}
-@media(max-width:560px){.jsrow{grid-template-columns:112px 1fr}}
+/* right-aligned so the ends line up; the span sits outside on the right */
+.jstack{display:flex;flex-direction:column;gap:5px;margin-top:6px}
+.jsrow{display:grid;grid-template-columns:1fr 92px;align-items:center;gap:14px}
+.jsbar{display:flex;justify-content:flex-end}
+.jsbar i{display:block;font-style:normal;font-size:12.5px;font-weight:600;color:#fff;
+         padding:9px 14px;border-radius:7px;background:rgba(74,59,174,var(--t));
+         white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.jsyr{font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;color:var(--ink-45)}
+@media(max-width:560px){.jsrow{grid-template-columns:1fr 76px;gap:9px}.jsbar i{font-size:11.5px;padding:8px 11px}}
 .jclimb{height:150px;margin-top:4px}
 .jfig-foot{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:8px}
 .jfig-foot span{font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;color:var(--ink-45);text-align:center}
@@ -1133,39 +1130,25 @@ function vJesus(){
   </div></div>`;
 }
 
-/* The phases as layers, right-aligned, where a layer's width is how long
-   that phase ran in Christ's own life. The spans are read off PHASES, which
-   is the framework's own table — 30 years, 1.5 years, 6-9 months, ongoing,
-   1.5 years. A range is taken at its midpoint, which is arithmetic on what
-   is written, not a new claim. "Ongoing" is given no number and no length:
-   it runs the full width with an open edge, because the table states no end
-   and inventing one would be the easiest lie on this page.
+/* The phases as a cake: widest at the base, narrowing by an even step to
+   the top, right-aligned so the ends line up. The taper is deliberately
+   uniform and carries no measurement — it is the shape of the framework,
+   not a chart of it. The span for each phase sits outside the bar on the
+   right, where it can be read across whatever the bar's width.
 
-   The proportion is the teaching. Thirty years of preparation next to a
-   ministry measured in months is the whole point of the diagram, so the
-   bars are not floored to make the small ones look bigger — the spans are
-   printed beside every label instead. */
+   (Note the difference from the challenge cake, where JOURNEY.md records
+   that width MUST equal people. That one shows a group's real shape; this
+   one shows no data at all, so a drawn taper claims nothing.) */
 function phaseYearsHTML(){
-  const months=t=>{
-    if(/ongoing/i.test(t)) return null;
-    const yr=t.match(/([\d.]+)\s*year/); if(yr) return parseFloat(yr[1])*12;
-    const rng=t.match(/([\d.]+)\s*[\u2013-]\s*([\d.]+)\s*month/);
-    if(rng) return (parseFloat(rng[1])+parseFloat(rng[2]))/2;
-    const mo=t.match(/([\d.]+)\s*month/); if(mo) return parseFloat(mo[1]);
-    return null;
-  };
-  const vals=PHASES.map(p=>months(p.span));
-  const mx=Math.max(...vals.filter(v=>v!=null));
   return `<div class="jstack">
     ${[...PHASES].reverse().map(p=>{
-      const m=months(p.span), open=m==null;
-      const w=open?100:Math.max(1.2,(m/mx)*100);
+      const w=100-(p.n-1)*12;                  /* 100 at the base, 52 at the top */
+      const t=(.20+(5-p.n)*.09).toFixed(2);    /* and deepening toward the base */
       return `<div class="jsrow">
-        <span class="jslab">${pname(p)}<em>${p.span}</em></span>
-        <span class="jsbar"><i class="${open?'open':''}" style="width:${w}%;--t:${(.20+p.n*.10).toFixed(2)}"></i></span>
+        <span class="jsbar"><i style="width:${w}%;--t:${t}">${pname(p)}</i></span>
+        <span class="jsyr">${p.span}</span>
       </div>`}).join('')}
-  </div>
-  <p class="jstack-note">Width is how long each phase ran in Christ&rsquo;s life. Expansion has no length here because the framework gives it none &mdash; it is still going.</p>`;
+  </div>`;
 }
 
 /* The road, drawn rather than measured: unbelief on the left, maturity on
