@@ -317,9 +317,11 @@ it was, so the list never claims something is fixed that Airtable never
 heard about. Note text is escaped before it reaches `innerHTML`; a tester
 writing "students < 12" would otherwise swallow the rest of the panel.
 
-A new note also emails Mel, via an Airtable automation on the Workbench
-table (`wflOfIn3NJtYD4Gvf`) rather than any code in this repo. If notes stop
-arriving, check that automation is still switched on before looking here.
+**No email on new notes, decided 26 Aug 2026.** An automation was built and
+then removed — a mail per note is noise when a tester is working through a
+screen. The notes live in the base and in the panel; Mel reads them when he
+chooses to, or asks Claude to pull the open ones and work through them.
+Do not add a per-note notification back without Mel asking for it.
 
 ---
 
