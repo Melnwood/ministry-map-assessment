@@ -274,6 +274,18 @@ h2{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.01
 .phtier.on{background:var(--phase);box-shadow:0 5px 16px rgba(74,59,174,.26)}
 .phtier.empty{background:none!important;box-shadow:inset 0 0 0 1.5px var(--ink-15);color:var(--ink-45)}
 .phtier.empty b{color:var(--ink-15)}
+/* the logged list inside the note bot */
+.nlist{margin-top:16px;border-top:1px solid var(--ink-08);padding-top:12px}
+.nhd{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-45);margin-bottom:8px}
+.nhd span{letter-spacing:.04em}
+.nrow{display:flex;gap:10px;width:100%;text-align:left;background:none;border:0;border-radius:8px;padding:7px 8px;cursor:pointer;align-items:flex-start}
+.nrow:hover{background:var(--ink-08)}
+.ntick{flex:none;width:16px;height:16px;margin-top:2px;border-radius:4px;box-shadow:inset 0 0 0 1.5px var(--ink-15);display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff}
+.nrow.done .ntick{background:var(--z3);box-shadow:none}
+.ncol{display:flex;flex-direction:column;gap:2px;min-width:0}
+.ntt{font-size:12.5px;line-height:1.35;color:var(--ink);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.nmeta{font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;color:var(--ink-45)}
+.nrow.done .ntt{color:var(--ink-45);text-decoration:line-through}
 .known-row.stacked{align-items:flex-start}
 .chal-stack{display:flex;flex-direction:column;gap:5px;width:100%}
 .chal-row{display:flex;align-items:center;gap:9px;font-size:14px}
@@ -1763,6 +1775,9 @@ const SCREENS={today:'Today',map:'Your map',check:'Check-up',reports:'Reports',r
 const screenNow=()=>SCREENS[active]||'Somewhere';
 
 let NOTES=[], draftShots=[], storageOK=null, saveErr=null, justSaved=false;
+/* Note text is typed by a tester and rendered into innerHTML. A stray < in
+   "students < 12" would swallow the rest of the panel. */
+const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let WHO=null, askingWho=false;
 try{ WHO=localStorage.getItem('workbench-who')||null }catch(e){ WHO=null }
 function setWho(v){
@@ -1838,6 +1853,18 @@ async function benchAdd(){
     justSaved=true; render(); setTimeout(()=>{justSaved=false;render()},2600);
   }
 }
+/* Mark a note fixed, or put it back. The tick moves straight away and the
+   save reconciles; if the save fails the tick goes back where it was, so the
+   list never claims something is fixed that Airtable never heard about. */
+async function benchFix(id){
+  const n=NOTES.find(x=>x.id===id); if(!n)return;
+  const was=n.state;
+  n.state = was==='done' ? 'open' : 'done';
+  render();
+  await benchSave(n);
+  if(saveErr){ const m=NOTES.find(x=>x.id===id); if(m)m.state=was; render(); }
+}
+
 function benchShot(files){
   [...files].slice(0,3).forEach(file=>{
     const r=new FileReader();
@@ -1880,6 +1907,23 @@ function botHTML(){
         : justSaved
           ? `<p class="bot-hint ok">Saved. ${n} note${n===1?'':'s'} so far.</p>`
           : `<p class="bot-hint">&#8984;V pastes a screenshot straight in.</p>`}
+
+      ${(!WHO||askingWho)||!n?'':(()=>{
+        const open=NOTES.filter(x=>x.state!=='done').length;
+        const rows=[...NOTES].sort((a,b)=>new Date(b.at)-new Date(a.at)).map(x=>{
+          const done=x.state==='done';
+          return `<button class="nrow${done?' done':''}" data-fix="${x.id}"
+                    aria-pressed="${done}" title="${done?'Mark as not fixed':'Mark as fixed'}">
+            <span class="ntick">${done?'&#10003;':''}</span>
+            <span class="ncol">
+              <span class="ntt">${esc(x.text)}</span>
+              <span class="nmeta">${esc(x.who||'Unknown')}${x.area?' &middot; '+esc(x.area):''} &middot; ${new Date(x.at).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</span>
+            </span>
+          </button>`}).join('');
+        return `<div class="nlist">
+          <div class="nhd">Logged<span>${open} still open</span></div>
+          ${rows}
+        </div>`;})()}
     </div>
   </div></div>`;
 }
@@ -1938,6 +1982,7 @@ document.addEventListener('click',e=>{
     if(t.dataset.who==='ask'){askingWho=true;render();setTimeout(()=>{const el=document.getElementById('bn-who');el&&el.focus()},40);return}
     setWho(document.getElementById('bn-who').value); return}
   if(t=hit('bench')){if(t.dataset.bench==='add')benchAdd(); return}
+  if(t=hit('fix')){benchFix(Number(t.dataset.fix)); return}
   if(t=hit('unshot')){draftShots.splice(+t.dataset.unshot,1);render();return}
   if(t=hit('sel')){selStudent=(selStudent===+t.dataset.sel?null:+t.dataset.sel);addingTo=null;render();return}
   if(t=hit('move')){const[i,z]=t.dataset.move.split(':');moveStudent(+i,+z);return}
