@@ -238,6 +238,39 @@ h2{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.01
 .tier b{font-family:var(--mono);font-size:16px;font-weight:600;flex-shrink:0}
 .tier.empty{background:none!important;box-shadow:inset 0 0 0 1.5px var(--ink-15);color:var(--ink-45)}
 .tier.empty b{color:var(--ink-15)}
+/* the road — challenges, left to right */
+.road{width:100%}
+.road-row{display:grid;grid-template-columns:repeat(5,1fr);column-gap:6px}
+.road-row.bars{align-items:end;height:96px}
+.road-row.bars span{display:flex;align-items:flex-end;justify-content:center;height:100%}
+.road-row.bars i{display:block;width:70%;border-radius:6px 6px 0 0;min-height:3px}
+.road-row.rail{position:relative;justify-items:center;padding:11px 0 9px}
+.road-row.rail::before{content:'';position:absolute;left:10%;right:10%;top:50%;transform:translateY(-50%);height:2px;background:var(--ink-08)}
+.mile-dot{width:11px;height:11px;border-radius:50%;position:relative;box-shadow:0 0 0 3px var(--surface)}
+.mile-dot.empty{background:var(--surface);box-shadow:0 0 0 3px var(--surface),inset 0 0 0 1.5px var(--ink-15)}
+.road-row.labs .lab{text-align:center;min-width:0}
+.road-row.labs b{display:block;font-family:var(--mono);font-size:15px;font-weight:600;line-height:1}
+.road-row.labs span{display:block;font-size:10px;font-weight:600;color:var(--ink-45);line-height:1.2;margin-top:5px}
+.road-row.labs .lab.empty b{color:var(--ink-15)}
+/* the phases, as layers anchored on the right */
+/* phrow, not prow — .prow is already the programme row further down */
+.phcake{display:flex;flex-direction:column;gap:8px;width:100%}
+.phrow{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px}
+.phrow .phlab{font-size:11px;font-weight:600;color:var(--ink-45);text-align:right;white-space:nowrap}
+.phrow .phbar{height:15px;background:var(--ink-08);border-radius:4px;overflow:hidden}
+.phrow .phbar i{display:block;height:100%;border-radius:4px;background:rgba(74,59,174,.28)}
+.phrow.done .phbar i{background:var(--ink-45)}
+.phrow.on .phbar i{background:var(--phase)}
+.phrow.on .phlab{color:var(--phase)}
+.phrow.on .phlab::before{content:'\25B8 ';color:var(--phase)}
+.phrow .phval{font-family:var(--mono);font-size:11px;color:var(--ink-45);min-width:2.4em;text-align:right}
+.phrow.on .phval{color:var(--phase);font-weight:600}
+.known-row.stacked{align-items:flex-start}
+.chal-stack{display:flex;flex-direction:column;gap:5px;width:100%}
+.chal-row{display:flex;align-items:center;gap:9px;font-size:14px}
+.chal-row .chal-dot{width:9px;height:9px;border-radius:50%;flex:none}
+.chal-row .chal-n{flex:1;color:var(--ink-70)}
+.chal-row b{font-family:var(--mono);font-weight:600}
 .plinth{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-45);text-align:center;margin-top:16px;padding-top:13px;border-top:1px solid var(--ink-08)}
 .climb{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;align-items:end;width:100%;height:186px}
 .step{display:flex;flex-direction:column;justify-content:flex-end;height:100%}
@@ -867,9 +900,12 @@ function vToday(){
     : d<0 ? `${-d} fewer student${d===-1?'':'s'} ${d===-1?'is':'are'} further on<br>than in <em>the spring</em>.`
     : `Your group is the same shape<br>as it was in <em>the spring</em>.`;
 
-  /* the cake — widest tier is where most students are, so a healthy
-     pipeline makes a cake and an unhealthy one visibly does not */
-  const tiers=cakeHTML(L.r);
+  /* The road. The five challenges read left to right, the way the training
+     deck draws them. Column height is the count, never a stylised shape —
+     size must equal people, or the group's true shape stops being visible.
+     The vertical cake is still what the then/now comparison uses. */
+  const sc=scoresOf(L);
+  const road=roadHTML(L.r);
 
   return `<div class="view"><div class="wrap">
     <div class="eyebrow">CB Fr&yacute;dlant youth &middot; ${fmtDate(L)}</div>
@@ -879,19 +915,20 @@ function vToday(){
       <div class="duo-half">
         <div class="eyebrow">Where your students are</div>
         <div class="big-n">${tot}<em>students</em></div>
-        <div class="duo-vis"><div class="cake">${tiers}</div></div>
-        <div class="plinth">${hasNames()?'Each student sits at the furthest invitation they have said yes to':'Each number is how many have said yes to that invitation, and no further'}</div>
+        <div class="duo-vis">${road}</div>
+        <div class="plinth">${hasNames()?'Each student is counted once, at the furthest challenge they have reached':'Each number is how many have reached that challenge, and no further'}</div>
       </div>
       <div class="duo-rule"></div>
       <div class="duo-half">
         <div class="eyebrow">What season your ministry is in</div>
         <div class="big-n ph">${pname(PHASES[ph-1])}</div>
-        <div class="duo-vis"><div class="climb">
+        <div class="duo-vis"><div class="phcake">
           ${PHASES.map(p=>{
-            const st=p.n===ph?'on':(p.n<ph?'done':'ahead');
-            return `<div class="step ${st}" style="--h:${20+p.n*16}%;--t:${.22+p.n*.09}">
-              <div class="riser">${p.n===ph?'<span class="here">YOU ARE HERE</span>':''}</div>
-              <div class="slab">${pname(p)}</div></div>`;
+            const st=p.n===ph?'on':(p.n<ph?'done':'ahead'), v=sc[p.n];
+            return `<div class="phrow ${st}">
+              <div class="phlab">${pname(p)}</div>
+              <div class="phbar"><i style="width:${Math.max(1.5,v*10)}%"></i></div>
+              <div class="phval">${v.toFixed(1)}</div></div>`;
           }).join('')}
         </div></div>
         <div class="plinth">${chg?`Stepped up from ${pname(PHASES[currentPhase(scoresOf(chg))-1])} on ${fmtDate(chg)}`:'Your first phase'}</div>
@@ -918,6 +955,20 @@ function vToday(){
       <button class="btn ghost" data-go="time">See how you have moved</button>
     </div>
   </div></div>`;
+}
+
+/* The road: five milestones left to right, column height = how many people.
+   Used on Today. The vertical cake below is still the then/now comparison. */
+function roadHTML(ri){
+  const c=zoneCounts(ri), mx=Math.max(1,...c);
+  return `<div class="road">
+    <div class="road-row bars">${ZONES.map((z,i)=>
+      `<span>${c[i]?`<i style="height:${12+80*(c[i]/mx)}%;background:var(${z.v})"></i>`:''}</span>`).join('')}</div>
+    <div class="road-row rail">${ZONES.map((z,i)=>
+      `<span class="mile-dot${c[i]?'':' empty'}" style="${c[i]?`background:var(${z.v})`:''}"></span>`).join('')}</div>
+    <div class="road-row labs">${ZONES.map((z,i)=>
+      `<div class="lab${c[i]?'':' empty'}"><b>${c[i]}</b><span>${z.name}</span></div>`).join('')}</div>
+  </div>`;
 }
 
 /* reusable cake, used on Today and in the then/now comparison */
@@ -1178,6 +1229,11 @@ function vCheck(){
   const c=zoneCounts(2), tot=c.reduce((a,b)=>a+b,0);
   /* both of these are just the counts — no roster needed either way */
   const ready=c[3]+c[4], lead=c[4];
+  /* Every row on this screen claims to come off the map, so every row has to
+     be computed. Three of them used to be typed into the HTML by hand. */
+  const covC=coverage();
+  const madeBy=ZONES.filter(z=>covC[z.n].length).length;
+  const neverMade=ZONES.filter(z=>!covC[z.n].length);
 
   if(quizIx===0){
     return `<div class="view"><div class="wrap"><div class="q-shell">
@@ -1187,11 +1243,13 @@ function vCheck(){
       <div class="eyebrow" style="margin-top:26px;margin-bottom:8px">All of this comes off your map</div>
       <div class="known">
         <div class="known-row"><div class="known-k">Students in your group</div><div class="known-v">${tot}</div></div>
-        <div class="known-row"><div class="known-k">Furthest invitation said yes to</div><div class="known-v">${c.map((n,i)=>`${ZONES[i].name} ${n}`).join(' · ')}</div></div>
-        <div class="known-row"><div class="known-k">Asked to help reach others</div><div class="known-v">${ready} said yes</div></div>
-        <div class="known-row"><div class="known-k">Sent out to lead</div><div class="known-v">${lead} student</div></div>
-        <div class="known-row"><div class="known-k">Programs running</div><div class="known-v">${PROGRAMS.length}, making 4 of the 5 invitations</div></div>
-        <div class="known-row"><div class="known-k">Never asked</div><div class="known-v">Nobody is ever sent out to lead</div></div>
+        <div class="known-row stacked"><div class="known-k">Where they are now</div>
+          <div class="known-v"><div class="chal-stack">${ZONES.map((z,i)=>
+            `<div class="chal-row"><span class="chal-dot" style="background:var(${z.v})"></span><span class="chal-n">${z.name}</span><b>${c[i]}</b></div>`).join('')}</div></div></div>
+        <div class="known-row"><div class="known-k">Ready to help reach others</div><div class="known-v">${ready}</div></div>
+        <div class="known-row"><div class="known-k">Sent out to lead</div><div class="known-v">${lead} student${lead===1?'':'s'}</div></div>
+        <div class="known-row"><div class="known-k">Programs running</div><div class="known-v">${PROGRAMS.length}, covering ${madeBy} of the 5 challenges</div></div>
+        <div class="known-row"><div class="known-k">Never asked</div><div class="known-v">${neverMade.length?neverMade.map(z=>z.name).join(' · '):'None — every challenge is covered'}</div></div>
       </div>
       <p class="note" style="margin-top:18px">If something is wrong here, change it on your map and it changes here too.</p>
       <div style="margin-top:24px;display:flex;gap:10px">

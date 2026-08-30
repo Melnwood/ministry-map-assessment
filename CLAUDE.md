@@ -32,6 +32,19 @@ Believe", not "camp carries that challenge", not "the only door". Write
 about **who has been asked and who has not**. A programme is *where an
 invitation tends to get made*, nothing more.
 
+> **Suspended, 26 Aug 2026 — the "said yes to" phrasing only.** Mel logged
+> a note against the check-up screen: *"For 'said yes,' I don't even know
+> what that means. You're not using the language of the tool. You're making
+> stuff up here."* Fair — the source instrument just lists people under each
+> challenge; "the furthest invitation they have said yes to" was our framing
+> layered on top, and it read as invented. The UI now says "how far each has
+> come" / "reached", which is closer to the source and plainer to read aloud.
+>
+> This is provisional — Mel said "drop it for now", not "drop it". The rest
+> of the rule still stands: a challenge is still not a place, a programme
+> still does not carry one. If the phrasing comes back, it comes back
+> because someone decided it, not because this paragraph was skimmed.
+
 ### Five Phases of a disciplemaking ministry
 
 Each phase has a JV training tool. The 35 statements are tagged to the
