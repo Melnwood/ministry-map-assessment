@@ -1868,14 +1868,36 @@ function botHTML(){
 /* ============================================================
    BOOT
    ============================================================ */
+/* The pencil renders FIRST and inside its own try, on purpose.
+   It used to render after the view, so any error in any view took the note
+   bot down with it — the one moment you most want to report a problem is the
+   moment the screen is broken, and that was exactly when the pencil vanished.
+   A broken view now says so on screen instead of going blank. */
 function render(){
   const ta=document.getElementById('bn-text'); const keep=(ta&&ta.value)?ta.value:null;
+
+  try{ document.getElementById('bot').innerHTML=botHTML(); }
+  catch(err){ console.error('note bot failed to render', err); }
+
+  try{
+    document.getElementById('tiersw').innerHTML=
+      `<span>viewing as</span>${[['open','Open'],['activated','Activated']].map(([k,l])=>
+        `<button class="${TIER===k?'is':''}" data-tier="${k}">${l}</button>`).join('')}`;
+  }catch(err){ console.error('tier switch failed to render', err); }
+
   const m={today:vToday,map:vMap,check:vCheck,reports:vReports,report:vReport,time:vTime};
-  document.getElementById('app').innerHTML=m[active]();
-  document.getElementById('bot').innerHTML=botHTML();
-  document.getElementById('tiersw').innerHTML=
-    `<span>viewing as</span>${[['open','Open'],['activated','Activated']].map(([k,l])=>
-      `<button class="${TIER===k?'is':''}" data-tier="${k}">${l}</button>`).join('')}`;
+  try{
+    document.getElementById('app').innerHTML=m[active]();
+  }catch(err){
+    console.error('view "'+active+'" failed to render', err);
+    document.getElementById('app').innerHTML=
+      `<div class="view"><div class="wrap"><div class="cerr" style="margin-top:40px">
+        This screen did not load. Nothing you have entered is lost &mdash; try another tab.
+        <br><br>Please tell us with the pencil, bottom right. It helps to say what you
+        were doing.<br><br><code style="font-size:12px;opacity:.8">${active}: ${String(err&&err.message||err)}</code>
+      </div></div></div>`;
+  }
+
   if(keep!==null){const t2=document.getElementById('bn-text'); if(t2)t2.value=keep;}
 }
 document.addEventListener('click',e=>{
