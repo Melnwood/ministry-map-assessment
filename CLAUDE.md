@@ -115,6 +115,15 @@ Mel, not the build team, not a stakeholder.
 - Short sentences. Plain words. A leader should be able to read any line
   aloud to their team without translating it.
 
+**Phase, not season.** Decided 26 Aug 2026. The framework is Five Phases,
+the tab says phase, the tables say phase — so the app's own copy says phase
+everywhere. "Season" survives in exactly two sentences on the Like Jesus
+page, both quoted from Mel's own text ("five distinct phases, or seasons"
+and "What season your ministry is in"). That is where the synonym gets
+introduced; it is not a second name to use afterwards. The app had drifted
+into "what season you are in" on the report while the tab beside it said
+Five Phases.
+
 ### Two wording rules learned the hard way
 
 **Statements take truth labels. Practices take frequency labels.** The

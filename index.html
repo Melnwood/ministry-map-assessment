@@ -1271,7 +1271,7 @@ function vToday(){
         <div class="rc-delta">${(()=>{const g=reportGist(L);
           /* the weakest category is not always part of the phase's tool —
              for Ministry Training and Expansion the tool is one category
-             among several, so name the season, not the acronym */
+             among several, so name the phase, not the acronym */
           return `${g.actions} thing${g.actions===1?'':'s'} to do next &middot; weakest part of ${pname(PHASES[g.phase-1])}: <b class="dn">${g.weakest} &mdash; ${g.band}</b>`})()}</div>
       </div>
       <div class="rc-n"><b>${tot}</b><span>students</span></div>
@@ -1309,7 +1309,7 @@ function phaseSpans(){
   return out;
 }
 /* The phases cake, shared by Today and by a report so the two cannot drift
-   apart. `tappable` makes each layer a button that opens what that season
+   apart. `tappable` makes each layer a button that opens what that phase
    is about; Today just shows it. */
 function phaseCakeHTML(sc,ph,tappable){
   const spans=phaseSpans();
@@ -1657,14 +1657,14 @@ function toolInfoHTML(){
 `
       : `<p class="tip-line quiet">Measured in ${pname(ph)}, alongside ${T.words.filter(w=>w!==toolInfo).join(', ')}.</p>`}
     <div class="eyebrow tip-sec">${isAcr
-      ? `The ${qs.length} statements of this season`
+      ? `The ${qs.length} statements of this phase`
       : `${qs.length} statement${qs.length===1?'':'s'} measure${qs.length===1?'s':''} this`}</div>
     <ul class="tip-qs">${qs.map(q=>{const a=ansIn(R,q);
       return `<li class="${a>=A_TRUE?'yes':a===A_NONE?'no':'part'}"><i></i><span>${q.t}</span>
         <em>${isAcr?`${q.cat} &middot; `:''}${SCALE[a].t}</em></li>`}).join('')}</ul>
     ${notYet.length
       ? `<p class="tip-do"><b>Where to start.</b> ${notYet.length===1?'This one is':`These ${notYet.length} are`} not yet true of you. ${acr} is the tool you already have for ${notYet.length===1?'it':'them'}.</p>`
-      : `<p class="tip-do"><b>All of these are true of you.</b> Nothing here is the thing holding this season back.</p>`}
+      : `<p class="tip-do"><b>All of these are true of you.</b> Nothing here is the thing holding this phase back.</p>`}
   </div></div>`;
 }
 
@@ -1795,10 +1795,10 @@ function vReport(){
     </div>
 
     <div class="sec">
-      <div class="sec-hd"><h2>What season you are in</h2><span class="n">TAP A LAYER</span></div>
+      <div class="sec-hd"><h2>What phase you are in</h2><span class="n">TAP A LAYER</span></div>
       <div class="card">
         ${phaseCakeHTML(sc,ph,true)}
-        <p class="note" style="margin-top:12px">Each layer is how far that phase is cleared. ${selPhase?'':'Tap any layer to read what that season is about, and what is true of you in it.'}</p>
+        <p class="note" style="margin-top:12px">Each layer is how far that phase is cleared. ${selPhase?'':'Tap any layer to read what that phase is about, and what is true of you in it.'}</p>
         ${selPhase?phaseWhy(selPhase,ph,R):''}
       </div>
     </div>
@@ -1809,7 +1809,7 @@ function vReport(){
       <div class="sec-hd"><h2>How ${pname(PHASES[ph-1])} works</h2><span class="n">JV TRAINING TOOL</span></div>
       <div class="toolbox">
         <div class="tb-head"><button class="tb-acr" data-tool="${tk}" title="What ${tk} stands for">${tk}</button><p>${T.spells.join(' &middot; ')}</p></div>
-        <p class="tb-scale">How often each part of this season actually happens, read from your own answers.</p>
+        <p class="tb-scale">How often each part of this phase actually happens, read from your own answers.</p>
         <div class="tb-words">
           ${parts.map(x=>{const b=band(x[1].v);return `<button class="tw ${b.k}" data-tool="${x[0]}"><div class="tw-w">${x[0]}${isTool(x[0])&&T.letters.length===1&&x[0]!==tk?` <span class="acrtag mine">${tk}</span>`:''}</div>
             ${pips(x[1].v)}<div class="tw-v">${doingBand(x[1].v)}</div>
@@ -1820,10 +1820,10 @@ function vReport(){
         if(!w) return '';
         return `<p class="note" style="margin-top:12px">Weakest part: <b>${w[0]}</b>. ${
           w[0]===tk
-            ? `${tk} is the tool for this season &mdash; ${T.spells.join(', ').toLowerCase()}. You already have it; this is the part of the season you are furthest from, so it is the tool to go back to rather than something new to learn.`
+            ? `${tk} is the tool for this phase &mdash; ${T.spells.join(', ').toLowerCase()}. You already have it; this is the part of the phase you are furthest from, so it is the tool to go back to rather than something new to learn.`
           : isTool(w[0])
-            ? `That is one part of ${tk}, the tool for this season. The tool is the answer, not the diagnosis.`
-            : `${tk} is the tool for this season. This part is measured beside it, and it is the one you are furthest from.`}</p>`})()}
+            ? `That is one part of ${tk}, the tool for this phase. The tool is the answer, not the diagnosis.`
+            : `${tk} is the tool for this phase. This part is measured beside it, and it is the one you are furthest from.`}</p>`})()}
     </div>`})()}
 
     <div class="sec">
@@ -1858,7 +1858,7 @@ function vReport(){
 
 /* ============================================================
    WHAT EACH PHASE IS ABOUT
-   The report answers "what season am I in and what does it ask
+   The report answers "what phase am I in and what does it ask
    of me", not "how did the maths land".
    ============================================================ */
 /* the story of a phase, read from the statements */
