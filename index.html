@@ -2215,11 +2215,17 @@ async function benchLoad(){
     const body=await r.text();
     if(!r.ok)throw new Error(explain(r.status,body));
     NOTES=JSON.parse(body); storageOK=true; loadErr=null;
-  }catch(err){ storageOK=false; loadErr=String(err.message||err); }
+  }catch(err){
+    storageOK=false; loadErr=null;
+    console.warn('workbench notes did not load:', err.message||err);
+  }
   render();
 }
 
-/* Turn a status code into the thing that is actually wrong. */
+/* explain() is for whoever is fixing the app. It names env vars and base
+   ids, and a tester must never see any of it — that is how a feedback bot
+   teaches people not to trust the product it is attached to. It goes to the
+   console. What the tester sees is one plain sentence about their own note. */
 /* A tester reads this sentence and decides whether to phone someone. It has
    to say what happened in words a person can act on, never a browser's own
    error text. */
@@ -2244,9 +2250,15 @@ async function benchSave(note){
     try{
       r=await fetch(CONFIG.notesEndpoint,{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify(note)});
-    }catch(netErr){ throw new Error(netMsg()+' Your note is safe.'); }
+    }catch(netErr){ console.error('note save could not reach the server:', netErr);
+      throw new Error(location.protocol==='file:'?'this page was opened as a file':'we could not reach the server'); }
     const body=await r.text();
-    if(!r.ok)throw new Error(explain(r.status,body));
+    if(!r.ok){
+      console.error('note save failed:', explain(r.status,body));
+      throw new Error(/^\s*</.test(body)
+        ? 'the page needs reloading first'
+        : 'something on our side is not working');
+    }
     const saved=JSON.parse(body);
     const i=NOTES.findIndex(n=>n.id===note.id); if(i>-1)NOTES[i]=saved;
     storageOK=true; saveErr=null;
@@ -2319,9 +2331,8 @@ function botHTML(){
         <button class="btn bot-go" data-bench="add">Log it</button>
       </div>`}
       ${(!WHO||askingWho)?'':saveErr
-        ? `<p class="bot-hint warn">Not saved &mdash; ${saveErr}<br>Your note is still in the box; nothing was lost.</p>`
-        : loadErr
-        ? `<p class="bot-hint quiet">Earlier notes could not be loaded &mdash; ${loadErr}<br>You can still write one; it will save on its own.</p>`
+        ? `<p class="bot-hint warn">Not saved &mdash; ${saveErr}. Your note is still in the box, so nothing is lost. Try again in a moment.</p>`
+
         : justSaved
           ? `<p class="bot-hint ok">Saved. ${n} note${n===1?'':'s'} so far.</p>`
           : `<p class="bot-hint">&#8984;V pastes a screenshot straight in.</p>`}
