@@ -403,6 +403,12 @@ button.phtier{cursor:pointer}
   .mg-count b,.mg-num{font-size:18px}
 }
 
+.tnstack{display:flex;flex-direction:column;gap:6px}
+.tn-one{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px 10px}
+.tn-one.now{border-color:var(--ink-45)}
+.tn-lab{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-45);
+        display:flex;gap:10px;align-items:baseline;margin-bottom:8px}
+.tn-lab span{letter-spacing:.03em}
 /* the acronym panel */
 .tipwrap{position:fixed;inset:0;z-index:80;background:rgba(22,32,46,.42);display:flex;align-items:center;
          justify-content:center;padding:22px;animation:fade .15s both}
@@ -863,22 +869,17 @@ const Q=[
 const TOOLS={
  CCE: {phase:1, words:['Call','Character','Empowerment'],
        letters:['Call','Character','Empowerment'],
-       spells:['Call','Character','Empowerment'],
-       line:'What God settles in the leader before there is a ministry to lead.'},
+       spells:['Call','Character','Empowerment'],},
  SIX: {phase:2, words:['Relationships','Love','Vision','Jesus','Prayer','Bible'],
        letters:['Relationships','Love','Vision','Jesus','Prayer','Bible'],
-       spells:['Relationships','Love','Vision','Jesus','Prayer','Bible'],
-       line:'The six things a group is built on before it is built out.'},
+       spells:['Relationships','Love','Vision','Jesus','Prayer','Bible'],},
  TAR: {phase:3, words:['Serve','TAR','Evangelize','Shepherd'],
-       letters:['TAR'], spells:['Teach','Act','Reflect'],
-       line:'The training loop. You teach it, they do it, then you sit down and talk about what happened.'},
+       letters:['TAR'], spells:['Teach','Act','Reflect'],},
  CPR: {phase:4, words:['CPR','Expansion','Team'],
-       letters:['CPR'], spells:['Cultivate','Plant','Reap'],
-       line:'How ground that is not yours yet becomes ground where something grows.'},
+       letters:['CPR'], spells:['Cultivate','Plant','Reap'],},
  REST:{phase:5, words:['Restructure','Entrust','Support','Train','Multiplication'],
        letters:['Restructure','Entrust','Support','Train'],
-       spells:['Restructure','Entrust','Support','Train'],
-       line:'How you hand a ministry to the leaders you raised without dropping it.'}
+       spells:['Restructure','Entrust','Support','Train'],}
 };
 const toolFor=n=>Object.entries(TOOLS).find(([k,v])=>v.phase===n);
 /* every measured category -> the phase it belongs to (drives the "your phase" tag) */
@@ -1267,32 +1268,26 @@ const spanLabel=x=>{
 
 /* The road: five milestones left to right, column height = how many people.
    Used on Today. The vertical cake below is still the then/now comparison. */
-function roadHTML(ri){
-  const c=zoneCounts(ri), mx=Math.max(1,...c);
+function roadHTML(ri,opts){
+  const o=opts||{};
+  const c=zoneCounts(ri);
+  /* Two roads compared side by side MUST share a scale. Scaled to their own
+     maximum they look identical however much the group grew. */
+  const mx=o.mx||Math.max(1,...c);
   return `<div class="road">
     <div class="road-row bars">${ZONES.map((z,i)=>
       `<span>${c[i]?`<i style="height:${12+80*(c[i]/mx)}%;background:var(${z.v})"></i>`:''}</span>`).join('')}</div>
     <div class="road-row rail">${ZONES.map((z,i)=>
       `<span class="mile-dot${c[i]?'':' empty'}" style="${c[i]?`background:var(${z.v})`:''}"></span>`).join('')}</div>
     <div class="road-row labs">${ZONES.map((z,i)=>
-      `<div class="lab${c[i]?'':' empty'}"><b>${c[i]}</b><span>${z.name}</span></div>`).join('')}</div>
+      `<div class="lab${c[i]?'':' empty'}"><b>${c[i]}</b>${o.noNames?'':`<span>${z.name}</span>`}</div>`).join('')}</div>
   </div>`;
-}
-
-/* reusable cake, used on Today and in the then/now comparison */
-function cakeHTML(ri,small){
-  const c=zoneCounts(ri), mx=Math.max(...c);
-  return [...ZONES].reverse().map(z=>{
-    const n=c[z.n-1], w=n?44+56*(n/mx):44;
-    return `<div class="tier ${n?'':'empty'} ${small?'sm':''}" style="width:${w}%;background:var(${z.v})">
-      <span class="tn">${small?z.name.replace(' &amp; ',' &amp; '):z.name}</span><b>${n}</b></div>`;
-  }).join('');
 }
 
 /* ---------- MAP ----------
    Editable. This is the only place data changes; everything else
    in the app reads from it. Moving a student here updates the
-   current snapshot, so the cake, the report and the check-up
+   current snapshot, so the road, the report and the check-up
    auto-fill all follow. */
 let selStudent=null, addingTo=null, selProgram=null, addingProgram=false, toolInfo=null;
 const NOW=2;                       /* the current roster snapshot */
@@ -1592,7 +1587,7 @@ function toolInfoHTML(){
     <div class="tip-hd">${isAcr?acr:toolInfo}</div>
     ${isAcr
       ? `<div class="tip-spells">${T.spells.map(w=>`<span>${w}</span>`).join('')}</div>
-         <p class="tip-line">${T.line}</p>`
+`
       : `<p class="tip-line quiet">Measured in ${pname(ph)}, alongside ${T.words.filter(w=>w!==toolInfo).join(', ')}.</p>`}
     <div class="eyebrow tip-sec">${isAcr
       ? `The ${qs.length} statements of this season`
@@ -1746,7 +1741,7 @@ function vReport(){
       return `<div class="sec">
       <div class="sec-hd"><h2>How ${pname(PHASES[ph-1])} works</h2><span class="n">JV TRAINING TOOL</span></div>
       <div class="toolbox">
-        <div class="tb-head"><button class="tb-acr" data-tool="${tk}" title="What ${tk} stands for">${tk}</button><p>${T.line}</p></div>
+        <div class="tb-head"><button class="tb-acr" data-tool="${tk}" title="What ${tk} stands for">${tk}</button><p>${T.spells.join(' &middot; ')}</p></div>
         <p class="tb-scale">How often each part of this season actually happens, read from your own answers.</p>
         <div class="tb-words">
           ${parts.map(x=>{const b=band(x[1].v);return `<button class="tw ${b.k}" data-tool="${x[0]}"><div class="tw-w">${x[0]}${isTool(x[0])&&T.letters.length===1&&x[0]!==tk?` <span class="acrtag mine">${tk}</span>`:''}</div>
@@ -1799,37 +1794,14 @@ function vReport(){
    The report answers "what season am I in and what does it ask
    of me", not "how did the maths land".
    ============================================================ */
-const STORY={
- 1:{essence:'Before the ministry, the minister.',
-    about:'Thirty years of preparation for three years of ministry &mdash; that is the proportion Jesus kept, and it is the one this phase refuses to let you skip. Preparation is where God settles your character, your calling, and who has authorised you, so that everything built later has something to stand on.',
-    turn:null,
-    risk:'Skipping it. A ministry can run on gifting alone &mdash; for about two years.',
-    door:'You know your call, someone knows the real you, and your church has blessed you. Then you can start building.'},
- 2:{essence:'A few students, genuinely known.',
-    about:'Foundation is where a group becomes a place rather than an event. Six things go in the ground here &mdash; prayer, relationship, God&rsquo;s Word, vision, love, and Christ himself &mdash; and none of them can be added later without digging up what you already built.',
-    turn:'You stopped working only on yourself and started working on the room.',
-    risk:'Mistaking a full room for a healthy one.',
-    door:'Students would say an adult here knows them, and they have heard the gospel clearly. Then you have something worth handing to someone.'},
- 3:{essence:'Teach it, let them do it, then talk about what happened.',
-    about:'Ministry Training is the narrowing. You stop spending yourself evenly across the crowd and start pouring into a handful who can carry what you carry. It is the shortest phase on the board and the one that decides everything after it &mdash; and it only works as a loop, not a course.',
-    turn:'You stopped being the one who does the ministry and became the one who trains it.',
-    risk:'Teaching and acting but never reflecting &mdash; activity without anyone growing.',
-    door:'A student could lead without you in the room, and another leader is growing beside you.'},
- 4:{essence:'The turn outward.',
-    about:'For three phases the work pointed inward &mdash; your own walk, then your group&rsquo;s health, then a few workers you trained. Expansion is where that trained core stops being the point and becomes the means. The question changes from &ldquo;are our students growing?&rdquo; to &ldquo;who is not here yet?&rdquo;',
-    turn:'You stopped asking whether your students are growing and started asking who is still outside.',
-    risk:'Reaping where nothing was cultivated, or cultivating forever and never reaping. Both feel like work.',
-    door:'Your students bring friends without being asked, you are present where students already are, and you know what happens to a new believer in their first month.'},
- 5:{essence:'Give it away.',
-    about:'Leadership Multiplication is the bravest phase because it costs you the thing you built. You re-structure so the ministry no longer runs through you, entrust it to leaders you raised, stay close enough to support them, and keep training the generation behind them.',
-    turn:'You stopped growing your ministry and started growing other people&rsquo;s.',
-    risk:'Entrusting without supporting &mdash; which is not releasing people, it is abandoning them.',
-    door:'There is no next door. This is the room.'}
-};
-
 /* the story of a phase, read from the statements */
+/* Everything on this card is either from the source documents (the phase
+   name, its tool and what the acronym spells, who it is aimed at, how long
+   it typically runs) or from the leader's own answers. There is no written
+   description of a phase here, because the sources do not contain one and
+   inventing one is how the app ends up teaching something JV never said. */
 function phaseWhy(n,cur,R){
-  const p=PHASES[n-1], st=STORY[n];
+  const p=PHASES[n-1];
   const qs=Q.filter(q=>q.phase===n).map(q=>({...q,a:ansIn(R,q)}));
   const tiers=[
     {k:'true', hd:'True of you',        list:qs.filter(q=>q.a>=A_TRUE)},
@@ -1837,25 +1809,24 @@ function phaseWhy(n,cur,R){
     {k:'not',  hd:'Not yet true',       list:qs.filter(q=>q.a===A_NONE)}
   ];
   const prev=n>1?Q.filter(q=>q.phase===n-1).map(q=>({...q,a:ansIn(R,q)})).sort((a,b)=>b.a-a.a).slice(0,2):[];
+  const sc=scoresOf(R);
 
   let stance;
-  if(n===cur) stance=`This is where you are now. You are not behind — you have arrived here, and this is the work in front of you.`;
-  else if(n<cur) stance=`You have come through this. It is not finished — it is simply no longer the thing deciding your next move.`;
-  else stance=`Not yet. This is what is waiting on the other side of ${PHASES[cur-1].name}, and it is worth knowing where you are headed.`;
+  if(n===cur) stance='This is where you are now.';
+  else if(n<cur) stance='You have come through this.';
+  else stance=`Not yet &mdash; this is on the other side of ${pname(PHASES[cur-1])}.`;
 
   const tk=p.tool, T=TOOLS[tk];
   return `<div class="why-panel">
     <div class="ph-head">
-      <div class="ph-essence">&ldquo;${st.essence}&rdquo;</div>
-      <div class="ph-stance">${stance}</div>
+      <div class="ph-essence">${p.name}</div>
+      <div class="ph-stance">${stance} ${sc[n].toFixed(1)} out of 10.</div>
     </div>
     <div class="ph-meta">
       <span><b>${tk}</b>${T.spells.join(' &middot; ')}</span>
       <span><b>Aimed at</b>${p.who}</span>
       <span><b>Typically</b>${p.span}</span>
     </div>
-    <p class="ph-about">${st.about}</p>
-    ${st.turn?`<div class="ph-turn"><span>The turn</span>${st.turn}</div>`:''}
 
     <div class="tf-grid">
       ${tiers.map(t=>`<div>
@@ -1865,15 +1836,9 @@ function phaseWhy(n,cur,R){
     </div>
 
     ${prev.length?`<div class="ph-carry">
-      <div class="eyebrow">What you carried in from ${PHASES[n-2].name}</div>
+      <div class="eyebrow">Strongest in ${pname(PHASES[n-2])}, the phase before</div>
       ${prev.map(q=>`<div class="carry-line">${q.t}</div>`).join('')}
-      <p class="note" style="margin-top:9px">This is what makes ${p.name} possible. Lose it and you drop back, whatever the rest of the ministry looks like.</p>
     </div>`:''}
-
-    <div class="ph-foot">
-      <div><div class="eyebrow">Where this goes wrong</div><p>${st.risk}</p></div>
-      <div><div class="eyebrow">${n===5?'When you are here':`How you know you have finished ${p.name}`}</div><p>${st.door}</p></div>
-    </div>
   </div>`;
 }
 
@@ -2039,11 +2004,13 @@ function vTime(){
 
     <div class="sec">
       <div class="sec-hd"><h2>How the shape changed</h2><span class="n">THEN AND NOW</span></div>
-      <div class="thennow">
-        <div class="tn-side"><div class="tn-lab">${fmtDate(F)}<span>${t0} students</span></div><div class="cake">${cakeHTML(F.r,1)}</div></div>
-        <div class="tn-arrow">&rarr;</div>
-        <div class="tn-side"><div class="tn-lab">${fmtDate(L)}<span>${t1} students</span></div><div class="cake">${cakeHTML(L.r,1)}</div></div>
-      </div>
+      ${(()=>{const mx=Math.max(1,...zoneCounts(F.r),...zoneCounts(L.r));
+        return `<div class="tnstack">
+          <div class="tn-one"><div class="tn-lab">${fmtDate(F)}<span>${t0} students</span></div>
+            ${roadHTML(F.r,{mx,noNames:true})}</div>
+          <div class="tn-one now"><div class="tn-lab">${fmtDate(L)}<span>${t1} students</span></div>
+            ${roadHTML(L.r,{mx})}</div>
+        </div>`})()}
       <p class="note" style="margin-top:14px">The base widened and the top filled in.${furthest?` A year ago nobody was being sent; ${furthest.name} has gone from ${ZONES[furthest.hist[F.r]-1].name.replace(/&amp;/g,'&')} to ${ZONES[furthest.hist[L.r]-1].name.replace(/&amp;/g,'&')}.`:named?' A year ago nobody was being sent, and that is still true.':''}</p>
     </div>
 
