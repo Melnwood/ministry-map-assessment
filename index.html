@@ -253,18 +253,27 @@ h2{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.01
 .road-row.labs span{display:block;font-size:10px;font-weight:600;color:var(--ink-45);line-height:1.2;margin-top:5px}
 .road-row.labs .lab.empty b{color:var(--ink-15)}
 /* the phases, as layers anchored on the right */
-/* phrow, not prow — .prow is already the programme row further down */
-.phcake{display:flex;flex-direction:column;gap:8px;width:100%}
-.phrow{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px}
-.phrow .phlab{font-size:11px;font-weight:600;color:var(--ink-45);text-align:right;white-space:nowrap}
-.phrow .phbar{height:15px;background:var(--ink-08);border-radius:4px;overflow:hidden}
-.phrow .phbar i{display:block;height:100%;border-radius:4px;background:rgba(74,59,174,.28)}
-.phrow.done .phbar i{background:var(--ink-45)}
-.phrow.on .phbar i{background:var(--phase)}
-.phrow.on .phlab{color:var(--phase)}
-.phrow.on .phlab::before{content:'\25B8 ';color:var(--phase)}
-.phrow .phval{font-family:var(--mono);font-size:11px;color:var(--ink-45);min-width:2.4em;text-align:right}
-.phrow.on .phval{color:var(--phase);font-weight:600}
+/* the phases as a cake, anchored on the right. Layer width is the phase
+   score, so the taper is the ministry's real shape — same rule as the
+   challenge cake: width must equal the thing, never a drawn silhouette.
+   phtier, not tier — .tier is the challenge cake in the then/now view. */
+.phcake{display:flex;flex-direction:column;align-items:flex-end;gap:4px;width:100%}
+.phtier{border-radius:7px;padding:8px 13px;display:flex;flex-direction:column;align-items:flex-start;gap:1px;color:#fff;min-width:0;transition:transform .16s}
+.phtier:hover{transform:scale(1.015)}
+/* name on its own line — a duration is far longer than a number was, and
+   side by side it squeezed the phase names into ellipses */
+.phtier .phn{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.005em;max-width:100%}
+.phtier b{font-family:var(--mono);font-size:11px;font-weight:600;opacity:.88;white-space:nowrap}
+.phtier b:empty{display:none}
+/* Colour says where you are, not which phase it is: everything under you is
+   cleared ground, the layer you are on is solid, everything above is faint.
+   Ramping by phase number made the narrow top layers the darkest, which read
+   as the opposite of a cake. */
+.phtier.done{background:rgba(74,59,174,.52)}
+.phtier.ahead{background:rgba(74,59,174,.2)}
+.phtier.on{background:var(--phase);box-shadow:0 5px 16px rgba(74,59,174,.26)}
+.phtier.empty{background:none!important;box-shadow:inset 0 0 0 1.5px var(--ink-15);color:var(--ink-45)}
+.phtier.empty b{color:var(--ink-15)}
 .known-row.stacked{align-items:flex-start}
 .chal-stack{display:flex;flex-direction:column;gap:5px;width:100%}
 .chal-row{display:flex;align-items:center;gap:9px;font-size:14px}
@@ -920,18 +929,21 @@ function vToday(){
       </div>
       <div class="duo-rule"></div>
       <div class="duo-half">
-        <div class="eyebrow">What season your ministry is in</div>
+        <div class="eyebrow">Ministry phases</div>
         <div class="big-n ph">${pname(PHASES[ph-1])}</div>
         <div class="duo-vis"><div class="phcake">
-          ${PHASES.map(p=>{
+          ${(()=>{const spans=phaseSpans();return [...PHASES].reverse().map(p=>{
             const st=p.n===ph?'on':(p.n<ph?'done':'ahead'), v=sc[p.n];
-            return `<div class="phrow ${st}">
-              <div class="phlab">${pname(p)}</div>
-              <div class="phbar"><i style="width:${Math.max(1.5,v*10)}%"></i></div>
-              <div class="phval">${v.toFixed(1)}</div></div>`;
-          }).join('')}
+            /* width is the score against the full 0-10 scale, not against the
+               best phase — so a ministry with nothing cleared looks like it */
+            /* 48% floor so the longest phase name still fits in an empty
+               layer — the challenge cake uses a 44% floor for the same reason */
+            const w=48+52*(v/10);
+            return `<div class="phtier ${st} ${v?'':'empty'}" style="width:${w}%">
+              <span class="phn">${pname(p)}</span><b>${spans[p.n]?spanLabel(spans[p.n]):(p.n<ph?'&mdash;':'')}</b></div>`;
+          }).join('')})()}
         </div></div>
-        <div class="plinth">${chg?`Stepped up from ${pname(PHASES[currentPhase(scoresOf(chg))-1])} on ${fmtDate(chg)}`:'Your first phase'}</div>
+        <div class="plinth">Each layer is how far that phase is cleared</div>
       </div>
     </div>
 
@@ -956,6 +968,36 @@ function vToday(){
     </div>
   </div></div>`;
 }
+
+/* How long this ministry has been in each phase, read from the check-up
+   history — which is the only record of it there is.
+
+   WHAT WOULD MAKE THESE WRONG: a check-up is not a measurement, it is a
+   sighting. A leader who does not check up for a year moves phases silently
+   and the app cannot know when. So every figure here is "first seen in this
+   phase on…", a bound rather than a duration, and it reads long — the real
+   move happened at some point before the check-up that noticed it. Phases
+   already behind the leader at their first check-up get no figure at all,
+   because there is nothing to read. */
+function phaseSpans(){
+  const seenAt={};
+  REPORTS.forEach(r=>{ const n=currentPhase(scoresOf(r)); if(!(n in seenAt)) seenAt[n]=r.d; });
+  const last=REPORTS[REPORTS.length-1].d, out={};
+  PHASES.forEach(p=>{
+    const from=seenAt[p.n];
+    if(!from){ out[p.n]=null; return; }
+    const moved=REPORTS.find(r=>r.d>from && currentPhase(scoresOf(r))>p.n);
+    out[p.n]={months:monthsBetween(from, moved?moved.d:last), current:!moved};
+  });
+  return out;
+}
+const spanLabel=x=>{
+  if(!x) return '';
+  const m=x.months;
+  const t=m<1?'under a month':m<18?`${m} month${m===1?'':'s'}`
+      :m%12===0?`${m/12} years`:`${Math.floor(m/12)}y ${m%12}m`;
+  return x.current?`${t} so far`:t;
+};
 
 /* The road: five milestones left to right, column height = how many people.
    Used on Today. The vertical cake below is still the then/now comparison. */
