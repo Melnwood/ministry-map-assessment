@@ -301,6 +301,19 @@ Fraunces and Archivo need checking for Cyrillic, or Bulgarian, Ukrainian and
 Serbian will silently fall back to a system font and look like a different
 product.
 
+## While someone is testing
+
+**Netlify deploys `main`, so every push to `main` changes what a tester is
+looking at, mid-session.** That is how 31 Aug went: a day of pushing
+straight to `main` while Dave was trying to use it, including two builds
+that were broken when they landed.
+
+- `main` is what testers get. It changes only for something they reported,
+  or for work that is finished and has passed the render check.
+- Everything else goes on a branch. Long refactors — the string extraction,
+  the roster wiring — stay there until they are done, not merged in pieces.
+- Merge deliberately, and preferably not while someone is mid-session.
+
 ## Before every push
 
 `.checks/render-check.js` renders every view in both tiers, all five phase
