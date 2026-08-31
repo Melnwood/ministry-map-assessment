@@ -1184,6 +1184,76 @@ function vNotes(){
   </div></div>`;
 }
 
+/* ============================================================
+   LANGUAGE
+   JV works across sixteen countries and this app is English-only, so
+   every user-facing string is being moved here behind a key. Extraction
+   first, translation later: getting the strings out of the code is the
+   one-time structural job, and it gets more expensive with every screen
+   we add.
+
+   RULES, and they are not style preferences:
+
+   1. No user-facing string inline. It goes in STRINGS with a key.
+   2. One whole sentence per key, with {placeholders}. Never build a
+      sentence by joining fragments — word order differs by language and
+      a translator cannot move words across a concatenation.
+   3. Plurals go through tn(), never `n===1?'':'s'`. English has two
+      forms; Czech, Slovak and Polish have three; Hungarian uses none
+      after a numeral ("5 diák", not "5 diákok"). Intl.PluralRules knows
+      every one of these rules already.
+   4. A missing key falls back to English and warns, so a half-finished
+      language still renders rather than showing blanks.
+   ============================================================ */
+let LANG='en';
+const STRINGS={en:{
+  /* ---------- Like Jesus ---------- */
+  'jesus.eyebrow':   'Growing a healthy youth ministry',
+  'jesus.title':     'Like <em>Jesus</em>',
+  'jesus.lede':      'The young generation is constantly changing, but Jesus remains relevant at all times and in every location. His example can help you grow a healthy youth ministry that changes lives for eternity.',
+  'jesus.sent':      'When Jesus commissioned his disciples, he told them &ldquo;As the Father sent me, so send I you.&rdquo; <span class="jref">{ref}</span> Like these early disciples, you also are sent to walk in his steps.',
+  'jesus.sent.ref':  'John 20:21',
+  'jesus.first':     'A closer look at his life in the gospels shows <b>two patterns</b> you can imitate in your ministry. The first is how he led people from unbelief to maturity. You can trace this path through five specific challenges.',
+  'jesus.fig1':      'Five Challenges of Christ',
+  'jesus.road.alt':  'A road from unbelief to maturity through the five challenges, under the local church.',
+  'jesus.road.start':'Unbelief',
+  'jesus.road.end':  'Maturity',
+  'jesus.road.local':'LOCAL',
+  'jesus.road.church':'CHURCH',
+  'jesus.second':    'The second pattern is how he built a ministry that developed leaders and continued to bring fruit even after he left. This is the path of growing a disciple-making ministry through five distinct phases, or seasons &mdash; a chronological view of the life of Christ.',
+  'jesus.fig2':      'Five Phases of a disciplemaking ministry',
+  'jesus.spans.note':'<b>*</b> These spans are not in the M-Lens documents &mdash; they need checking against JV&rsquo;s own material before anyone teaches from them.',
+  'jesus.use':       'You can use these two &ldquo;like Jesus&rdquo; overviews to do a check-up on your ministry, and know where you are and what to focus on next. The check-up gives you a ministry map that answers two questions.',
+  'jesus.q1':        '<b>Where your students are</b> on the path from unbelief to maturity.',
+  'jesus.q1.tag':    'Five Challenges of Christ',
+  'jesus.q2':        '<b>What season your ministry is in</b>, and what to focus on to build a disciplemaking ministry like Jesus.',
+  'jesus.q2.tag':    'Five Phases of Christ&rsquo;s ministry',
+  'jesus.go.check':  'Start your check-up',
+  'jesus.go.map':    'See the map first'
+}};
+
+function t(key,vars){
+  const table=STRINGS[LANG]||STRINGS.en;
+  let str = table[key]!==undefined ? table[key] : STRINGS.en[key];
+  if(str===undefined){ console.warn('missing string:',key); return key; }
+  return vars ? String(str).replace(/\{(\w+)\}/g,(m,k)=>vars[k]!==undefined?vars[k]:m) : str;
+}
+
+/* Plural-aware. STRINGS holds a set keyed by CLDR category —
+   {one, few, many, other} — and Intl.PluralRules picks the right one for
+   the active language. English only ever uses `one` and `other`; adding
+   Czech means adding `few`, and nothing in the code changes. */
+function tn(key,n,vars){
+  const table=STRINGS[LANG]||STRINGS.en;
+  const set = table[key]!==undefined ? table[key] : STRINGS.en[key];
+  if(!set){ console.warn('missing plural:',key); return key; }
+  let cat='other';
+  try{ cat=new Intl.PluralRules(LANG).select(n); }catch(e){}
+  const str = set[cat]!==undefined ? set[cat] : (set.other!==undefined?set.other:set.one);
+  return String(str).replace(/\{(\w+)\}/g,(m,k)=>
+    k==='n' ? n : (vars&&vars[k]!==undefined?vars[k]:m));
+}
+
 /* ---------- LIKE JESUS — the first thing anyone sees ----------
    Mel's text, close to verbatim. The two diagrams are drawn in the app's
    own colours rather than pasted as pictures, so the road here is the same
@@ -1193,38 +1263,38 @@ function vNotes(){
    leader has told us nothing. */
 function vJesus(){
   return `<div class="view"><div class="wrap jw">
-    <div class="eyebrow">Growing a healthy youth ministry</div>
-    <h1 class="jh">Like <em>Jesus</em></h1>
+    <div class="eyebrow">${t('jesus.eyebrow')}</div>
+    <h1 class="jh">${t('jesus.title')}</h1>
 
-    <p class="jlede">The young generation is constantly changing, but Jesus remains relevant at all times and in every location. His example can help you grow a healthy youth ministry that changes lives for eternity.</p>
+    <p class="jlede">${t('jesus.lede')}</p>
 
-    <p class="jp">When Jesus commissioned his disciples, he told them &ldquo;As the Father sent me, so send I you.&rdquo; <span class="jref">John 20:21</span> Like these early disciples, you also are sent to walk in his steps.</p>
+    <p class="jp">${t('jesus.sent',{ref:t('jesus.sent.ref')})}</p>
 
-    <p class="jp">A closer look at his life in the gospels shows <b>two patterns</b> you can imitate in your ministry. The first is how he led people from unbelief to maturity. You can trace this path through five specific challenges.</p>
+    <p class="jp">${t('jesus.first')}</p>
 
     <div class="jfig">
-      <div class="jfig-hd">Five Challenges of Christ</div>
+      <div class="jfig-hd">${t('jesus.fig1')}</div>
       ${challengeRoadSVG()}
     </div>
 
-    <p class="jp">The second pattern is how he built a ministry that developed leaders and continued to bring fruit even after he left. This is the path of growing a disciple-making ministry through five distinct phases, or seasons &mdash; a chronological view of the life of Christ.</p>
+    <p class="jp">${t('jesus.second')}</p>
 
     <div class="jfig">
-      <div class="jfig-hd">Five Phases of a disciplemaking ministry</div>
+      <div class="jfig-hd">${t('jesus.fig2')}</div>
       ${phaseYearsHTML()}
-      <p class="jstack-note"><b>*</b> These spans are not in the M-Lens documents &mdash; they need checking against JV&rsquo;s own material before anyone teaches from them.</p>
+      <p class="jstack-note">${t('jesus.spans.note')}</p>
     </div>
 
-    <p class="jp">You can use these two &ldquo;like Jesus&rdquo; overviews to do a check-up on your ministry, and know where you are and what to focus on next. The check-up gives you a ministry map that answers two questions.</p>
+    <p class="jp">${t('jesus.use')}</p>
 
     <ol class="jlist">
-      <li><b>Where your students are</b> on the path from unbelief to maturity.<span>Five Challenges of Christ</span></li>
-      <li><b>What season your ministry is in</b>, and what to focus on to build a disciplemaking ministry like Jesus.<span>Five Phases of Christ&rsquo;s ministry</span></li>
+      <li>${t('jesus.q1')}<span>${t('jesus.q1.tag')}</span></li>
+      <li>${t('jesus.q2')}<span>${t('jesus.q2.tag')}</span></li>
     </ol>
 
     <div class="jgo">
-      <button class="jbtn solid" data-go="check">Start your check-up</button>
-      <button class="jbtn" data-go="map">See the map first</button>
+      <button class="jbtn solid" data-go="check">${t('jesus.go.check')}</button>
+      <button class="jbtn" data-go="map">${t('jesus.go.map')}</button>
     </div>
   </div></div>`;
 }
@@ -1279,18 +1349,18 @@ function challengeRoadSVG(){
   };
   const amp=t=>t.replace(/&/g,'&amp;');
   return `<svg class="jroad" viewBox="0 0 720 214" role="img"
-       aria-label="A road from unbelief to maturity through the five challenges, under the local church.">
+       aria-label="${t('jesus.road.alt')}">
     <g fill="none" stroke="var(--ink-15)" stroke-width="1.4">
       <path d="M196 118 L360 62 L524 118"/>
       <rect x="336" y="62" width="48" height="40" rx="2"/>
       <path d="M330 64 L360 44 L390 64"/>
       <path d="M360 44 L360 26 M352 33 L368 33"/>
     </g>
-    <text x="286" y="86" class="jr-lab">LOCAL</text>
-    <text x="434" y="86" class="jr-lab" text-anchor="end">CHURCH</text>
+    <text x="286" y="86" class="jr-lab">${t('jesus.road.local')}</text>
+    <text x="434" y="86" class="jr-lab" text-anchor="end">${t('jesus.road.church')}</text>
     <path d="M120 150 L600 150" stroke="var(--ink-15)" stroke-width="1.6" stroke-dasharray="3 7"/>
-    <text x="112" y="156" class="jr-end" text-anchor="end">Unbelief</text>
-    <text x="608" y="156" class="jr-end">Maturity</text>
+    <text x="112" y="156" class="jr-end" text-anchor="end">${t('jesus.road.start')}</text>
+    <text x="608" y="156" class="jr-end">${t('jesus.road.end')}</text>
     <g fill="none" stroke="var(--ink-45)" stroke-width="2.6">
       <path d="M246 108 L246 138 M236 118 L256 118"/>
     </g>

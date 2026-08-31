@@ -271,6 +271,46 @@ One sentence, if it is ever needed outside this repo: *the check-up tells
 you what is true of your ministry; coaching is where it becomes about
 people, and that is where the names live.*
 
+## Language
+
+**Started 31 Aug 2026.** JV works across sixteen countries and this app is
+English-only. Every user-facing string is being moved into `STRINGS` behind
+a key, read through `t()` and `tn()`. Extraction first, translation later —
+getting the strings out of the code is the one-time structural job, and it
+gets more expensive with every screen added.
+
+**Four rules, and they are not style preferences:**
+
+1. **No user-facing string inline.** It goes in `STRINGS` with a key.
+2. **One whole sentence per key**, with `{placeholders}`. Never build a
+   sentence by joining fragments — word order differs by language and a
+   translator cannot move words across a concatenation.
+3. **Plurals go through `tn()`**, never `n===1?'':'s'`. English has two
+   forms; Czech, Slovak and Polish have three; Hungarian uses none after a
+   numeral ("5 diák", not "5 diákok"). `Intl.PluralRules` already knows
+   every one of these; the code just has to ask it.
+4. **A missing key falls back to English and warns**, so a half-finished
+   language renders rather than showing blanks.
+
+Done so far: the Like Jesus page, 24 keys. Everything else is still inline.
+
+**Two things to settle before translation starts, not after.** The 35
+statements are the instrument — they need JV's own translation, not a
+machine's, and JV may already have M-Lens in these languages. And the fonts:
+Fraunces and Archivo need checking for Cyrillic, or Bulgarian, Ukrainian and
+Serbian will silently fall back to a system font and look like a different
+product.
+
+## Before every push
+
+`.checks/render-check.js` renders every view in both tiers, all five phase
+cards, every acronym panel, all 35 check-up steps, both editor panels and
+the note bot in each of its states, and reports anything that throws, comes
+back empty, or asks for a missing string. Run it. A day was lost on 31 Aug
+to shipping first and finding the fault afterwards — twice from an edit
+script that validated, failed, and exited before writing, having already
+printed its progress.
+
 ## Architecture
 
 Deliberately boring. One HTML file, two Netlify functions, Airtable.
