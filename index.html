@@ -490,6 +490,14 @@ button.tw:hover{background:var(--ink-08)}
 .nt-shotnote{font-size:11.5px;color:var(--ink-45);margin-top:8px;font-style:italic}
 .nt-empty{margin-top:26px;padding:30px;text-align:center;border:1px dashed var(--ink-15);
   border-radius:12px;color:var(--ink-45);font-size:14px}
+.nt{grid-template-columns:26px 1fr auto}
+.nt-act{display:flex;gap:6px;align-items:flex-start}
+.nt-del{font-family:var(--mono);font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;
+  background:none;border:1px solid var(--ink-15);color:var(--ink-45);border-radius:99px;
+  padding:4px 10px;cursor:pointer;white-space:nowrap}
+.nt-del:hover{border-color:var(--ink-45);color:var(--ink)}
+.nt-del.go{background:var(--z5);border-color:var(--z5);color:#fff}
+.nt-del.go:hover{color:#fff}
 /* the logged list inside the note bot */
 .bot-hint.quiet{color:var(--ink-45)}
 .nlist{margin-top:16px;border-top:1px solid var(--ink-08);padding-top:12px}
@@ -1155,6 +1163,10 @@ function vNotes(){
           : (x.shots||[]).some(sh=>sh&&sh.tooBig)
             ? `<div class="nt-shotnote">A screenshot was attached but was too large to store.</div>` : ''}
       </div>
+      <div class="nt-act">${confirmDel===x.id
+        ? `<button class="nt-del go" data-del="${x.id}">Delete for good</button>
+           <button class="nt-del" data-del="cancel">Keep</button>`
+        : `<button class="nt-del" data-del="ask:${x.id}" title="Delete this note">Delete</button>`}</div>
     </div>`;
   };
   return `<div class="view"><div class="wrap">
@@ -2259,7 +2271,7 @@ function vTime(){
 const SCREENS={today:'Today',map:'Your map',check:'Check-up',reports:'Reports',report:'A report',time:'The year'};
 const screenNow=()=>SCREENS[active]||'Somewhere';
 
-let NOTES=[], draftShots=[], storageOK=null, saveErr=null, loadErr=null, justSaved=false, lastShotsFailed=0;
+let NOTES=[], draftShots=[], storageOK=null, saveErr=null, loadErr=null, justSaved=false, lastShotsFailed=0, confirmDel=null;
 /* fetch rejecting before any response gives a message no tester can act on
    ("Failed to execute 'fetch' on 'Window'"). Both the load and the save
    paths hit it, so both translate it here rather than one of them. */
@@ -2391,6 +2403,31 @@ function shrink(dataUrl,type){
     img.src=dataUrl;
   });
 }
+/* Deleting is not reversible — the row leaves Airtable and there is no bin.
+   So it takes two clicks, and the second one is a differently-worded button
+   rather than the same button again, which is easy to hit twice by accident.
+   The row is put back if the server refuses. */
+async function benchDelete(id){
+  const i=NOTES.findIndex(x=>x.id===id); if(i<0)return;
+  const note=NOTES[i];
+  confirmDel=null;
+  NOTES.splice(i,1); render();
+  if(!note.rec) return;                       /* never reached Airtable anyway */
+  try{
+    const r=await fetch(`${CONFIG.notesEndpoint}?id=${encodeURIComponent(note.rec)}`,
+      {method:'DELETE',headers:APP_HDR});
+    if(!r.ok){
+      console.error('note delete failed:', explain(r.status, await r.text()));
+      NOTES.splice(i,0,note); saveErr='we could not delete that one'; render();
+    }
+  }catch(err){
+    console.error('note delete could not reach the server:', err);
+    NOTES.splice(i,0,note);
+    saveErr=onTheWeb()?'we could not reach the server':'this is a local copy of the page, not the live site';
+    render();
+  }
+}
+
 function benchShot(files){
   [...files].slice(0,3).forEach(file=>{
     const r=new FileReader();
@@ -2519,6 +2556,11 @@ document.addEventListener('click',e=>{
     setWho(document.getElementById('bn-who').value); return}
   if(t=hit('bench')){if(t.dataset.bench==='add')benchAdd(); return}
   if(t=hit('fix')){benchFix(Number(t.dataset.fix)); return}
+  if(t=hit('del')){
+    const v=t.dataset.del;
+    if(v==='cancel'){confirmDel=null;render();return}
+    if(v.startsWith('ask:')){confirmDel=Number(v.slice(4));render();return}
+    benchDelete(Number(v)); return}
   if(t=hit('tool')){toolInfo=(t.dataset.tool==='close'||toolInfo===t.dataset.tool)?null:t.dataset.tool;render();return}
   if(t=hit('unshot')){draftShots.splice(+t.dataset.unshot,1);render();return}
   if(t=hit('sel')){selStudent=(selStudent===+t.dataset.sel?null:+t.dataset.sel);addingTo=null;render();return}
