@@ -2279,9 +2279,14 @@ let NOTES=[], draftShots=[], storageOK=null, saveErr=null, loadErr=null, justSav
 /* fetch rejecting before any response gives a message no tester can act on
    ("Failed to execute 'fetch' on 'Window'"). Both the load and the save
    paths hit it, so both translate it here rather than one of them. */
-const netMsg=()=>location.protocol==='file:'
-  ? 'This page was opened as a file, so it cannot reach the server. Open the site by its web address instead.'
-  : 'Could not reach the server. Check your connection and try again.';
+/* The common cause is not a network fault: the page is a local copy opened
+   off disk or from a preview, where a relative /api path has no host to
+   resolve against and can never work. That is every protocol except http
+   and https — file:, data:, blob:. */
+const onTheWeb=()=>/^https?:$/.test(location.protocol);
+const netMsg=()=>onTheWeb()
+  ? 'Could not reach the server. Check your connection and try again.'
+  : 'This is a local copy of the page, not the live site, so it has no server to save to.';
 /* Note text is typed by a tester and rendered into innerHTML. A stray < in
    "students < 12" would swallow the rest of the panel. */
 const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
