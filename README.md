@@ -60,11 +60,16 @@ than failing:
 | `State`     | Single select     | `open`, `doing`, `done`                  |
 | `LoggedAt`  | Date (with time)  | Sort field                               |
 | `ClaudeRead`| Long text         | The three-part read, when asked for      |
-| `Shots`     | Long text         | Base64 screenshots as JSON               |
+| `Screenshots`| Attachment       | Uploaded by `notes.js`, 5 MB each         |
+| `Shots`     | Long text         | Legacy base64, read-only, do not write   |
 
-`Shots` holds images inline rather than as attachments — simpler, and they
-never leave the base. Airtable caps a cell near 100k characters; the
-function drops oversized images to a marker rather than corrupting the row.
+Screenshots are real attachments. The original design held them inline as
+base64 in `Shots`, which was simpler and did not work: Airtable caps a cell
+near 100k characters and a screenshot base64-encodes to between 270k and
+2.7M, so almost every image was dropped to a marker. `notes.js` now uploads
+each one against the saved record after the note is written, and the app
+shrinks images to 1600px on the long edge first. `Shots` is still read so
+older notes keep whatever survived; nothing new is written to it.
 
 Student and check-up data is **not** in this table. That belongs in the
 Ministry Map base, which this prototype does not yet write to.

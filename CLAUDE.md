@@ -356,9 +356,13 @@ Do not add a per-note notification back without Mel asking for it.
    `DATA-PROTECTION.md`. Erasure still cannot be satisfied in one action.
 4. **Student names go to Anthropic** in the coach prompt. There is a
    toggle; it defaults to on. Mel's decision, not a default to inherit.
-5. **Screenshots mostly do not save.** Stored as base64 in a text field,
-   capped near 95k characters; a real screenshot is far bigger, so the
-   function drops it to a marker. Fix is Airtable attachments.
+5. ~~**Screenshots mostly do not save.**~~ **Fixed 31 Aug 2026.** They are
+   real Airtable attachments now, uploaded by `notes.js` against the saved
+   record, with a 5 MB cap and a client-side shrink to 1600px first. The old
+   `Shots` column held base64 in a long-text cell capped near 95k characters —
+   a screenshot base64-encodes to 270k–2.7M, so essentially every one was
+   dropped to a marker. `Shots` is still read so old notes keep their images;
+   nothing new is written to it.
 6. **Students, programmes and check-ups are in-memory demo data.** Wiring
    them to the Ministry Map base is the next real build.
 

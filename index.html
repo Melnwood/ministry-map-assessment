@@ -460,6 +460,8 @@ button.tw:hover{background:var(--ink-08)}
 .tb-acr{font:inherit;background:none;border:0;cursor:pointer;font-family:var(--mono);font-size:19px;
         font-weight:600;letter-spacing:.09em;color:var(--z4);padding:0;border-bottom:1.5px dotted var(--z4)}
 .tb-acr:hover{color:var(--ink)}
+.bot-local{font-family:var(--mono);font-size:9px;letter-spacing:.07em;text-transform:uppercase;
+  background:var(--z5);color:#fff;padding:2px 7px;border-radius:99px}
 /* the notes page */
 .tw-notes{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;padding:4px 9px;border-radius:99px;
   background:none;border:1px solid var(--ink-15);color:var(--ink-45);cursor:pointer;margin-left:10px;
@@ -2257,7 +2259,7 @@ function vTime(){
 const SCREENS={today:'Today',map:'Your map',check:'Check-up',reports:'Reports',report:'A report',time:'The year'};
 const screenNow=()=>SCREENS[active]||'Somewhere';
 
-let NOTES=[], draftShots=[], storageOK=null, saveErr=null, loadErr=null, justSaved=false;
+let NOTES=[], draftShots=[], storageOK=null, saveErr=null, loadErr=null, justSaved=false, lastShotsFailed=0;
 /* fetch rejecting before any response gives a message no tester can act on
    ("Failed to execute 'fetch' on 'Window'"). Both the load and the save
    paths hit it, so both translate it here rather than one of them. */
@@ -2335,6 +2337,7 @@ async function benchSave(note){
         : 'something on our side is not working');
     }
     const saved=JSON.parse(body);
+    lastShotsFailed=saved.shotsFailed||0;
     const i=NOTES.findIndex(n=>n.id===note.id); if(i>-1)NOTES[i]=saved;
     storageOK=true; saveErr=null;
   }catch(err){ storageOK=false; saveErr=String(err.message||err); }
@@ -2368,10 +2371,31 @@ async function benchFix(id){
   if(saveErr){ const m=NOTES.find(x=>x.id===id); if(m)m.state=was; render(); }
 }
 
+/* Screenshots are shrunk before they are sent. Airtable takes 5 MB per
+   attachment and Netlify caps a function request around 6 MB, and a retina
+   screen grab can approach both. 1600px on the long edge keeps text readable
+   and the payload small. */
+function shrink(dataUrl,type){
+  return new Promise(res=>{
+    const img=new Image();
+    img.onload=()=>{
+      const max=1600, sc=Math.min(1,max/Math.max(img.width,img.height));
+      if(sc===1) return res(dataUrl);
+      const c=document.createElement('canvas');
+      c.width=Math.round(img.width*sc); c.height=Math.round(img.height*sc);
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      try{ res(c.toDataURL(type==='image/jpeg'?'image/jpeg':'image/png',.92)); }
+      catch(e){ res(dataUrl); }
+    };
+    img.onerror=()=>res(dataUrl);
+    img.src=dataUrl;
+  });
+}
 function benchShot(files){
   [...files].slice(0,3).forEach(file=>{
     const r=new FileReader();
-    r.onload=()=>{ draftShots.push({name:file.name,type:file.type,data:r.result}); render(); };
+    r.onload=async()=>{ const data=await shrink(r.result,file.type);
+      draftShots.push({name:file.name,type:file.type,data}); render(); };
     r.readAsDataURL(file);
   });
 }
@@ -2386,7 +2410,7 @@ function botHTML(){
 
   return `<div class="botwrap"><div class="bot">
     <div class="bot-hd">
-      <b>Notes</b>
+      <b>Notes</b>${onTheWeb()?'':'<span class="bot-local">local copy &mdash; will not save</span>'}
       <button class="bot-x" data-bot="close" aria-label="Close">&times;</button>
     </div>
     <div class="bot-body">
@@ -2409,7 +2433,8 @@ function botHTML(){
         ? `<p class="bot-hint warn">Not saved &mdash; ${saveErr}. Your note is still in the box, so nothing is lost. Try again in a moment.</p>`
 
         : justSaved
-          ? `<p class="bot-hint ok">Saved. ${n} note${n===1?'':'s'} so far.</p>`
+          ? `<p class="bot-hint ok">Saved. ${n} note${n===1?'':'s'} so far.${
+              lastShotsFailed?` ${lastShotsFailed} screenshot${lastShotsFailed===1?'':'s'} could not be attached.`:''}</p>`
           : `<p class="bot-hint">&#8984;V pastes a screenshot straight in.</p>`}
 
       ${(!WHO||askingWho)||!n?'':(()=>{
