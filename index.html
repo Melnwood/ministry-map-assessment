@@ -2268,7 +2268,11 @@ function vTime(){
    sessions where storage is available, and export as text so
    Mel and Claude can work through them together in chat.
    ============================================================ */
-const SCREENS={today:'Today',map:'Your map',check:'Check-up',reports:'Reports',report:'A report',time:'The year'};
+/* One entry per view, or the note loses the one thing it tags automatically.
+   'jesus' and 'notes' were added later and missed, so every note logged from
+   the landing page — which is where the app opens — was filed as "Somewhere". */
+const SCREENS={jesus:'Like Jesus',today:'Today',map:'Your map',check:'Check-up',
+               reports:'Reports',report:'A report',time:'The year',notes:'Notes'};
 const screenNow=()=>SCREENS[active]||'Somewhere';
 
 let NOTES=[], draftShots=[], storageOK=null, saveErr=null, loadErr=null, justSaved=false, lastShotsFailed=0, confirmDel=null;
