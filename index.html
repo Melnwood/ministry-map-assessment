@@ -241,16 +241,18 @@ h2{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.01
 /* the road — challenges, left to right */
 .road{width:100%}
 .road-row{display:grid;grid-template-columns:repeat(5,1fr);column-gap:6px}
-.road-row.bars{align-items:end;height:96px}
-.road-row.bars span{display:flex;align-items:flex-end;justify-content:center;height:100%}
-.road-row.bars i{display:block;width:70%;border-radius:6px 6px 0 0;min-height:3px}
-.road-row.rail{position:relative;justify-items:center;padding:11px 0 9px}
+.road-row.bars{align-items:start;height:96px}
+.road-row.bars span{display:flex;align-items:flex-start;justify-content:center;height:100%}
+.road-row.bars i{display:block;width:70%;border-radius:0 0 6px 6px;min-height:3px}
+.road-row.rail{position:relative;justify-items:center;padding:4px 0 11px}
 .road-row.rail::before{content:'';position:absolute;left:10%;right:10%;top:50%;transform:translateY(-50%);height:2px;background:var(--ink-08)}
 .mile-dot{width:11px;height:11px;border-radius:50%;position:relative;box-shadow:0 0 0 3px var(--surface)}
 .mile-dot.empty{background:var(--surface);box-shadow:0 0 0 3px var(--surface),inset 0 0 0 1.5px var(--ink-15)}
-.road-row.labs .lab{text-align:center;min-width:0}
-.road-row.labs b{display:block;font-family:var(--mono);font-size:15px;font-weight:600;line-height:1}
-.road-row.labs span{display:block;font-size:10px;font-weight:600;color:var(--ink-45);line-height:1.2;margin-top:5px}
+.road-row.labs .lab{text-align:center;min-width:0;padding-bottom:7px}
+/* the challenge names were 10px at 45% ink and Dave could not read them */
+.road-row.labs span{display:block;font-size:12px;font-weight:600;color:var(--ink);line-height:1.25}
+.road-row.labs b{display:block;font-family:var(--mono);font-size:17px;font-weight:600;line-height:1;margin-top:5px}
+.road-row.labs .lab.empty span{color:var(--ink-45)}
 .road-row.labs .lab.empty b{color:var(--ink-15)}
 /* the phases, as layers anchored on the right */
 /* the phases as a cake, anchored on the right. Layer width is the phase
@@ -1220,10 +1222,10 @@ const STRINGS={en:{
   'jesus.road.end':  'Maturity',
   'jesus.road.local':'LOCAL',
   'jesus.road.church':'CHURCH',
-  'jesus.second':    'The second pattern is how he built a ministry that developed leaders and continued to bring fruit even after he left. This is the path of growing a disciple-making ministry through five distinct phases, or seasons &mdash; a chronological view of the life of Christ.',
+  'jesus.second':    'The second pattern is how he built a ministry that reached the lost, made disciples, developed leaders and continued to bring fruit even after he left. This is the path of growing a disciple-making ministry through five distinct phases, or seasons, as shown in a chronological view of Christ&rsquo;s life.',
   'jesus.fig2':      'Five Phases of a disciplemaking ministry',
   'jesus.spans.note':'<b>*</b> These spans are not in the M-Lens documents &mdash; they need checking against JV&rsquo;s own material before anyone teaches from them.',
-  'jesus.use':       'You can use these two &ldquo;like Jesus&rdquo; overviews to do a check-up on your ministry, and know where you are and what to focus on next. The check-up gives you a ministry map that answers two questions.',
+  'jesus.use':       'You can use these two &ldquo;like Jesus&rdquo; overviews and do a check-up on your ministry to discover where you are at and what to focus on next. The check-up gives you a ministry map that answers two questions.',
   'jesus.q1':        '<b>Where your students are</b> on the path from unbelief to maturity.',
   'jesus.q1.tag':    'Five Challenges of Christ',
   'jesus.q2':        '<b>What season your ministry is in</b>, and what to focus on to build a disciplemaking ministry like Jesus.',
@@ -1494,13 +1496,18 @@ function roadHTML(ri,opts){
   /* Two roads compared side by side MUST share a scale. Scaled to their own
      maximum they look identical however much the group grew. */
   const mx=o.mx||Math.max(1,...c);
+  /* Rail, then name and count, then the bar hanging beneath. Dave, 31 Aug:
+     bars rising above the rail made a normal pipeline read as decline —
+     fewer people further along is what a pipeline looks like, not a loss.
+     Hanging them under the number reads as narrowing instead of shrinking,
+     and matches the phases cake, where the bar sits with its own label. */
   return `<div class="road">
-    <div class="road-row bars">${ZONES.map((z,i)=>
-      `<span>${c[i]?`<i style="height:${12+80*(c[i]/mx)}%;background:var(${z.v})"></i>`:''}</span>`).join('')}</div>
     <div class="road-row rail">${ZONES.map((z,i)=>
       `<span class="mile-dot${c[i]?'':' empty'}" style="${c[i]?`background:var(${z.v})`:''}"></span>`).join('')}</div>
     <div class="road-row labs">${ZONES.map((z,i)=>
-      `<div class="lab${c[i]?'':' empty'}"><b>${c[i]}</b><span>${z.name}</span></div>`).join('')}</div>
+      `<div class="lab${c[i]?'':' empty'}"><span>${z.name}</span><b>${c[i]}</b></div>`).join('')}</div>
+    <div class="road-row bars">${ZONES.map((z,i)=>
+      `<span>${c[i]?`<i style="height:${12+80*(c[i]/mx)}%;background:var(${z.v})"></i>`:''}</span>`).join('')}</div>
   </div>`;
 }
 
