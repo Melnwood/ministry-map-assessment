@@ -301,6 +301,24 @@ Fraunces and Archivo need checking for Cyrillic, or Bulgarian, Ukrainian and
 Serbian will silently fall back to a system font and look like a different
 product.
 
+## Writing a Fix on a note
+
+State what changed. Nothing else.
+
+No "you were right", no thanking the tester, no explaining why their
+instinct was good. They wrote the note; they know what they meant. A fix
+that opens with agreement buries the one thing the field is for, and reads
+as filler when someone scans twenty of them.
+
+Say what it was, what it is now, and the cause where the cause is not
+obvious. If it is not done, say that and say what it is waiting on.
+
+    Road reordered. Was: bars above the rail, then count, then name.
+    Now: rail with dots, challenge name, count, bar hanging below.
+
+    Not done. Needs a destination: JV training pages, a PDF, or an
+    explainer written inside the app.
+
 ## While someone is testing
 
 **Netlify deploys `main`, so every push to `main` changes what a tester is

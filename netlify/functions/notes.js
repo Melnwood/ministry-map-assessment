@@ -29,7 +29,7 @@ const out = (rec) => {
     who: f.Who || 'Unknown',
     text: f.Note || '', area: f.Screen || '', kind: f.Kind || 'idea',
     state: f.State || 'open', at: f.LoggedAt || new Date().toISOString(),
-    reply: f.ClaudeRead || null, shots
+    reply: f.ClaudeRead || null, fix: f.Fix || null, shots
   };
 };
 
