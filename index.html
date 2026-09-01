@@ -489,6 +489,12 @@ button.tw:hover{background:var(--ink-08)}
 .tw-notes i{font-style:normal;font-size:9.5px;font-weight:600;background:var(--z5);color:#fff;
   border-radius:99px;padding:0 5px;line-height:15px}
 .nt-of{font-weight:400;color:var(--ink-45)}
+.nt-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.nt-refresh{font-family:var(--mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;
+  background:none;border:1px solid var(--ink-15);color:var(--ink-45);border-radius:99px;
+  padding:5px 12px;cursor:pointer}
+.nt-refresh:hover:not(:disabled){border-color:var(--ink);color:var(--ink)}
+.nt-refresh:disabled{opacity:.5;cursor:default}
 .nt-sec{margin-top:26px}
 .nt-sec .eyebrow{margin-bottom:10px}
 .nt{display:grid;grid-template-columns:26px 1fr;gap:13px;padding:14px 16px;background:var(--surface);
@@ -1197,13 +1203,17 @@ function vNotes(){
     </div>`;
   };
   return `<div class="view"><div class="wrap">
-    <div class="eyebrow">Workbench</div>
+    <div class="nt-top">
+      <div class="eyebrow">Workbench</div>
+      <button class="nt-refresh" data-notes="refresh" ${loadingNotes?'disabled':''}>${
+        loadingNotes?t('notes.loading'):t('notes.refresh')}</button>
+    </div>
     <h1>${NOTES.length ? `${open.length} still open<span class="nt-of">, ${done.length} done</span>` : 'Nothing logged yet'}</h1>
     <p class="lede">Everything logged from the pencil, from everyone. Tick one when it is dealt with. This reads the same records as the base &mdash; there is no second copy.</p>
 
     ${!NOTES.length ? `<div class="nt-empty">
         ${storageOK===false
-          ? 'Notes could not be loaded just now. Try again in a moment.'
+          ? t('notes.failed')
           : 'When someone writes a note with the pencil, bottom right, it appears here.'}
       </div>` : `
       ${open.length?`<div class="nt-sec"><div class="eyebrow">Open</div>${open.map(row).join('')}</div>`:''}
@@ -1265,6 +1275,9 @@ const STRINGS={en:{
 
   /* ---------- Notes ---------- */
   'notes.fix':       'What changed',
+  'notes.refresh':   'Refresh',
+  'notes.loading':   'Loading&hellip;',
+  'notes.failed':    'The list could not be loaded. Nothing is lost &mdash; try Refresh.',
 
   /* ---------- Learn more ---------- */
   'learn.more':      'Learn more',
@@ -2427,7 +2440,7 @@ const SCREENS={jesus:'Like Jesus',today:'Today',map:'Your map',check:'Check-up',
                reports:'Reports',report:'A report',time:'The year',notes:'Notes'};
 const screenNow=()=>SCREENS[active]||'Somewhere';
 
-let NOTES=[], draftShots=[], storageOK=null, saveErr=null, loadErr=null, justSaved=false, lastShotsFailed=0, confirmDel=null;
+let NOTES=[], draftShots=[], storageOK=null, saveErr=null, loadErr=null, justSaved=false, lastShotsFailed=0, confirmDel=null, loadingNotes=false;
 /* fetch rejecting before any response gives a message no tester can act on
    ("Failed to execute 'fetch' on 'Window'"). Both the load and the save
    paths hit it, so both translate it here rather than one of them. */
@@ -2455,6 +2468,7 @@ function setWho(v){
    tester who had typed nothing was told in red that their note was not
    saved and was still in the box — with an empty box in front of them. */
 async function benchLoad(){
+  loadingNotes=true; render();
   try{
     let r;
     try{ r=await fetch(CONFIG.notesEndpoint,{headers:APP_HDR}); }
@@ -2466,6 +2480,7 @@ async function benchLoad(){
     storageOK=false; loadErr=null;
     console.warn('workbench notes did not load:', err.message||err);
   }
+  loadingNotes=false;
   render();
 }
 
@@ -2723,6 +2738,7 @@ document.addEventListener('click',e=>{
     if(v.startsWith('ask:')){confirmDel=Number(v.slice(4));render();return}
     benchDelete(Number(v)); return}
   if(t=hit('tool')){toolInfo=(t.dataset.tool==='close'||toolInfo===t.dataset.tool)?null:t.dataset.tool;render();return}
+  if(t=hit('notes')){ if(t.dataset.notes==='refresh') benchLoad(); return}
   if(t=hit('learn')){learnMore=(t.dataset.learn==='close'||learnMore===t.dataset.learn)?null:t.dataset.learn;render();return}
   if(t=hit('unshot')){draftShots.splice(+t.dataset.unshot,1);render();return}
   if(t=hit('sel')){selStudent=(selStudent===+t.dataset.sel?null:+t.dataset.sel);addingTo=null;render();return}
