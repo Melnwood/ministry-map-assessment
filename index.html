@@ -464,6 +464,8 @@ button.tw:hover{background:var(--ink-08)}
 .tb-acr:hover{color:var(--ink)}
 .bot-local{font-family:var(--mono);font-size:9px;letter-spacing:.07em;text-transform:uppercase;
   background:var(--z5);color:#fff;padding:2px 7px;border-radius:99px}
+.check-next{margin-top:14px;padding-top:13px;border-top:1px solid var(--ink-08);
+  font-size:13.5px;line-height:1.55;color:var(--ink-70)}
 /* the notes page */
 .tw-notes{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;padding:4px 9px;border-radius:99px;
   background:none;border:1px solid var(--ink-15);color:var(--ink-45);cursor:pointer;margin-left:10px;
@@ -1024,7 +1026,11 @@ const REPORTS=[
  {d:'2025-10-12',t:'19:40',r:0,a:{1:[3,2,3,2,2,2,2],2:[2,2,2,1,2,1,1],3:[1,1,1,1,1,1,0],4:[0,0,1,0,1,0,0],5:[0,0,0,0,0,0,0]}},
  {d:'2026-03-08',t:'20:05',r:1,a:{1:[3,3,3,2,3,2,2],2:[3,2,3,2,2,2,2],3:[2,1,2,1,2,1,1],4:[1,0,1,0,1,1,0],5:[0,0,0,0,0,0,0]}},
  {d:'2026-08-02',t:'09:14',r:2,a:{1:[3,3,3,2,3,2,2],2:[3,2,3,2,3,2,2],3:[2,2,2,2,2,2,1],4:[2,2,1,0,1,0,0],5:[0,0,0,0,0,0,0]}},
- {d:'2026-08-05',t:'21:30',r:2,a:{1:[3,3,3,2,3,2,2],2:[3,3,3,2,3,2,2],3:[2,2,2,2,2,2,1],4:[2,2,2,0,1,0,0],5:[0,0,0,0,0,0,0]}}
+ /* Phase 1 gains one answer here so it no longer ties with phase 2. The two
+    were identical, which drew Preparation and Foundation the same width and
+    read as a bug. Fabricated either way — but a coincidence in fake data
+    should not look like a broken chart. */
+ {d:'2026-08-05',t:'21:30',r:2,a:{1:[3,3,3,3,3,2,2],2:[3,3,3,2,3,2,2],3:[2,2,2,2,2,2,1],4:[2,2,2,0,1,0,0],5:[0,0,0,0,0,0,0]}}
 ];
 const qIx=q=>Q.filter(x=>x.phase===q.phase).indexOf(q);
 const ansIn=(rep,q)=>rep.a[q.phase][qIx(q)];
@@ -1231,6 +1237,12 @@ const STRINGS={en:{
   'jesus.q2':        '<b>What season your ministry is in</b>, and what to focus on to build a disciplemaking ministry like Jesus.',
   'jesus.q2.tag':    'Five Phases of Christ&rsquo;s ministry',
   'jesus.go.check':  'Start your check-up',
+
+  /* ---------- Check-up, step 1 ---------- */
+  'check.next':      {one:'Then {n} statement about your ministry, one at a time. Nothing here is skipped &mdash; this part is answered from your map, and you answer the rest.',
+                      other:'Then {n} statements about your ministry, one at a time. Nothing here is skipped &mdash; this part is answered from your map, and you answer the rest.'},
+  'check.go':        'That looks right &mdash; start the statements',
+  'check.fixmap':    'Change my map first',
   'jesus.go.map':    'See the map first'
 }};
 
@@ -1856,9 +1868,10 @@ function vCheck(){
           : 'Nothing &mdash; every challenge has something that asks it'}</div></div>
       </div>
       <p class="note" style="margin-top:18px">If something is wrong here, change it on your map and it changes here too.</p>
+      <p class="check-next">${tn('check.next',Q.length)}</p>
       <div style="margin-top:24px;display:flex;gap:10px">
-        <button class="btn" data-q="1">That looks right — keep going</button>
-        <button class="btn ghost" data-go="map">Change my map first</button>
+        <button class="btn" data-q="1">${t('check.go')}</button>
+        <button class="btn ghost" data-go="map">${t('check.fixmap')}</button>
       </div>
     </div></div></div>`;
   }
