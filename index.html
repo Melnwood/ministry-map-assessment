@@ -466,6 +466,20 @@ button.tw:hover{background:var(--ink-08)}
   background:var(--z5);color:#fff;padding:2px 7px;border-radius:99px}
 .check-next{margin-top:14px;padding-top:13px;border-top:1px solid var(--ink-08);
   font-size:13.5px;line-height:1.55;color:var(--ink-70)}
+.jfig-more{margin-top:14px;padding-top:12px;border-top:1px solid var(--ink-08)}
+.jmore{font:inherit;font-size:12.5px;font-weight:600;color:var(--ink-45);background:none;border:0;
+  cursor:pointer;padding:2px 0;border-bottom:1.5px solid var(--ink-15)}
+.jmore:hover{color:var(--ink);border-bottom-color:var(--ink)}
+.lm-list{display:flex;flex-direction:column;gap:2px;margin-top:16px}
+.lm{display:grid;grid-template-columns:30px 1fr;gap:12px;padding:11px 10px;border-radius:9px;align-items:start}
+.lm:hover{background:var(--ink-08)}
+.lm-n{font-family:var(--mono);font-size:13px;font-weight:600;color:#fff;background:var(--zc);
+  width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.lm-name{font-family:var(--display);font-size:15.5px;font-weight:700;letter-spacing:-.01em}
+.lm-say{font-size:13.5px;line-height:1.45;color:var(--ink-70);margin-top:3px}
+.lm-say b{font-family:var(--mono);font-weight:600;letter-spacing:.05em}
+.lm-meta{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--ink-45);margin-top:5px}
 /* the notes page */
 .tw-notes{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;padding:4px 9px;border-radius:99px;
   background:none;border:1px solid var(--ink-15);color:var(--ink-45);cursor:pointer;margin-left:10px;
@@ -1251,6 +1265,17 @@ const STRINGS={en:{
 
   /* ---------- Notes ---------- */
   'notes.fix':       'What changed',
+
+  /* ---------- Learn more ---------- */
+  'learn.more':      'Learn more',
+  'learn.ch.title':  'Five Challenges of Christ',
+  'learn.ch.lede':   'Five invitations a leader makes to a student. Not places a student sits, and not events on a calendar &mdash; things you ask a person, one at a time. Where someone is on the map is the furthest one they have reached.',
+  'learn.ph.title':  'Five Phases of a disciplemaking ministry',
+  'learn.ph.lede':   'Five seasons a ministry grows through, each with a JV training tool you already have. Your phase is the first one scoring below 7 out of 10: everything before it is cleared, everything after is not yet your turn.',
+  'learn.ph.tool':   'Tool',
+  'learn.ph.who':    'Aimed at',
+  'learn.ph.span':   'Typically',
+  'learn.close':     'Close',
   'jesus.go.map':    'See the map first'
 }};
 
@@ -1297,6 +1322,7 @@ function vJesus(){
     <div class="jfig">
       <div class="jfig-hd">${t('jesus.fig1')}</div>
       ${challengeRoadSVG()}
+      <div class="jfig-more"><button class="jmore" data-learn="challenges">${t('learn.more')}</button></div>
     </div>
 
     <p class="jp">${t('jesus.second')}</p>
@@ -1305,6 +1331,7 @@ function vJesus(){
       <div class="jfig-hd">${t('jesus.fig2')}</div>
       ${phaseYearsHTML()}
       <p class="jstack-note">${t('jesus.spans.note')}</p>
+      <div class="jfig-more"><button class="jmore" data-learn="phases">${t('learn.more')}</button></div>
     </div>
 
     <p class="jp">${t('jesus.use')}</p>
@@ -1536,7 +1563,7 @@ function roadHTML(ri,opts){
    in the app reads from it. Moving a student here updates the
    current snapshot, so the road, the report and the check-up
    auto-fill all follow. */
-let selStudent=null, addingTo=null, selProgram=null, addingProgram=false, toolInfo=null;
+let selStudent=null, addingTo=null, selProgram=null, addingProgram=false, toolInfo=null, learnMore=null;
 const NOW=2;                       /* the current roster snapshot */
 
 /* ============================================================
@@ -1819,6 +1846,33 @@ function vMapNamed(){
    that are not yet true are the nearest thing to "what to do next" that this
    data supports. Fuller teaching for each letter belongs to JV's own
    training material and should be added here from it, not written by us. */
+/* Learn more. Built only from what the app already holds: the invitation
+   wording for each challenge, and each phase's tool, letters, audience and
+   span. Nothing here is new writing, so nothing here is waiting on JV. If
+   real training pages appear later, these buttons point at those instead. */
+function learnMoreHTML(){
+  if(!learnMore) return '';
+  const ch = learnMore==='challenges';
+  return `<div class="tipwrap" data-learn="close"><div class="tip" role="dialog">
+    <button class="tip-x" data-learn="close" aria-label="${t('learn.close')}">&times;</button>
+    <div class="eyebrow">${t(ch?'learn.ch.title':'learn.ph.title')}</div>
+    <p class="tip-line">${t(ch?'learn.ch.lede':'learn.ph.lede')}</p>
+    <div class="lm-list">${ch
+      ? ZONES.map(z=>`<div class="lm" style="--zc:var(${z.v})">
+          <div class="lm-n">${z.n}</div>
+          <div><div class="lm-name">${z.name}</div><div class="lm-say">${z.ask}</div></div>
+        </div>`).join('')
+      : PHASES.map(p=>{const T=TOOLS[p.tool];
+          return `<div class="lm" style="--zc:var(--phase)">
+            <div class="lm-n">${p.n}</div>
+            <div><div class="lm-name">${p.name}</div>
+              <div class="lm-say"><b>${p.tool}</b> &middot; ${T.spells.join(' &middot; ')}</div>
+              <div class="lm-meta">${t('learn.ph.who')} ${p.who} &middot; ${t('learn.ph.span')} ${p.span}<sup class="ph-ast">*</sup></div>
+            </div></div>`}).join('')}</div>
+    ${ch?'':`<p class="ph-note"><b>*</b> ${t('jesus.spans.note').replace(/^<b>\*<\/b>\s*/,'')}</p>`}
+  </div></div>`;
+}
+
 function toolInfoHTML(){
   if(!toolInfo) return '';
   const R=rep(), isAcr=!!TOOLS[toolInfo];
@@ -2615,7 +2669,7 @@ function render(){
   try{ document.getElementById('bot').innerHTML=botHTML(); }
   catch(err){ console.error('note bot failed to render', err); }
 
-  try{ document.getElementById('tip').innerHTML=toolInfoHTML(); }
+  try{ document.getElementById('tip').innerHTML=learnMore?learnMoreHTML():toolInfoHTML(); }
   catch(err){ console.error('tool panel failed to render', err); }
 
   try{
@@ -2669,6 +2723,7 @@ document.addEventListener('click',e=>{
     if(v.startsWith('ask:')){confirmDel=Number(v.slice(4));render();return}
     benchDelete(Number(v)); return}
   if(t=hit('tool')){toolInfo=(t.dataset.tool==='close'||toolInfo===t.dataset.tool)?null:t.dataset.tool;render();return}
+  if(t=hit('learn')){learnMore=(t.dataset.learn==='close'||learnMore===t.dataset.learn)?null:t.dataset.learn;render();return}
   if(t=hit('unshot')){draftShots.splice(+t.dataset.unshot,1);render();return}
   if(t=hit('sel')){selStudent=(selStudent===+t.dataset.sel?null:+t.dataset.sel);addingTo=null;render();return}
   if(t=hit('move')){const[i,z]=t.dataset.move.split(':');moveStudent(+i,+z);return}
