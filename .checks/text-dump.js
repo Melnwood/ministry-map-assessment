@@ -5,7 +5,7 @@
    wording change hides. */
 (function(){
   const dump={};
-  const views=['jesus','today','map','check','reports','report','time','notes'];
+  const views=['jesus','today','map','check','reports','report','time','notes','translate'];
   const grab=k=>{ try{ render(); dump[k]=document.getElementById('app').innerText
                         .replace(/\s+/g,' ').trim(); }
                   catch(e){ dump[k]='THREW: '+e.message; } };

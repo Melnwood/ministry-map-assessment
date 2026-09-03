@@ -17,6 +17,11 @@
   to   = "/.netlify/functions/notes"
   status = 200
 
+[[redirects]]
+  from = "/api/strings"
+  to   = "/.netlify/functions/strings"
+  status = 200
+
 # The app calls only its own origin. Nothing third-party loads except the fonts.
 [[headers]]
   for = "/*"

@@ -6,7 +6,7 @@
   const out={threw:[],empty:[],missingStrings:[]};
   const warn=console.warn;
   console.warn=function(...a){ if(String(a[0]).indexOf('missing string')===0||String(a[0]).indexOf('missing plural')===0) out.missingStrings.push(a[1]); warn.apply(console,a); };
-  const views={jesus:'vJesus',today:'vToday',map:'vMap',check:'vCheck',reports:'vReports',report:'vReport',time:'vTime',notes:'vNotes'};
+  const views={jesus:'vJesus',today:'vToday',map:'vMap',check:'vCheck',reports:'vReports',report:'vReport',time:'vTime',notes:'vNotes',translate:'vTranslate'};
   const PX='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
   NOTES=[{id:1,rec:'r1',who:'Dave',text:'A note',area:'Today',state:'open',at:'2026-08-31T09:00:00Z',shots:[]},
          {id:2,rec:'r2',who:'Mel',text:'Done',area:'Your map',state:'done',at:'2026-08-30T09:00:00Z',shots:[]},
@@ -36,6 +36,16 @@
     try{ selProgram=0; render(); if(!document.querySelector('.mdet')) out.empty.push(tier+'/programme-panel'); }catch(e){ out.threw.push(tier+'/programme-panel: '+e.message); }
     selProgram=null;
   });
+  // the translate page, on a language, with every group open — 463 rows of
+  // it, which is where a bad key or a missing plural category would show
+  try{ TIER='open'; active='translate'; trLang='cs';
+       TR_GROUPS.forEach(g=>trOpen[g.id]=true); trOpen['inst-ok']=true;
+       render();
+       var n=document.querySelectorAll('.tr-row').length;
+       if(n<Object.keys(STRINGS.en).length) out.empty.push('translate/rows ('+n+')');
+  }catch(e){ out.threw.push('translate/open: '+e.message); }
+  trLang=null; trOpen={};
+
   // a fixed note shows the tester's shot beside the after-shot from /after/
   try{ TIER='open'; active='notes'; render();
        var ba=document.querySelector('.nt-ba');
