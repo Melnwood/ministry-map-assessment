@@ -1310,6 +1310,35 @@ const STRINGS={en:{
   'jesus.q2.tag':    'Five Phases of Christ&rsquo;s ministry',
   'jesus.go.check':  'Start your check-up',
 
+  /* ---------- Today ---------- */
+  'today.head.moved': {one:'{n} student moved forward<br>since <em>the spring</em>.',
+                       other:'{n} students moved forward<br>since <em>the spring</em>.'},
+  'today.head.further':{one:'{n} more student has gone further<br>than in <em>the spring</em>.',
+                       other:'{n} more students have gone further<br>than in <em>the spring</em>.'},
+  'today.head.fewer': {one:'{n} fewer student is further on<br>than in <em>the spring</em>.',
+                       other:'{n} fewer students are further on<br>than in <em>the spring</em>.'},
+  'today.head.same':  'Your group is the same shape<br>as it was in <em>the spring</em>.',
+  'today.where':      'Where your students are',
+  'today.students':   'students',
+  'today.plinth.named':'Each student is counted once, at the furthest challenge they have reached',
+  'today.plinth.open':'Each number is how many have reached that challenge, and no further',
+  'today.phases':     'Ministry phases',
+  'today.plinth.phase':'Each layer is a phase, and how long you have been in it',
+  'today.latest':     'Your latest report',
+  'today.delta':      {one:'{n} thing to do next &middot; weakest part of {phase}: <b class="dn">{weakest} &mdash; {band}</b>',
+                       other:'{n} things to do next &middot; weakest part of {phase}: <b class="dn">{weakest} &mdash; {band}</b>'},
+  'today.open':       'Open &rarr;',
+  'today.newcheck':   'Start a new check-up',
+  'today.allreports': {one:'All {n} report', other:'All {n} reports'},
+  'today.moved':      'See how you have moved',
+
+  /* How long a ministry has sat in a phase. */
+  'span.under':       'under a month',
+  'span.months':      {one:'{n} month', other:'{n} months'},
+  'span.years':       {one:'{n} year',  other:'{n} years'},
+  'span.ym':          '{y}y {m}m',
+  'span.sofar':       '{span} so far',
+
   /* ---------- Check-up, step 1 ---------- */
   'check.next':      {one:'Then {n} statement about your ministry, one at a time. Nothing here is skipped &mdash; this part is answered from your map, and you answer the rest.',
                       other:'Then {n} statements about your ministry, one at a time. Nothing here is skipped &mdash; this part is answered from your map, and you answer the rest.'},
@@ -1328,6 +1357,58 @@ const STRINGS={en:{
   'build.reload':    'Reload',
   'notes.loading':   'Loading&hellip;',
   'notes.failed':    'The list could not be loaded. Nothing is lost &mdash; try Refresh.',
+
+  /* ---------- Shared words ---------- */
+  'common.cancel':    'Cancel',
+  'common.add':       'Add',
+  'common.done':      'Done',
+  'common.remove':    'Remove',
+
+  /* ---------- Adding a student ---------- */
+  'intake.eyebrow':   'New student',
+  'intake.title':     'Who has joined you?',
+  'intake.lede':      'Every field here earns its place later &mdash; how they came tells you whether your students are inviting their friends, and who knows them tells you whether anyone actually does.',
+  'intake.err.name':  'A first name is the one thing this cannot go without.',
+  'intake.first':     'First name',
+  'intake.init':      'Last initial',
+  'intake.init.ph':   'H',
+  'intake.age':       'Age',
+  'intake.since':     'First came',
+  'intake.zone':      'Furthest challenge they have reached',
+  'intake.how':       'How they came',
+  'intake.by':        'Invited by',
+  'intake.known':     'Who knows them best',
+  'intake.nobody':    'Nobody yet',
+  'intake.note':      'Anything worth remembering',
+  'intake.note.ph':   'Optional &mdash; a sentence you would want to read in six months',
+  'intake.privacy':   'First name and last initial only &mdash; never a full name. Stays on your device and in your group&rsquo;s own records.',
+  'intake.save':      'Add student',
+
+  /* ---------- The map ---------- */
+  'map.eyebrow':      'Ministry Map',
+  'map.title':        'Everything you run, and<br>everyone you have, <em>side by side</em>',
+  'map.lede':         'Five challenges across the top. What you run above, who you have below. Read straight down a column and you can see where an invitation is being made with nobody there to hear it &mdash; or where people are waiting and nothing ever asks them.',
+  'map.programs':     'Programs',
+  'map.running':      'running',
+  'map.addprog':      '+ Add a programme',
+  'map.people':       'People',
+  'map.names':        'Names',
+  'map.new':          'new',
+  'map.note':         'The programs you offer are above, the people you care for are below.',
+  'map.note.overlap': 'A programme can make two challenges, so the numbers across add up to more than the number running.',
+  'map.aria.fewer':   'One fewer',
+  'map.aria.more':    'One more',
+  'map.aria.count':   'How many at {ch}',
+  'map.aria.addhere': 'Add a student here',
+
+  /* ---------- A student, or a programme, opened ---------- */
+  'mdet.since':       'Coming since {date}',
+  'mdet.knownby':     '{who} knows them',
+  'mdet.nobody':      'nobody is following them',
+  'mdet.move':        'Move them to the furthest challenge they have reached',
+  'prog.name':        'Programme name',
+  'prog.which':       'Which challenges this programme actually makes',
+  'ask.done':         'Someone from Josiah Venture in your country will be in touch. Nothing changes here until you have spoken to them.',
 
   /* ---------- Learn more ---------- */
   'learn.more':      'Learn more',
@@ -1496,11 +1577,13 @@ function vToday(){
      a roster knows. So the open tier says the honest smaller thing. */
   const moved=hasNames()?STUDENTS.filter(s=>s.hist[2]>s.hist[1]&&s.hist[1]>0).length:null;
   const d=deeper(2)-deeper(1);
-  const head=hasNames()
-    ? `${moved} students moved forward<br>since <em>the spring</em>.`
-    : d>0 ? `${d} more student${d===1?'':'s'} ${d===1?'has':'have'} gone further<br>than in <em>the spring</em>.`
-    : d<0 ? `${-d} fewer student${d===-1?'':'s'} ${d===-1?'is':'are'} further on<br>than in <em>the spring</em>.`
-    : `Your group is the same shape<br>as it was in <em>the spring</em>.`;
+  /* Four whole sentences rather than assembled fragments. English needs
+     student/students and has/have; other languages agree far more than
+     that, and none of it survives being glued together from pieces. */
+  const head=hasNames() ? tn('today.head.moved',moved)
+    : d>0 ? tn('today.head.further',d)
+    : d<0 ? tn('today.head.fewer',-d)
+    : t('today.head.same');
 
   /* The road. The five challenges read left to right, the way the training
      deck draws them. Column height is the count, never a stylised shape —
@@ -1515,38 +1598,39 @@ function vToday(){
 
     <div class="duo">
       <div class="duo-half">
-        <div class="eyebrow">Where your students are</div>
-        <div class="big-n">${tot}<em>students</em></div>
+        <div class="eyebrow">${t('today.where')}</div>
+        <div class="big-n">${tot}<em>${t('today.students')}</em></div>
         <div class="duo-vis">${road}</div>
-        <div class="plinth">${hasNames()?'Each student is counted once, at the furthest challenge they have reached':'Each number is how many have reached that challenge, and no further'}</div>
+        <div class="plinth">${hasNames()?t('today.plinth.named'):t('today.plinth.open')}</div>
       </div>
       <div class="duo-rule"></div>
       <div class="duo-half">
-        <div class="eyebrow">Ministry phases</div>
+        <div class="eyebrow">${t('today.phases')}</div>
         <div class="big-n ph">${pname(PHASES[ph-1])}</div>
         <div class="duo-vis">${phaseCakeHTML(sc,ph,false)}</div>
-        <div class="plinth">Each layer is a phase, and how long you have been in it</div>
+        <div class="plinth">${t('today.plinth.phase')}</div>
       </div>
     </div>
 
     <button class="repcard newest big" data-open="${REPORTS.length-1}">
       <div class="rc-date"><span class="d">${fmtDate(L)}</span><span class="t">${L.t}</span></div>
       <div class="rc-mid">
-        <div class="rc-phase"><i></i>Your latest report</div>
+        <div class="rc-phase"><i></i>${t('today.latest')}</div>
         <div class="rc-delta">${(()=>{const g=reportGist(L);
           /* the weakest category is not always part of the phase's tool —
              for Ministry Training and Expansion the tool is one category
              among several, so name the phase, not the acronym */
-          return `${g.actions} thing${g.actions===1?'':'s'} to do next &middot; weakest part of ${pname(PHASES[g.phase-1])}: <b class="dn">${g.weakest} &mdash; ${g.band}</b>`})()}</div>
+          return tn('today.delta',g.actions,{phase:pname(PHASES[g.phase-1]),
+                    weakest:g.weakest, band:g.band})})()}</div>
       </div>
-      <div class="rc-n"><b>${tot}</b><span>students</span></div>
-      <div class="rc-go">Open &rarr;</div>
+      <div class="rc-n"><b>${tot}</b><span>${t('today.students')}</span></div>
+      <div class="rc-go">${t('today.open')}</div>
     </button>
 
     <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap">
-      <button class="btn" data-go="check">Start a new check-up</button>
-      <button class="btn ghost" data-go="reports">All ${REPORTS.length} reports</button>
-      <button class="btn ghost" data-go="time">See how you have moved</button>
+      <button class="btn" data-go="check">${t('today.newcheck')}</button>
+      <button class="btn ghost" data-go="reports">${tn('today.allreports',REPORTS.length)}</button>
+      <button class="btn ghost" data-go="time">${t('today.moved')}</button>
     </div>
   </div></div>`;
 }
@@ -1598,9 +1682,13 @@ function phaseCakeHTML(sc,ph,tappable){
 const spanLabel=x=>{
   if(!x) return '';
   const m=x.months;
-  const t=m<1?'under a month':m<18?`${m} month${m===1?'':'s'}`
-      :m%12===0?`${m/12} years`:`${Math.floor(m/12)}y ${m%12}m`;
-  return x.current?`${t} so far`:t;
+  /* `label`, not `t` — the local name used to shadow the translate
+     function, which would have made every string in here unreachable. */
+  const label = m<1 ? t('span.under')
+      : m<18 ? tn('span.months',m)
+      : m%12===0 ? tn('span.years',m/12)
+      : t('span.ym',{y:Math.floor(m/12), m:m%12});
+  return x.current ? t('span.sofar',{span:label}) : label;
 };
 
 /* The road: five milestones left to right, column height = how many people.
@@ -1670,7 +1758,7 @@ const val=id=>{const el=document.getElementById(id);return el?el.value:''};
 function saveIntake(){
   const first=val('in-name').trim(), init=val('in-init').trim().toUpperCase().slice(0,1);
   const name=first+(init?' '+init+'.':'');
-  if(!first){intakeErr='A first name is the one thing this cannot go without.';render();return}
+  if(!first){intakeErr=t('intake.err.name');render();return}
   const z=+val('in-zone')||1, came=val('in-came');
   const h=[0,0,0]; h[NOW]=z;
   STUDENTS.push({id:Math.max(0,...STUDENTS.map(x=>x.id))+1,name,hist:h,zone:z,
@@ -1685,22 +1773,22 @@ function saveIntake(){
 
 function intakeHTML(){
   const today=new Date().toISOString().slice(0,10);
-  return `<div class="sheet" data-close="bg"><div class="sheetin" role="dialog" aria-label="Add a student">
+  return `<div class="sheet" data-close="bg"><div class="sheetin" role="dialog" aria-label="${plain(t('intake.title'))}">
     <div class="sh-hd">
-      <div><div class="eyebrow">New student</div><h2>Who has joined you?</h2></div>
+      <div><div class="eyebrow">${t('intake.eyebrow')}</div><h2>${t('intake.title')}</h2></div>
       <button class="sh-x" data-close="x">&times;</button>
     </div>
-    <p class="sh-lede">Every field here earns its place later &mdash; how they came tells you whether your students are inviting their friends, and who knows them tells you whether anyone actually does.</p>
+    <p class="sh-lede">${t('intake.lede')}</p>
     ${intakeErr?`<div class="sh-err">${intakeErr}</div>`:''}
 
     <div class="fgrid four">
-      <label class="fld wide"><span>First name</span><input id="in-name" placeholder="First name" autofocus></label>
-      <label class="fld"><span>Last initial</span><input id="in-init" maxlength="1" placeholder="H"></label>
-      <label class="fld"><span>Age</span><select id="in-age">${AGES.map(a=>`<option ${a==='15-17'?'selected':''}>${a}</option>`).join('')}</select></label>
-      <label class="fld"><span>First came</span><input id="in-since" type="date" value="${today}"></label>
+      <label class="fld wide"><span>${t('intake.first')}</span><input id="in-name" placeholder="${plain(t('intake.first'))}" autofocus></label>
+      <label class="fld"><span>${t('intake.init')}</span><input id="in-init" maxlength="1" placeholder="${plain(t('intake.init.ph'))}"></label>
+      <label class="fld"><span>${t('intake.age')}</span><select id="in-age">${AGES.map(a=>`<option ${a==='15-17'?'selected':''}>${a}</option>`).join('')}</select></label>
+      <label class="fld"><span>${t('intake.since')}</span><input id="in-since" type="date" value="${today}"></label>
     </div>
 
-    <div class="fld"><span>Furthest challenge they have reached</span>
+    <div class="fld"><span>${t('intake.zone')}</span>
       <div class="zpick">${ZONES.map(z=>`<label class="zp" style="--zc:var(${z.v})">
         <input type="radio" name="in-zone-r" value="${z.n}" ${z.n===intake?'checked':''} data-zone="${z.n}">
         <b>${z.name}</b><em>${z.ask}</em></label>`).join('')}</div>
@@ -1708,18 +1796,18 @@ function intakeHTML(){
     </div>
 
     <div class="fgrid">
-      <label class="fld"><span>How they came</span><select id="in-came" data-came>${CAME.map(x=>`<option>${x}</option>`).join('')}</select></label>
-      <label class="fld" id="bywrap" style="display:${CAME[0]==='Invited by a student'?'':'none'}"><span>Invited by</span>
+      <label class="fld"><span>${t('intake.how')}</span><select id="in-came" data-came>${CAME.map(x=>`<option>${x}</option>`).join('')}</select></label>
+      <label class="fld" id="bywrap" style="display:${CAME[0]==='Invited by a student'?'':'none'}"><span>${t('intake.by')}</span>
         <select id="in-by"><option value="">&mdash;</option>${STUDENTS.map(x=>`<option>${x.name}</option>`).join('')}</select></label>
-      <label class="fld"><span>Who knows them best</span>
-        <select id="in-known"><option value="">Nobody yet</option>${LEADERS.map(l=>`<option>${l}</option>`).join('')}</select></label>
+      <label class="fld"><span>${t('intake.known')}</span>
+        <select id="in-known"><option value="">${t('intake.nobody')}</option>${LEADERS.map(l=>`<option>${l}</option>`).join('')}</select></label>
     </div>
 
-    <label class="fld"><span>Anything worth remembering</span><input id="in-note" placeholder="Optional &mdash; a sentence you would want to read in six months"></label>
+    <label class="fld"><span>${t('intake.note')}</span><input id="in-note" placeholder="${plain(t('intake.note.ph'))}"></label>
 
     <div class="sh-foot">
-      <span class="note">First name and last initial only &mdash; never a full name. Stays on your device and in your group&rsquo;s own records.</span>
-      <div><button class="btn ghost" data-close="x">Cancel</button><button class="btn" data-save="1">Add student</button></div>
+      <span class="note">${t('intake.privacy')}</span>
+      <div><button class="btn ghost" data-close="x">${t('common.cancel')}</button><button class="btn" data-save="1">${t('intake.save')}</button></div>
     </div>
   </div></div>`;
 }
@@ -1743,10 +1831,10 @@ function mapGridHTML(){
 
   let h='<div class="mgwrap"><div class="mgrid">';
 
-  h+='<div class="mg-gut mg-title">Programs</div>';
+  h+=`<div class="mg-gut mg-title">${t('map.programs')}</div>`;
   h+=ZONES.map(z=>`<div class="mg-ch" style="--zc:var(${z.v})"><i>${z.n}</i>${z.name}</div>`).join('');
 
-  h+=`<div class="mg-gut mg-count"><b>${PROGRAMS.length}</b><span>running</span></div>`;
+  h+=`<div class="mg-gut mg-count"><b>${PROGRAMS.length}</b><span>${t('map.running')}</span></div>`;
   h+=ZONES.map(z=>{const n=cov[z.n].length;
     return `<div class="mg-num${n?'':' zero'}" style="--zc:var(${z.v})">${n}</div>`}).join('');
 
@@ -1758,31 +1846,31 @@ function mapGridHTML(){
         : '<span class="mg-dash">&ndash;</span>'}</div>`}).join('');
   });
   h+='<div class="mg-gut mg-freq"></div>';
-  h+='<div class="mg-wide"><button class="mg-addb" data-newprog="open">+ Add a programme</button></div>';
+  h+=`<div class="mg-wide"><button class="mg-addb" data-newprog="open">${t('map.addprog')}</button></div>`;
 
   h+='<div class="mg-rule"></div>';
 
-  h+='<div class="mg-gut mg-title">People</div>';
+  h+=`<div class="mg-gut mg-title">${t('map.people')}</div>`;
   h+=ZONES.map(z=>`<div class="mg-ch" style="--zc:var(${z.v})"><i>${z.n}</i>${z.name}</div>`).join('');
 
-  h+=`<div class="mg-gut mg-count"><b id="cnt-tot">${tot}</b><span>students</span></div>`;
+  h+=`<div class="mg-gut mg-count"><b id="cnt-tot">${tot}</b><span>${t('today.students')}</span></div>`;
   h+=ZONES.map((z,i)=>named
       ? `<div class="mg-num${c[i]?'':' zero'}" style="--zc:var(${z.v})">${c[i]}</div>`
       : `<div class="mg-num edit" style="--zc:var(${z.v})">
-           <button class="stp" data-cnt="${i}:-1" aria-label="One fewer">&minus;</button>
+           <button class="stp" data-cnt="${i}:-1" aria-label="${plain(t('map.aria.fewer'))}">&minus;</button>
            <input class="cnv" id="cnv${i}" data-cntv="${i}" type="text" inputmode="numeric"
-                  value="${c[i]}" aria-label="How many at ${plain(z.name)}">
-           <button class="stp" data-cnt="${i}:1" aria-label="One more">+</button>
+                  value="${c[i]}" aria-label="${plain(t('map.aria.count',{ch:plain(z.name)}))}">
+           <button class="stp" data-cnt="${i}:1" aria-label="${plain(t('map.aria.more'))}">+</button>
          </div>`).join('');
 
   if(named){
-    h+='<div class="mg-gut mg-freq">Names</div>';
+    h+=`<div class="mg-gut mg-freq">${t('map.names')}</div>`;
     h+=ZONES.map(z=>{const inz=STUDENTS.filter(x=>x.hist[NOW]===z.n);
       return `<div class="mg-cell" style="--zc:var(${z.v})">${inz.map(x=>{
         const d=x.hist[NOW]-(x.hist[1]||x.hist[NOW]);
-        const tag=!x.hist[1]?'<i class="mv">new</i>':d>0?`<i class="mv">+${d}</i>`:d<0?`<i class="mv back">${d}</i>`:'';
+        const tag=!x.hist[1]?`<i class="mv">${t('map.new')}</i>`:d>0?`<i class="mv">+${d}</i>`:d<0?`<i class="mv back">${d}</i>`:'';
         return `<button class="schip${selStudent===x.id?' is':''}" data-sel="${x.id}" style="--zc:var(${z.v})">${esc(x.name)}${tag}</button>`;
-      }).join('')}<button class="schip add" data-adding="${z.n}" aria-label="Add a student here">+</button></div>`}).join('');
+      }).join('')}<button class="schip add" data-adding="${z.n}" aria-label="${plain(t('map.aria.addhere'))}">+</button></div>`}).join('');
   }
 
   h+='</div></div>';
@@ -1790,8 +1878,8 @@ function mapGridHTML(){
      may make two challenges, so the row across can come to more than the
      number running. The paper form has the same property. */
   const sum=ZONES.reduce((t,z)=>t+cov[z.n].length,0);
-  h+=`<p class="mg-note">The programs you offer are above, the people you care for are below.${
-    sum>PROGRAMS.length?' A programme can make two challenges, so the numbers across add up to more than the number running.':''}</p>`;
+  h+=`<p class="mg-note">${t('map.note')}${
+    sum>PROGRAMS.length?' '+t('map.note.overlap'):''}</p>`;
   return h;
 }
 
@@ -1803,22 +1891,22 @@ function mapDetailHTML(){
     const x=STUDENTS.find(s2=>s2.id===selStudent);
     if(x) return `<div class="mdet">
       <div class="mdet-hd"><b>${esc(x.name)}</b>
-        <span>Coming since ${fmtShort(x.since)} &middot; ${monthsBetween(x.since,new Date().toISOString().slice(0,10))} months${x.knownBy?` &middot; ${esc(x.knownBy)} knows them`:' &middot; <b class="warn">nobody is following them</b>'}</span>
-        <button class="mdet-x" data-sel="${x.id}" aria-label="Close">&times;</button></div>
+        <span>${t('mdet.since',{date:fmtShort(x.since)})} &middot; ${tn('span.months',monthsBetween(x.since,new Date().toISOString().slice(0,10)))}${x.knownBy?' &middot; '+t('mdet.knownby',{who:esc(x.knownBy)}):' &middot; <b class="warn">'+t('mdet.nobody')+'</b>'}</span>
+        <button class="mdet-x" data-sel="${x.id}" aria-label="${plain(t('learn.close'))}">&times;</button></div>
       <div class="chip-move">${ZONES.map(t=>`<button class="mvb ${t.n===x.hist[NOW]?'is':''}" style="--zc:var(${t.v})" data-move="${x.id}:${t.n}" title="${plain(t.name)}">${t.n}</button>`).join('')}</div>
-      <div class="chip-act"><span>Move them to the furthest challenge they have reached</span><button data-drop="${x.id}">Remove</button></div>
+      <div class="chip-act"><span>${t('mdet.move')}</span><button data-drop="${x.id}">${t('common.remove')}</button></div>
     </div>`;
   }
   if(addingProgram) return `<div class="mdet">
-    <input class="pnin" id="newpr" placeholder="Programme name" autofocus>
-    <div class="chip-act"><button class="prim" data-newprog="go">Add</button><button data-newprog="cancel">Cancel</button></div></div>`;
+    <input class="pnin" id="newpr" placeholder="${plain(t('prog.name'))}" autofocus>
+    <div class="chip-act"><button class="prim" data-newprog="go">${t('common.add')}</button><button data-newprog="cancel">${t('common.cancel')}</button></div></div>`;
   if(selProgram!=null&&PROGRAMS[selProgram]){
     const p=PROGRAMS[selProgram], pi=selProgram;
     return `<div class="mdet">
       <input class="pnin" id="pn${pi}" value="${esc(p.name)}">
       <div class="pfreq">${FREQS.map(fq=>`<button class="fq ${fq===p.freq?'is':''}" data-freq="${pi}:${fq}">${fq}</button>`).join('')}</div>
       <div class="pinv">${ZONES.map(z=>`<button class="inv ${p.ch.includes(z.n)?'on':''}" style="--zc:var(${z.v})" data-inv="${pi}:${z.n}">${z.name}</button>`).join('')}</div>
-      <div class="chip-act"><span>Which challenges this programme actually makes</span><button class="prim" data-pdone="${pi}">Done</button><button data-pdrop="${pi}">Remove</button></div>
+      <div class="chip-act"><span>${t('prog.which')}</span><button class="prim" data-pdone="${pi}">${t('common.done')}</button><button data-pdrop="${pi}">${t('common.remove')}</button></div>
     </div>`;
   }
   return '';
@@ -1832,9 +1920,9 @@ function vMap(){ return hasNames()?vMapNamed():vMapOpen() }
 function vMapOpen(){
   const b=blanks(NOW);
   return `<div class="view"><div class="wrap">
-    <div class="eyebrow">Ministry Map</div>
-    <h1>Everything you run, and<br>everyone you have, <em>side by side</em></h1>
-    <p class="lede">Five challenges across the top. What you run above, who you have below. Read straight down a column and you can see where an invitation is being made with nobody there to hear it &mdash; or where people are waiting and nothing ever asks them.</p>
+    <div class="eyebrow">${t('map.eyebrow')}</div>
+    <h1>${t('map.title')}</h1>
+    <p class="lede">${t('map.lede')}</p>
 
     ${mapGridHTML()}
     ${mapDetailHTML()}
@@ -1860,7 +1948,7 @@ function refreshCounts(){
 
 function askHTML(){
   if(askedCoach) return `<div class="ask done">
-    <p>Someone from Josiah Venture in your country will be in touch. Nothing changes here until you have spoken to them.</p></div>`;
+    <p>${t('ask.done')}</p></div>`;
   return `<div class="ask">
     <p class="ask-why">The map is not for us. It&rsquo;s for the conversation you&rsquo;ll have about it.</p>
     <div class="ask-row">
