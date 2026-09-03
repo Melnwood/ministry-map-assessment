@@ -823,6 +823,9 @@ button.prow:hover{border-color:var(--ink)}
 <header class="mast">
   <div class="mast-in">
     <div>
+      <!-- Demo data, not chrome: a real leader's group name, their own
+           names and their country come from their record. Nothing here is
+           translated — you do not translate somebody's name. -->
       <div class="grp">CB Frýdlant <em>— youth</em></div>
       <div class="who">Katka &amp; Boža · Czech Republic</div>
     </div>
@@ -1087,7 +1090,7 @@ const STUDENTS=[
 })();
 const MS_MO=2629800000;
 const monthsBetween=(a,b)=>Math.max(0,Math.round((new Date(b)-new Date(a))/MS_MO));
-const fmtShort=d=>new Date(d).toLocaleDateString('en-GB',{month:'short',year:'numeric'});
+const fmtShort=d=>new Date(d).toLocaleDateString(LANG,{month:'short',year:'numeric'});
 const LEADERS=['Katka','Boža'];
 const AGES=['12-14','15-17','18-20','21+'];
 const CAME=['Invited by a student','Invited by a leader','Came with family','Through school or club','Found us themselves'];
@@ -1131,25 +1134,25 @@ const catScores=rep=>{const g={};Q.forEach(q=>{if(NO_SUBTOTAL.has(q.cat))return;
   const o={};for(const k in g)o[k]={v:g[k].reduce((a,b)=>a+b,0)/g[k].length,n:g[k].length};return o};
 /* Band edges sit midway between the four answers, so a category answered
    the same way every time lands in its own band. */
-const BANDS=[{m:2.5,l:'Consistently true',s:'consistent',k:'true'},
-             {m:1.5,l:'Mostly true',      s:'mostly',    k:'true'},
-             {m:0.5,l:'Starting',         s:'starting',  k:'part'},
-             {m:0,  l:'Not yet',          s:'not yet',   k:'not'}];
+/* `l` is gone; the label is looked up where it is shown. `s` stays English:
+   it is an internal handle into the four label sets below, never displayed
+   raw — slugLabel() is what puts it on screen. */
+const BANDS=[{m:2.5,key:'band.consistent',s:'consistent',k:'true'},
+             {m:1.5,key:'band.mostly',    s:'mostly',    k:'true'},
+             {m:0.5,key:'band.starting',  s:'starting',  k:'part'},
+             {m:0,  key:'band.notyet',    s:'not yet',   k:'not'}];
+const SLUG={'consistent':'consistent','mostly':'mostly','starting':'starting','not yet':'notyet'};
 const band=v=>BANDS.find(b=>v>=b.m);
 /* The band labels answer "is this statement true of us?" — right for the
    statements, wrong for the tool letters, which are practices. A letter needs
    to say how often you actually do it. */
-const DOING={'consistent':'You do this consistently',
-             'mostly':'You do this most of the time',
-             'starting':'You have started doing this',
-             'not yet':'You are not doing this yet'};
-const SHORT={'consistent':'consistently','mostly':'most of the time',
-             'starting':'only just started','not yet':'not doing this yet'};
-const doingBand=v=>DOING[band(v).s];
-const shortBand=v=>SHORT[band(v).s];
+const bandLabel =v=>t(band(v).key);              /* is this true of us */
+const doingBand =v=>t('doing.'+SLUG[band(v).s]);  /* how often we do it */
+const shortBand =v=>t('short.'+SLUG[band(v).s]);  /* the same, in a clause */
+const slugLabel =v=>t('slug.'+SLUG[band(v).s]);   /* the bare word, for the why-line */
 const pipLevel=v=>Math.round(v)+1;
 const pips=v=>{const f=pipLevel(v);return `<span class="pips">${[1,2,3,4].map(i=>`<i class="${i<=f?'on':''}"></i>`).join('')}</span>`};
-const fmtDate=r=>new Date(r.d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+const fmtDate=r=>new Date(r.d).toLocaleDateString(LANG,{day:'numeric',month:'short',year:'numeric'});
 
 const FREQ_RANK={'Weekly':4,'Bi-weekly':3,'Monthly':2,'Yearly':1};
 
@@ -1168,21 +1171,19 @@ const currentPhase=s=>{for(const p of PHASES){if(s[p.n]<7)return p.n}return 5};
    Never turn this into an advert. */
 function blanks(ci){
   const c=zoneCounts(ci);
-  const one=(n,a,b)=>n===1?a:b;
-  if(c[3]>0&&c[4]===0) return {n:c[3],
-    line:`${c[3]} of your students ${one(c[3],'has','have')} reached Follow Me &amp; Fish. ${one(c[3],'That student has not','None of them has')} been sent.`};
-  if(c[0]>0&&c[1]===0) return {n:c[0],
-    line:`${c[0]} ${one(c[0],'student is','students are')} coming and looking at Jesus. ${one(c[0],'That student has not','None of them has')} been asked to give their life to Christ.`};
+  /* Whole sentences per count, not clauses stitched together with has/have.
+     English needs two forms; Czech needs three, in different places. */
+  if(c[3]>0&&c[4]===0) return {n:c[3], line:tn('blank.reached',c[3])};
+  if(c[0]>0&&c[1]===0) return {n:c[0], line:tn('blank.looking',c[0])};
   const biggest=c.indexOf(Math.max(...c));
   if(c[biggest]<1) return null;
   /* "gone no further than I Am Sending You" is not a criticism, it is the
      top of the map. Say the good version of it. */
-  if(biggest===ZONES.length-1) return {n:c[biggest],
-    line:`${c[biggest]} of your students ${one(c[biggest],'has','have')} been sent out to lead.`};
+  if(biggest===ZONES.length-1) return {n:c[biggest], line:tn('blank.sent',c[biggest])};
   return {n:c[biggest],
-    line:`${c[biggest]} of your students ${one(c[biggest],'has','have')} gone no further than ${plain(zname(ZONES[biggest]))}.`};
+    line:tn('blank.nofurther',c[biggest],{ch:plain(zname(ZONES[biggest]))})};
 }
-const MAP_BLANK_NOTE='This is your group as a number. With names, it could tell you who has not moved since spring.';
+const MAP_BLANK_NOTE=()=>t('blank.note');
 const blanksHTML=(b,note)=>!b?'':`<div class="blanks">
   <p class="bl-line">${b.line}</p>
   <div class="bl-row">${Array.from({length:Math.min(b.n,6)},()=>'<i></i>').join('')}${b.n>6?`<span class="bl-more">${tn('blanks.more',b.n-6)}</span>`:''}</div>
@@ -1322,7 +1323,12 @@ function vNotes(){
    4. A missing key falls back to English and warns, so a half-finished
       language still renders rather than showing blanks.
    ============================================================ */
-let LANG='en';
+/* A full BCP-47 tag, not a bare language: dates and plurals both key off it,
+   and this app's English is British — 'en' alone would render 5 Aug 2026 as
+   Aug 5, 2026. STRINGS is looked up by tag first, then by the base language,
+   so 'cs-CZ' finds a table filed under 'cs'. */
+let LANG='en-GB';
+const strings=()=>STRINGS[LANG]||STRINGS[String(LANG).split('-')[0]]||STRINGS.en;
 const STRINGS={en:{
   /* ---------- Like Jesus ---------- */
   'jesus.eyebrow':   'Growing a healthy youth ministry',
@@ -1381,6 +1387,8 @@ const STRINGS={en:{
                       other:'Then {n} statements about your ministry, one at a time. Nothing here is skipped &mdash; this part is answered from your map, and you answer the rest.'},
   'check.go':        'That looks right &mdash; start the statements',
   'check.fixmap':    'Change my map first',
+
+  'app.title':        'Ministry Map + Check-up',
 
   /* ---------- Tabs ---------- */
   'nav.jesus':        'Like Jesus',
@@ -1542,6 +1550,36 @@ const STRINGS={en:{
   'spell.Teach':         'Teach',
   'spell.Train':         'Train',
   'spell.Vision':        'Vision',
+
+  /* ---------- How true, and how often ---------- */
+  'band.consistent':  'Consistently true',
+  'band.mostly':      'Mostly true',
+  'band.starting':    'Starting',
+  'band.notyet':      'Not yet',
+  'doing.consistent': 'You do this consistently',
+  'doing.mostly':     'You do this most of the time',
+  'doing.starting':   'You have started doing this',
+  'doing.notyet':     'You are not doing this yet',
+  'short.consistent': 'consistently',
+  'short.mostly':     'most of the time',
+  'short.starting':   'only just started',
+  'short.notyet':     'not doing this yet',
+  'slug.consistent':  'consistent',
+  'slug.mostly':      'mostly',
+  'slug.starting':    'starting',
+  'slug.notyet':      'not yet',
+  'report.latest':    'LATEST',
+
+  /* ---------- What the counts alone can say ---------- */
+  'blank.reached':    {one:'{n} of your students has reached Follow Me &amp; Fish. That student has not been sent.',
+                       other:'{n} of your students have reached Follow Me &amp; Fish. None of them has been sent.'},
+  'blank.looking':    {one:'{n} student is coming and looking at Jesus. That student has not been asked to give their life to Christ.',
+                       other:'{n} students are coming and looking at Jesus. None of them has been asked to give their life to Christ.'},
+  'blank.sent':       {one:'{n} of your students has been sent out to lead.',
+                       other:'{n} of your students have been sent out to lead.'},
+  'blank.nofurther':  {one:'{n} of your students has gone no further than {ch}.',
+                       other:'{n} of your students have gone no further than {ch}.'},
+  'blank.note':       'This is your group as a number. With names, it could tell you who has not moved since spring.',
 
   /* ---------- Notes ---------- */
   'notes.workbench': 'Workbench',
@@ -1818,7 +1856,7 @@ const STRINGS={en:{
 }};
 
 function t(key,vars){
-  const table=STRINGS[LANG]||STRINGS.en;
+  const table=strings();
   let str = table[key]!==undefined ? table[key] : STRINGS.en[key];
   if(str===undefined){ console.warn('missing string:',key); return key; }
   return vars ? String(str).replace(/\{(\w+)\}/g,(m,k)=>vars[k]!==undefined?vars[k]:m) : str;
@@ -1829,7 +1867,7 @@ function t(key,vars){
    the active language. English only ever uses `one` and `other`; adding
    Czech means adding `few`, and nothing in the code changes. */
 function tn(key,n,vars){
-  const table=STRINGS[LANG]||STRINGS.en;
+  const table=strings();
   const set = table[key]!==undefined ? table[key] : STRINGS.en[key];
   if(!set){ console.warn('missing plural:',key); return key; }
   let cat='other';
@@ -1907,9 +1945,9 @@ function phaseYearsHTML(){
     cells+=`<span class="jsbar" style="grid-row:${i+1};grid-column:1">
       <i style="width:${w}%;--t:${t}">${pname(p)}</i></span>`;
     if(skip){skip=false;return}
-    const nxt=order[i+1], pair=nxt&&nxt.span===p.span;
+    const nxt=order[i+1], pair=nxt&&pspan(nxt)===pspan(p);
     cells+=`<span class="jsyr${pair?' pair':''}" style="grid-row:${i+1}${pair?' / span 2':''};grid-column:2">
-      ${p.span}<sup class="ph-ast">*</sup></span>`;
+      ${pspan(p)}<sup class="ph-ast">*</sup></span>`;
     if(pair) skip=true;
   });
   return `<div class="jstack">${cells}</div>`;
@@ -1924,9 +1962,10 @@ function challengeRoadSVG(){
   /* Names sit under their own number rather than in a list below, so the
      diagram says which challenge is which without the eye counting across.
      Two balanced lines when a name is too long for one. */
-  const split=t=>{
-    if(t.length<=11) return [t];
-    const w=t.split(' ');
+  /* `str`, not `t` — the parameter shadowed the translate function. */
+  const split=str=>{
+    if(str.length<=11) return [str];
+    const w=str.split(' ');
     let at=1,best=1e9;
     for(let i=1;i<w.length;i++){
       const d=Math.abs(w.slice(0,i).join(' ').length-w.slice(i).join(' ').length);
@@ -1934,7 +1973,7 @@ function challengeRoadSVG(){
     }
     return [w.slice(0,at).join(' '), w.slice(at).join(' ')];
   };
-  const amp=t=>t.replace(/&/g,'&amp;');
+  const amp=str=>str.replace(/&/g,'&amp;');
   return `<svg class="jroad" viewBox="0 0 720 214" role="img"
        aria-label="${t('jesus.road.alt')}">
     <g fill="none" stroke="var(--ink-15)" stroke-width="1.4">
@@ -2102,7 +2141,7 @@ function roadHTML(ri,opts){
     <div class="road-row rail">${ZONES.map((z,i)=>
       `<span class="mile-dot${c[i]?'':' empty'}" style="${c[i]?`background:var(${z.v})`:''}"></span>`).join('')}</div>
     <div class="road-row labs">${ZONES.map((z,i)=>
-      `<div class="lab${c[i]?'':' empty'}"><span>${z.name}</span><b>${c[i]}</b></div>`).join('')}</div>
+      `<div class="lab${c[i]?'':' empty'}"><span>${zname(z)}</span><b>${c[i]}</b></div>`).join('')}</div>
     <div class="road-row bars">${ZONES.map((z,i)=>
       `<span>${c[i]?`<i style="height:${12+80*(c[i]/mx)}%;background:var(${z.v})"></i>`:''}</span>`).join('')}</div>
   </div>`;
@@ -2321,7 +2360,7 @@ function vMapOpen(){
     ${mapGridHTML()}
     ${mapDetailHTML()}
 
-    <div id="blanks-slot">${blanksHTML(b,MAP_BLANK_NOTE)}</div>
+    <div id="blanks-slot">${blanksHTML(b,MAP_BLANK_NOTE())}</div>
 
     ${askHTML()}
   </div></div>`;
@@ -2337,7 +2376,7 @@ function refreshCounts(){
   const tot=document.getElementById('cnt-tot');
   if(tot) tot.textContent=String(c.reduce((a,b)=>a+b,0));
   const slot=document.getElementById('blanks-slot');
-  if(slot) slot.innerHTML=blanksHTML(blanks(NOW),MAP_BLANK_NOTE);
+  if(slot) slot.innerHTML=blanksHTML(blanks(NOW),MAP_BLANK_NOTE());
 }
 
 function askHTML(){
@@ -2565,19 +2604,19 @@ function vReport(){
        translator may need the frequency to arrive unchanged — the key
        carries the whole clause so they can rewrite around it. */
     acts.push({b:t('report.act.freq',{verb:zverb(wz), n:c[wz.n-1]+c[0], prog:only.name}),
-    w:t('report.act.freq.w',{band:band(cats.CPR.v).s, prog:only.name, freq:only.freq.toLowerCase()})});}
+    w:t('report.act.freq.w',{band:slugLabel(cats.CPR.v), prog:only.name, freq:only.freq.toLowerCase()})});}
   if(gapZone) acts.push({b:t('report.act.gap',{sent:c[4], ready:c[3]}),
-    w:t('report.act.gap.w',{band:band(cats.Entrust.v).s, ready:zoneCounts(R.r)[3]})});
+    w:t('report.act.gap.w',{band:slugLabel(cats.Entrust.v), ready:zoneCounts(R.r)[3]})});
   const used=acts.map(a=>a.w).join(' ');
   const fresh=low.find(k=>!used.includes(k[0]))||low[0];
-  acts.push({b:t('report.act.weak',{cat:catLabel(fresh[0]), band:band(fresh[1].v).s, phase:pfull(PHASES[ph-1])}),
+  acts.push({b:t('report.act.weak',{cat:catLabel(fresh[0]), band:slugLabel(fresh[1].v), phase:pfull(PHASES[ph-1])}),
     w:tn('report.act.weak.w',fresh[1].n,{cat:catLabel(fresh[0]), of:ranked.length})});
 
   return `<div class="view"><div class="wrap">
     <button class="backlink" data-go="reports">${t('report.back')}</button>
 
     <div class="cover">
-      <div class="cover-date">${fmtDate(R)} &middot; ${R.t}${openIx===REPORTS.length-1?' <span class="pill">LATEST</span>':''}</div>
+      <div class="cover-date">${fmtDate(R)} &middot; ${R.t}${openIx===REPORTS.length-1?` <span class="pill">${t('report.latest')}</span>`:''}</div>
       <div class="cover-grid">
         <div class="cv"><b>${tot}</b><span>${t('report.cover.students')}</span></div>
         <div class="cv"><b class="ph">${pname(PHASES[ph-1])}</b><span>${t('report.cover.phase',{n:ph})}${prev&&ph>pph?' &middot; '+t('report.cover.upfrom',{prev:pname(PHASES[pph-1])}):''}</span></div>
@@ -2650,7 +2689,7 @@ function vReport(){
         const order=[]; PHASES.forEach(ps=>TOOLS[ps.tool].words.forEach(w=>order.push(w)));
         return order.filter(w=>cats[w]).map(w=>[w,cats[w]]);})()
         .map(k=>{const b=band(k[1].v),acr=CAT_TOOL[k[0]],mine=CAT_PHASE[k[0]]===ph;
-        return `<div class="bar ${b.k}"><div class="lb">${catLabel(k[0])}${acr?`<span class="acrtag ${mine?'mine':''}">${acr}</span>`:''}${mine?`<span class="tag">${t('report.yourphase')}</span>`:''}</div>${pips(k[1].v)}<div class="vl">${b.l}</div></div>`}).join('')}
+        return `<div class="bar ${b.k}"><div class="lb">${catLabel(k[0])}${acr?`<span class="acrtag ${mine?'mine':''}">${acr}</span>`:''}${mine?`<span class="tag">${t('report.yourphase')}</span>`:''}</div>${pips(k[1].v)}<div class="vl">${bandLabel(k[1].v)}</div></div>`}).join('')}
     </div>
   </div></div>`;
 }
@@ -3282,6 +3321,11 @@ function botHTML(){
    bot down with it — the one moment you most want to report a problem is the
    moment the screen is broken, and that was exactly when the pencil vanished.
    A broken view now says so on screen instead of going blank. */
+/* The <title> tag in the head is the fallback shown before the script runs.
+   Once STRINGS is loaded the real one is set from it, so the browser tab is
+   in the leader's language too. */
+function setDocTitle(){ try{ document.title=plain(t('app.title')); }catch(e){} }
+
 function render(){
   const ta=document.getElementById('bn-text'); const keep=(ta&&ta.value)?ta.value:null;
 
@@ -3304,6 +3348,7 @@ function render(){
          : `<span class="tw-build">${buildLabel()}</span>`}`;
   }catch(err){ console.error('tier switch failed to render', err); }
 
+  setDocTitle();
   const m={jesus:vJesus,today:vToday,map:vMap,check:vCheck,reports:vReports,report:vReport,time:vTime,notes:vNotes};
   try{
     document.getElementById('app').innerHTML=m[active]();
