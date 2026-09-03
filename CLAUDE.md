@@ -392,6 +392,75 @@ visibly empty rather than stretching across the card.
 Only for visual fixes. A wording change is explained by the Fix line; a
 screenshot of it adds nothing.
 
+## Language
+
+Every user-facing string is in `STRINGS` behind a key. 422 of them. Nothing
+that a leader reads is inline in the markup any more.
+
+**The rules, and they are not style preferences:**
+
+1. No user-facing string inline. It goes in `STRINGS` with a key.
+2. One whole sentence per key, with `{placeholders}`. Never build a sentence
+   by joining fragments — word order differs by language and a translator
+   cannot move words across a concatenation.
+3. Plurals go through `tn()`, never `n===1?'':'s'`. English has two forms;
+   Czech, Slovak and Polish have three; Hungarian uses none after a numeral
+   ("5 diák", not "5 diákok"). `Intl.PluralRules` knows all of it already.
+4. Dates and times use `LANG`, never a hard-coded locale.
+5. A missing key falls back to English and warns, so a half-finished
+   language renders rather than showing blanks.
+6. Never name a variable or a parameter `t` — it shadows the translate
+   function and every string in that scope goes silently unreachable. This
+   has already happened four times: `spanLabel`, `phaseWhy`, and twice in
+   `challengeRoadSVG`.
+
+**Three kinds of string, and they are not the same job:**
+
+| Namespace | What it is | Who writes it |
+|---|---|---|
+| everything else | UI chrome | any fluent JV staffer; a machine draft is a fine start |
+| `q.*` `cat.*` `scale.*` | **the instrument** | JV's existing M-Lens translation, verbatim |
+| `zone.*` `phase.*` `spell.*` | content and acronyms | JV's training material; the acronym is a per-country decision |
+
+The instrument is the one that matters. If the gap between "Mostly true" and
+"Consistently true" narrows in one language, that country's scores stop being
+comparable with everyone else's and nothing in the app would show it. Those
+39 strings are never machine-translated and never improved.
+
+`spell.*` is separate from `cat.*` because TAR spells Teach, Act, Reflect —
+three words the instrument never scores — and only spells TAR in English.
+Each country decides: keep the English acronym and gloss it, build its own,
+or drop it.
+
+**Deliberately NOT translated**, and each for a reason: the demo roster and
+programmes (a real leader's records replace them), `COACH_DEMO` (examples
+naming demo students), `STORY` (placeholder prose behind a red asterisk —
+nobody should translate wording that is due to be replaced), and the
+statements in the coach prompt (the model reasons against one fixed wording
+whatever the leader is reading).
+
+The data tables keep their English values. Scores are keyed to them,
+programmes store them, and code compares them — only the *label* is looked
+up, through `zname` / `pname` / `catLabel` / `freqLabel` and friends. That is
+what lets a country switch language without touching saved data.
+
+### Proving an extraction changed nothing
+
+    ./.checks/capture-text.sh before.json     # then make the change
+    ./.checks/capture-text.sh after.json
+    diff <(jq -S . before.json) <(jq -S . after.json)
+
+142 states, and the diff must be empty. Extraction may move words, never
+change them, and a large mechanical diff is exactly where a quiet rewording
+would hide.
+
+That check only proves English still renders the same. `.checks/pseudo.js`
+proves the app can actually change language: it swaps every key for a marked
+echo, renders every screen in both tiers, and reports any plain English left.
+It found five things the text diff could not — hard-coded dates, the band
+labels, the count-only sentences, the road on Today, and the LATEST pill.
+Run both before a push that touches strings.
+
 ## Before every push
 
 `.checks/render-check.js` renders every view in both tiers, all five phase

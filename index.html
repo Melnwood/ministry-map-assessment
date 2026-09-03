@@ -1767,7 +1767,7 @@ const STRINGS={en:{
   /* ---------- The year ---------- */
   'time.eyebrow':     '{from} &rarr; {to} &middot; {months} &middot; {checks}',
   'time.checkups':    {one:'{n} check-up', other:'{n} check-ups'},
-  'time.title':       'From {t0} students to {t1},<br>and Foundation to <em>{phase}</em>.',
+  'time.title':       'From {t0} students to {t1},<br>and {from} to <em>{phase}</em>.',
   'time.students':    {one:'{n} student', other:'{n} students'},
   'time.more':        'more students',
   'time.more.named':  '{n} joined, none lost',
@@ -2951,11 +2951,10 @@ function vTime(){
   return `<div class="view"><div class="wrap">
     <div class="eyebrow">${t('time.eyebrow',{from:fmtDate(F), to:fmtDate(L),
         months:tn('span.months',months), checks:tn('time.checkups',REPORTS.length)})}</div>
-    <!-- KNOWN BUG, kept verbatim through the extraction: "Foundation" is
-         hard-coded where the FIRST phase name belongs (PHASES[fPh-1]). It is
-         only right when the year started in Foundation. Extraction is not
-         allowed to change words, so it is reported rather than fixed here. -->
-    <h1>${t('time.title',{t0, t1, phase:pname(PHASES[lPh-1])})}</h1>
+    <!-- Was: "and Foundation to X", with Foundation hard-coded where the
+         phase the year STARTED in belongs. Only right when the year began in
+         Foundation, which the demo data happens to do — so it was invisible. -->
+    <h1>${t('time.title',{t0, t1, from:pname(PHASES[fPh-1]), phase:pname(PHASES[lPh-1])})}</h1>
 
     <div class="jstats">
       ${stat((t1-t0>=0?'+':'')+(t1-t0),t('time.more'),named?t('time.more.named',{n:joined.length}):t('time.more.open'))}
