@@ -1566,6 +1566,62 @@ const STRINGS={en:{
   'reports.d.weakest':'weakest: {cat}',
   'reports.d.first':  'first check-up',
 
+  /* ---------- The coach ---------- */
+  'coach.real':       'Written from your answers and your students together',
+  'coach.demo':       'Example questions &mdash; not generated yet',
+  'coach.run':        'Read my report',
+  'coach.again':      'Ask again',
+  'coach.thinking':   'Thinking&hellip;',
+  'coach.loading':    'Reading your answers and your roster together&hellip;',
+  'coach.error':      'Could not reach the coach &mdash; {why}. The questions above are the built-in examples.',
+  'coach.ask.ph':     'Or ask your own question about this report&hellip;',
+  'coach.ask':        'Ask',
+  'coach.names':      'Send student names',
+  'coach.names.on':   'Names are included so questions can be specific.',
+  'coach.names.off':  'Names replaced with &ldquo;a student&rdquo; before sending.',
+
+  /* ---------- The year ---------- */
+  'time.eyebrow':     '{from} &rarr; {to} &middot; {months} &middot; {checks}',
+  'time.checkups':    {one:'{n} check-up', other:'{n} check-ups'},
+  'time.title':       'From {t0} students to {t1},<br>and Foundation to <em>{phase}</em>.',
+  'time.students':    {one:'{n} student', other:'{n} students'},
+  'time.more':        'more students',
+  'time.more.named':  '{n} joined, none lost',
+  'time.more.open':   'net change &mdash; counts cannot show who left',
+  'time.crossed':     'challenges crossed',
+  'time.crossed.sub': 'by {a} of the original {b}',
+  'time.further':     'further on than a year ago',
+  'time.further.sub': 'at Follow Me or beyond &mdash; not necessarily the same students',
+  'time.became':      'statements became true',
+  'time.became.sub':  'none went backward',
+  'time.climbed':     'phases climbed',
+  'time.climbed.sub': '{a} &rarr; {b}',
+  'time.shape':       'How the shape changed',
+  'time.thennow':     'THEN AND NOW',
+  'time.shape.note':  'The base widened and the top filled in.',
+  'time.shape.moved': 'A year ago nobody was being sent; {who} has gone from {from} to {to}.',
+  'time.shape.stillnone':'A year ago nobody was being sent, and that is still true.',
+  'time.legs':        'How long you spent in each phase',
+  'time.legs.tag':    'FROM YOUR CHECK-UPS',
+  'time.now':         'now',
+  'time.approx':      '~{n} mo',
+  'time.legs.note':   'Measured between check-ups, so it is only as precise as how often you take one &mdash; a phase change is dated to the check-up that first showed it, not the day it happened.',
+  'time.sec.became':  'What became true',
+  'time.nstatements': {one:'{n} STATEMENT', other:'{n} STATEMENTS'},
+  'time.nowtrue':     'Now true that was not',
+  'time.unmoved':     'Unmoved all year',
+  'time.andmore':     {one:'and {n} more, all in {phase}.', other:'and {n} more, all in {phase}.'},
+  'time.slipped':     {one:'{n} statement went backward this year.', other:'{n} statements went backward this year.'},
+  'time.stuck':       'Who has not moved',
+  'time.stuck.n':     '{n} OF THE ORIGINAL {of}',
+  'time.stuck.unknown':'NOT KNOWN FROM COUNTS',
+  'time.stuck.note':  {one:'Same challenge as {n} month ago. Not a failure &mdash; but if nobody has had a real conversation with them, this is the list to start from.',
+                       other:'Same challenge as {n} months ago. Not a failure &mdash; but if nobody has had a real conversation with them, this is the list to start from.'},
+  'time.stuck.blank': {one:'Counts cannot answer this one. The same number at an invitation {n} month apart can be the same students standing still, or different students passing through. Only names tell them apart.',
+                       other:'Counts cannot answer this one. The same number at an invitation {n} months apart can be the same students standing still, or different students passing through. Only names tell them apart.'},
+  'time.every':       'Every check-up',
+  'time.taptoopen':   'TAP TO OPEN',
+
   /* ---------- Learn more ---------- */
   'learn.more':      'Learn more',
   'learn.ch.title':  'Five Challenges of Christ',
@@ -2612,20 +2668,20 @@ function coachHTML(){
   const list=st.questions||COACH_DEMO;
   return `<div class="coach">
     <div class="coach-top">
-      <div class="eyebrow">${st.questions?'Written from your answers and your students together':'Example questions &mdash; not generated yet'}</div>
-      <button class="cbtn" data-coach="run" ${st.loading?'disabled':''}>${st.loading?'Thinking&hellip;':(st.questions?'Ask again':'Read my report')}</button>
+      <div class="eyebrow">${st.questions?t('coach.real'):t('coach.demo')}</div>
+      <button class="cbtn" data-coach="run" ${st.loading?'disabled':''}>${st.loading?t('coach.thinking'):(st.questions?t('coach.again'):t('coach.run'))}</button>
     </div>
-    ${st.loading?'<div class="cq skel">Reading your answers and your roster together&hellip;</div>':
+    ${st.loading?`<div class="cq skel">${t('coach.loading')}</div>`:
       list.map(x=>`<div class="cq">${x.q}<span class="from">${x.from}</span></div>`).join('')}
-    ${st.error?`<div class="cerr">Could not reach the coach &mdash; ${st.error}. The questions above are the built-in examples.</div>`:''}
+    ${st.error?`<div class="cerr">${t('coach.error',{why:st.error})}</div>`:''}
     <div class="cask">
-      <input id="cq" type="text" placeholder="Or ask your own question about this report&hellip;" ${st.asking?'disabled':''}>
-      <button class="cbtn solid" data-coach="ask" ${st.asking?'disabled':''}>${st.asking?'&hellip;':'Ask'}</button>
+      <input id="cq" type="text" placeholder="${plain(t('coach.ask.ph'))}" ${st.asking?'disabled':''}>
+      <button class="cbtn solid" data-coach="ask" ${st.asking?'disabled':''}>${st.asking?'&hellip;':t('coach.ask')}</button>
     </div>
     ${st.answer?`<div class="canswer">${st.answer.split('\n').filter(Boolean).map(p=>`<p>${p}</p>`).join('')}</div>`:''}
     <div class="cfoot">
-      <label><input type="checkbox" data-coach="names" ${CONFIG.sendNames?'checked':''}> Send student names</label>
-      <span>${CONFIG.sendNames?'Names are included so questions can be specific.':'Names replaced with &ldquo;a student&rdquo; before sending.'}</span>
+      <label><input type="checkbox" data-coach="names" ${CONFIG.sendNames?'checked':''}> ${t('coach.names')}</label>
+      <span>${CONFIG.sendNames?t('coach.names.on'):t('coach.names.off')}</span>
     </div>
   </div>`;
 }
@@ -2669,73 +2725,80 @@ function vTime(){
   const stat=(n,l,sub)=>`<div class="jstat"><b>${n}</b><span>${l}</span>${sub?`<em>${sub}</em>`:''}</div>`;
 
   return `<div class="view"><div class="wrap">
-    <div class="eyebrow">${fmtDate(F)} &rarr; ${fmtDate(L)} &middot; ${months} months &middot; ${REPORTS.length} check-ups</div>
-    <h1>From ${t0} students to ${t1},<br>and Foundation to <em>${pname(PHASES[lPh-1])}</em>.</h1>
+    <div class="eyebrow">${t('time.eyebrow',{from:fmtDate(F), to:fmtDate(L),
+        months:tn('span.months',months), checks:tn('time.checkups',REPORTS.length)})}</div>
+    <!-- KNOWN BUG, kept verbatim through the extraction: "Foundation" is
+         hard-coded where the FIRST phase name belongs (PHASES[fPh-1]). It is
+         only right when the year started in Foundation. Extraction is not
+         allowed to change words, so it is reported rather than fixed here. -->
+    <h1>${t('time.title',{t0, t1, phase:pname(PHASES[lPh-1])})}</h1>
 
     <div class="jstats">
-      ${stat((t1-t0>=0?'+':'')+(t1-t0),'more students',named?joined.length+' joined, none lost':'net change &mdash; counts cannot show who left')}
+      ${stat((t1-t0>=0?'+':'')+(t1-t0),t('time.more'),named?t('time.more.named',{n:joined.length}):t('time.more.open'))}
       ${named
-        ? stat(crossings,'challenges crossed','by '+advanced.length+' of the original '+started.length)
-        : stat((dDeep>=0?'+':'')+dDeep,'further on than a year ago','at Follow Me or beyond &mdash; not necessarily the same students')}
-      ${stat(became.length+'/35','statements became true','none went backward')}
-      ${stat(lPh-fPh,'phases climbed',pname(PHASES[fPh-1])+' &rarr; '+pname(PHASES[lPh-1]))}
+        ? stat(crossings,t('time.crossed'),t('time.crossed.sub',{a:advanced.length,b:started.length}))
+        : stat((dDeep>=0?'+':'')+dDeep,t('time.further'),t('time.further.sub'))}
+      ${stat(became.length+'/35',t('time.became'),t('time.became.sub'))}
+      ${stat(lPh-fPh,t('time.climbed'),t('time.climbed.sub',{a:pname(PHASES[fPh-1]),b:pname(PHASES[lPh-1])}))}
     </div>
 
     <div class="sec">
-      <div class="sec-hd"><h2>How the shape changed</h2><span class="n">THEN AND NOW</span></div>
+      <div class="sec-hd"><h2>${t('time.shape')}</h2><span class="n">${t('time.thennow')}</span></div>
       ${(()=>{const mx=Math.max(1,...zoneCounts(F.r),...zoneCounts(L.r));
         return `<div class="tnstack">
-          <div class="tn-one"><div class="tn-lab">${fmtDate(F)}<span>${t0} students</span></div>
+          <div class="tn-one"><div class="tn-lab">${fmtDate(F)}<span>${tn('time.students',t0)}</span></div>
             ${roadHTML(F.r,{mx})}</div>
-          <div class="tn-one now"><div class="tn-lab">${fmtDate(L)}<span>${t1} students</span></div>
+          <div class="tn-one now"><div class="tn-lab">${fmtDate(L)}<span>${tn('time.students',t1)}</span></div>
             ${roadHTML(L.r,{mx})}</div>
         </div>`})()}
-      <p class="note" style="margin-top:14px">The base widened and the top filled in.${furthest?` A year ago nobody was being sent; ${furthest.name} has gone from ${ZONES[furthest.hist[F.r]-1].name.replace(/&amp;/g,'&')} to ${ZONES[furthest.hist[L.r]-1].name.replace(/&amp;/g,'&')}.`:named?' A year ago nobody was being sent, and that is still true.':''}</p>
+      <p class="note" style="margin-top:14px">${t('time.shape.note')}${furthest?' '+t('time.shape.moved',{who:furthest.name,
+          from:plain(ZONES[furthest.hist[F.r]-1].name), to:plain(ZONES[furthest.hist[L.r]-1].name)})
+        :named?' '+t('time.shape.stillnone'):''}</p>
     </div>
 
     <div class="sec">
-      <div class="sec-hd"><h2>How long you spent in each phase</h2><span class="n">FROM YOUR CHECK-UPS</span></div>
+      <div class="sec-hd"><h2>${t('time.legs')}</h2><span class="n">${t('time.legs.tag')}</span></div>
       <div class="legs">
         ${legs.map((g,i)=>`<div class="leg ${i===legs.length-1?'now':''}" style="width:${g.w}%">
           <span class="lg-n">${pname(PHASES[g.p-1])}</span>
-          <span class="lg-t">${i===legs.length-1?'now':'~'+g.mo+' mo'}</span></div>`).join('')}
+          <span class="lg-t">${i===legs.length-1?t('time.now'):t('time.approx',{n:g.mo})}</span></div>`).join('')}
       </div>
-      <p class="note" style="margin-top:12px">Measured between check-ups, so it is only as precise as how often you take one &mdash; a phase change is dated to the check-up that first showed it, not the day it happened.</p>
+      <p class="note" style="margin-top:12px">${t('time.legs.note')}</p>
     </div>
 
     <div class="sec">
-      <div class="sec-hd"><h2>What became true</h2><span class="n">${became.length} STATEMENTS</span></div>
+      <div class="sec-hd"><h2>${t('time.sec.became')}</h2><span class="n">${tn('time.nstatements',became.length)}</span></div>
       <div class="tf-grid" style="grid-template-columns:1fr 1fr">
         <div>
-          <div class="tf-hd true">Now true that was not${''}<span>${became.length}</span></div>
+          <div class="tf-hd true">${t('time.nowtrue')}<span>${became.length}</span></div>
           ${became.map(q=>`<div class="tf true">${q.t}<span class="qp">${pname(PHASES[q.phase-1])} &middot; ${q.cat}</span></div>`).join('')}
         </div>
         <div>
-          <div class="tf-hd not">Unmoved all year<span>${frozen.length}</span></div>
+          <div class="tf-hd not">${t('time.unmoved')}<span>${frozen.length}</span></div>
           ${frozen.slice(0,6).map(q=>`<div class="tf not">${q.t}<span class="qp">${pname(PHASES[q.phase-1])} &middot; ${q.cat}</span></div>`).join('')}
-          ${frozen.length>6?`<p class="note" style="margin-top:10px">and ${frozen.length-6} more, all in ${pname(PHASES[4])}.</p>`:''}
+          ${frozen.length>6?`<p class="note" style="margin-top:10px">${tn('time.andmore',frozen.length-6,{phase:pname(PHASES[4])})}</p>`:''}
         </div>
       </div>
-      ${slipped.length?`<p class="note" style="margin-top:14px">${slipped.length} statement${slipped.length>1?'s':''} went backward this year.</p>`:''}
+      ${slipped.length?`<p class="note" style="margin-top:14px">${tn('time.slipped',slipped.length)}</p>`:''}
     </div>
 
     <div class="sec">
-      <div class="sec-hd"><h2>Who has not moved</h2><span class="n">${named?`${stuck.length} OF THE ORIGINAL ${started.length}`:'NOT KNOWN FROM COUNTS'}</span></div>
+      <div class="sec-hd"><h2>${t('time.stuck')}</h2><span class="n">${named?t('time.stuck.n',{n:stuck.length,of:started.length}):t('time.stuck.unknown')}</span></div>
       ${named
         ? `<div class="stuckrow">${stuck.map(x=>`<span class="sc" style="--zc:var(${ZONES[x.hist[L.r]-1].v})">${x.name}<em>${ZONES[x.hist[L.r]-1].name}</em></span>`).join('')}</div>
-           <p class="note" style="margin-top:12px">Same challenge as ${months} months ago. Not a failure &mdash; but if nobody has had a real conversation with them, this is the list to start from.</p>`
-        : blanksHTML(blanks(L.r),`Counts cannot answer this one. The same number at an invitation ${months} months apart can be the same students standing still, or different students passing through. Only names tell them apart.`)}
+           <p class="note" style="margin-top:12px">${tn('time.stuck.note',months)}</p>`
+        : blanksHTML(blanks(L.r),tn('time.stuck.blank',months))}
     </div>
 
     <div class="sec">
-      <div class="sec-hd"><h2>Every check-up</h2><span class="n">TAP TO OPEN</span></div>
+      <div class="sec-hd"><h2>${t('time.every')}</h2><span class="n">${t('time.taptoopen')}</span></div>
       <div class="track">
         ${REPORTS.map((r,i)=>{const p=currentPhase(scoresOf(r));
           return `<button class="stop ${i===REPORTS.length-1?'now':''}" data-open="${i}">
             <span class="dot"></span>
             <span class="st-d">${fmtDate(r)}</span>
             <span class="st-p">${pname(PHASES[p-1])}</span>
-            <span class="st-n">${totalAt(r.r)} students</span></button>`}).join('')}
+            <span class="st-n">${tn('time.students',totalAt(r.r))}</span></button>`}).join('')}
       </div>
     </div>
   </div></div>`;
@@ -2782,8 +2845,8 @@ const buildLabel=()=>{
   if(!onTheWeb()||!BUILD||BUILD.at==='local') return t('build.local');
   const d=new Date(BUILD.at);
   if(isNaN(d)) return t('build.local');
-  return t('build.label',{when:d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})+
-    ', '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})});
+  return t('build.label',{when:d.toLocaleDateString(LANG,{day:'numeric',month:'short'})+
+    ', '+d.toLocaleTimeString(LANG,{hour:'2-digit',minute:'2-digit'})});
 };
 
 /* What the app knew when a note was written. One line, one field — the tester
