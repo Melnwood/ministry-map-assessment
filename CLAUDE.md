@@ -362,6 +362,30 @@ Colour is the same problem in a smaller package. `--ink-45` carries every
 eyebrow, meta line and caption in the app, so "this text is too light on
 the check-up" was never about the check-up. One variable, every screen.
 
+## Showing a fix beside the complaint
+
+When a note has a screenshot and the fix is visual, capture the fixed state and
+commit it as `after/<record id>.jpg`. The Notes page shows it beside the
+tester's shot — "What you saw" | "What it looks like now" — so the list can be
+scanned without opening the app and hunting for the change.
+
+Capture it headlessly rather than by hand:
+
+    ./.checks/shot.sh "screen=report&tier=activated&report=3" out.png 1300 1900
+
+The deep-link params (`screen`, `report`, `tier`, `phase`, `tool`, `learn`,
+`q`, `student`) exist for this. Crop to the part the note is about, resize to
+about 900px wide, save JPEG q82 — roughly 25kB.
+
+The after-shot is a **file in the repo, not an Airtable field**. A screenshot
+does not fit in a cell (the base64 runs 270k–2.7M characters against a ~100k
+cap — that is the bug that made the tester's own shots vanish for a week), and
+committing it versions the picture with the change it shows. A note with no
+file renders exactly as it did before: the figure removes itself on error.
+
+Only for visual fixes. A wording change is explained by the Fix line; a
+screenshot of it adds nothing.
+
 ## Before every push
 
 `.checks/render-check.js` renders every view in both tiers, all five phase
