@@ -444,6 +444,52 @@ programmes store them, and code compares them — only the *label* is looked
 up, through `zname` / `pname` / `catLabel` / `freqLabel` and friends. That is
 what lets a country switch language without touching saved data.
 
+### The Translate page
+
+A workbench tool, beside Notes — not in the leader nav. It renders **from
+`STRINGS`**, never from a list of its own: extract a new string tomorrow and
+it appears there by itself, and every language's count drops by one so we can
+see it is owed. A hand-kept list of what needs translating would be a second
+source of truth and would be wrong inside a month.
+
+Groups are collapsed by default and open one at a time. Open together they
+make a page 52,000 pixels tall — seventy screens — and nobody translates an
+app that way. You sit down and do Today.
+
+What it does that a spreadsheet cannot:
+
+- **Plural boxes follow the target language.** Czech gets one/few/many/other,
+  Hungarian gets only `other`. Nobody is asked to invent a form their
+  language has not got.
+- **The English is shown escaped, with `{placeholders}` picked out** as
+  chips. A dropped `{n}` is the commonest translation bug and invisible in a
+  wall of text; a translation missing one says so under the box.
+- **Drift.** Each row stores the English it was written against. If the
+  English later changes, the row says the translation is answering an older
+  question.
+- **"See this screen"** opens the exact view a group belongs to, using the
+  deep links.
+- **"See the app in X"** switches the whole app immediately.
+
+The instrument group is behind a second click — *"I have JV's official
+translation"* — with the reason stated. Not a lock, because somebody has to
+paste it in; friction and a plain sentence, because it is the one place where
+a well-meaning improvement does real damage nobody would ever see.
+
+Storage is the `Translations` table in the same base, through
+`/api/strings`. One row per string per language. The English in `index.html`
+stays the source of truth: a row is an override, a missing row falls back, and
+an **empty** cell is treated as "not translated yet" rather than "translate to
+nothing" — otherwise saving a blank would blank the string instead of
+restoring English. The function pages past Airtable's 100-record limit,
+because 463 keys in one page would silently return a partial translation that
+looks exactly like an unfinished one.
+
+`LANGS` in `index.html` is the list offered. It is **only what the app already
+evidences** — Czech, Slovak, Polish, Hungarian — not JV's full set. Adding one
+is a single line. Confirm the real list before asking any national team to
+start.
+
 ### Proving an extraction changed nothing
 
     ./.checks/capture-text.sh before.json     # then make the change

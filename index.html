@@ -13,6 +13,16 @@
   --ground:#E8EAE6; --surface:#FBFBFA; --line:#D3D7D1;
   --z1:#4C6B8A; --z2:#5E8A88; --z3:#8A9455; --z4:#C58A3B; --z5:#B04A38;
   --mark:#16202E; --phase:#4A3BAE; --phase-08:rgba(74,59,174,.085);
+  /* Added for the Translate page, and for the note thumbnails, which had
+     been asking for --paper since 3 Sep with nothing behind it — an
+     undefined custom property fails silently, so the background simply
+     never painted. */
+  --paper:#FBFBFA;                       /* same as --surface; the name a form field wants */
+  --ink-04:rgba(22,32,46,.04);
+  --ink-64:rgba(22,32,46,.64);
+  --warn:#8F3A2C;    --warn-bg:rgba(176,74,56,.10);   /* --z5, darkened to hold 4.5:1 */
+  --ok:#5F6836;      --ok-bg:rgba(138,148,85,.16);    /* --z3, likewise */
+  --z3-bg:rgba(138,148,85,.14);
   --r:14px; --maxw:1080px;
   --display:'Fraunces',Georgia,serif; --body:'Archivo',system-ui,sans-serif; --mono:'IBM Plex Mono',monospace;
 }
@@ -519,6 +529,73 @@ button.tw-build{background:none;border:0;cursor:pointer;padding:0}
 /* Two fixed columns, never auto-fit: a note with only the tester's shot
    should sit in its half and leave the other half visibly empty, not
    stretch across the card. */
+/* ---------- Translate ----------
+   Two columns: the English as it is written, and a box. The source is shown
+   escaped with its placeholders picked out, because the translator has to
+   reproduce {n} and &mdash; exactly and cannot do that if we render them. */
+.tr-langs{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:24px}
+.tr-lang{text-align:left;padding:16px 18px;border:1px solid var(--line);border-radius:10px;
+  background:var(--paper);cursor:pointer;transition:border-color .12s,transform .12s}
+.tr-lang:hover{border-color:var(--ink-45);transform:translateY(-1px)}
+.tr-lang b{display:block;font-size:19px;letter-spacing:-.01em}
+.tr-lang span{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--ink-45);margin-top:3px}
+
+.tr-top{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.tr-of{font-weight:400;color:var(--ink-45)}
+.tr-acts{display:flex;gap:8px;flex-wrap:wrap}
+.tr-bar{height:3px;background:var(--ink-08);border-radius:2px;margin-top:18px;overflow:hidden}
+.tr-bar i{display:block;height:100%;background:var(--z3);transition:width .3s}
+.tr-err{margin-top:14px;padding:10px 14px;border-radius:8px;background:var(--warn-bg);
+  color:var(--warn);font-size:13px}
+
+.tr-grp{margin-top:2px}
+.tr-ghd{display:flex;align-items:center;gap:14px;width:100%;text-align:left;
+  padding:15px 4px;border-bottom:1px solid var(--ink-08)}
+.tr-grp.open .tr-ghd{border-bottom-color:var(--line)}
+.tr-ghd:hover h2{color:var(--ink)}
+.tr-caret{font-family:var(--mono);font-size:15px;color:var(--ink-45);width:12px;flex:none}
+.tr-ghd h2{margin:0;font-size:18px;letter-spacing:-.015em;color:var(--ink-70);font-weight:600}
+.tr-grp.open .tr-ghd h2{color:var(--ink)}
+.tr-gbar{margin-left:auto;width:110px;height:3px;border-radius:2px;background:var(--ink-08);
+  overflow:hidden;flex:none}
+.tr-gbar i{display:block;height:100%;background:var(--z3)}
+.tr-gn{font-family:var(--mono);font-size:11px;color:var(--ink-45);letter-spacing:.06em;
+  width:52px;text-align:right;flex:none}
+.tr-gsub{display:flex;justify-content:flex-end;padding:10px 4px 0}
+.tr-see{font-family:var(--mono);font-size:10px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--ink-45);text-decoration:none;border-bottom:1px solid var(--ink-15)}
+.tr-see:hover{color:var(--ink);border-color:var(--ink-45)}
+.tr-warn{margin:12px 0 0;padding:11px 14px;border-radius:8px;font-size:13px;line-height:1.5;
+  background:var(--warn-bg);color:var(--warn)}
+.tr-warn.soft{background:var(--ink-04);color:var(--ink-64)}
+.tr-open{margin-top:12px}
+
+.tr-row{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:14px 0;
+  border-bottom:1px solid var(--ink-08);align-items:start}
+.tr-row.has{background:linear-gradient(to right,transparent,transparent)}
+.tr-key{font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--ink-45);
+  display:flex;align-items:center;gap:8px}
+.tr-key i{font-style:normal;font-size:9px;letter-spacing:.08em;text-transform:uppercase;
+  padding:1px 6px;border-radius:99px}
+.tr-saving{background:var(--ink-08);color:var(--ink-45)}
+.tr-saved{background:var(--ok-bg);color:var(--ok)}
+.tr-failed{background:var(--warn-bg);color:var(--warn)}
+.tr-src{margin-top:5px;font-size:14px;line-height:1.55;white-space:pre-wrap;word-break:break-word}
+.tr-encat{font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink-45);margin-right:4px}
+.tr-ph{background:var(--z3-bg);color:var(--z3);border-radius:3px;padding:0 3px;
+  font-family:var(--mono);font-size:12px}
+.tr-drift,.tr-miss{margin-top:6px;font-size:12px;line-height:1.45;color:var(--warn)}
+.tr-in textarea{width:100%;font:inherit;font-size:14px;line-height:1.55;padding:9px 11px;
+  border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);
+  resize:vertical}
+.tr-in textarea:focus{outline:none;border-color:var(--z3)}
+.tr-in textarea::placeholder{color:var(--ink-45);opacity:.6}
+.tr-plurals{display:flex;flex-direction:column;gap:6px}
+.tr-pl>span{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--ink-45);margin-bottom:2px}
+@media(max-width:820px){.tr-row{grid-template-columns:1fr;gap:8px}}
 .nt-ba{display:grid;gap:10px;margin-top:12px;grid-template-columns:repeat(2,minmax(0,1fr))}
 .nt-ba figure{margin:0;min-width:0}
 .nt-ba figcaption{font-family:var(--mono);font-size:9px;letter-spacing:.09em;text-transform:uppercase;
@@ -1302,6 +1379,208 @@ function vNotes(){
   </div></div>`;
 }
 
+
+/* ============================================================
+   TRANSLATE
+   Rendered FROM `STRINGS`, never from a list of its own. Extract a new
+   string tomorrow and it appears here by itself, and every language's
+   progress drops by one so we can see it is owed. A hand-kept list of
+   what needs translating is a second source of truth and would be wrong
+   inside a month.
+
+   A workbench tool, like the pencil: it sits with the tier switch, not in
+   the leader nav.
+   ============================================================ */
+let trLang=null, trBusy={}, trOpen={}, trErr=null;
+
+/* Which screen a key belongs to, and the deep link that opens it. First
+   match wins, so the two `phase.` rules must stay in this order: a numbered
+   one (phase.3.name) is content, an unnumbered one (phase.tf.true) is
+   chrome on the phase card. */
+const TR_GROUPS=[
+ {id:'jesus', label:'Like Jesus', go:'screen=jesus', test:k=>k.startsWith('jesus.')},
+ {id:'today', label:'Today', go:'screen=today', test:k=>/^(today|span|blank)\./.test(k)},
+ {id:'map', label:'Your map', go:'screen=map&tier=activated', test:k=>/^(map|mdet|prog|intake|ask|ms)\./.test(k)},
+ {id:'check', label:'Check-up', go:'screen=check', test:k=>k.startsWith('check.')},
+ {id:'reports', label:'All reports', go:'screen=reports', test:k=>k.startsWith('reports.')},
+ {id:'report', label:'A report', go:'screen=report&tier=activated&report=3',
+  test:k=>/^(report|tool|band|doing|short|slug)\./.test(k)||/^phase\.(?!\d)/.test(k)},
+ {id:'time', label:'The year', go:'screen=time&tier=activated', test:k=>k.startsWith('time.')},
+ {id:'coach', label:'The coach', go:'screen=report&tier=activated&report=3', test:k=>k.startsWith('coach.')},
+ {id:'learn', label:'The Learn more panels', go:'screen=jesus&learn=challenges', test:k=>k.startsWith('learn.')},
+ {id:'content', label:'The five challenges and the five phases', kind:'content', go:'screen=jesus',
+  test:k=>/^(zone|spell|freq|came)\./.test(k)||/^phase\.\d/.test(k)},
+ {id:'instrument', label:'The 35 statements and how they are scored', kind:'instrument', go:'screen=check',
+  test:k=>/^(q|cat|scale)\./.test(k)},
+ {id:'chrome', label:'Tabs, buttons and shared words', go:'screen=today', test:()=>true}
+];
+const trGroupOf=k=>TR_GROUPS.find(g=>g.test(k));
+
+/* CLDR plural categories the target language actually uses. Czech shows
+   one/few/many/other, Hungarian shows only `other` — so a Hungarian
+   translator is never asked to invent a form their language has not got. */
+const trCats=tag=>{
+  try{ return new Intl.PluralRules(tag).resolvedOptions().pluralCategories; }
+  catch(e){ return ['one','other']; }
+};
+
+const trIsPlural=v=>v&&typeof v==='object';
+const trDone=(tag,k)=>{const o=(STRINGS[tag]||{})[k];
+  return trIsPlural(o) ? Object.values(o).some(x=>String(x).trim()) : !!String(o||'').trim()};
+
+/* The English, with its placeholders picked out. A dropped {n} is the most
+   common translation bug and the hardest to see in a wall of text, so it is
+   shown as a chip rather than left to be noticed. Escaped, never rendered:
+   the translator has to reproduce &mdash; and <b> exactly, so they have to
+   be able to see them. */
+const trSource=str=>esc(String(str))
+  .replace(/\{(\w+)\}/g,'<span class="tr-ph">{$1}</span>');
+
+/* Placeholders present in the English but missing from the translation.
+   Warned inline rather than blocked — a translator may legitimately be
+   mid-sentence, and a form that refuses to save is a form people stop
+   using. */
+const trMissing=(en,val)=>{
+  const want=[...new Set(String(en).match(/\{\w+\}/g)||[])];
+  return want.filter(pl=>String(val).indexOf(pl)<0);
+};
+
+async function trSave(key){
+  const tag=trLang; if(!tag) return;
+  const en=STRINGS.en[key];
+  let value;
+  if(trIsPlural(en)){
+    value={};
+    trCats(tag).forEach(c=>{const el=document.getElementById('tr:'+key+':'+c);
+      if(el) value[c]=el.value;});
+    if(!Object.values(value).some(x=>String(x).trim())) value='';
+  } else {
+    const el=document.getElementById('tr:'+key); value=el?el.value:'';
+  }
+  STRINGS[tag]=STRINGS[tag]||{};
+  if(value==='' ) delete STRINGS[tag][key]; else STRINGS[tag][key]=value;
+
+  trBusy[key]='saving'; trErr=null; render();
+  try{
+    const r=await fetch(CONFIG.stringsEndpoint,{method:'POST',
+      headers:{...APP_HDR,'Content-Type':'application/json'},
+      body:JSON.stringify({lang:tag,key,text:value,
+        english:trIsPlural(en)?JSON.stringify(en):en, who:WHO||'Unknown'})});
+    if(!r.ok) throw new Error('http '+r.status);
+    trBusy[key]='saved';
+    trEnglishWas[tag]=trEnglishWas[tag]||{};
+    trEnglishWas[tag][key]=trIsPlural(en)?JSON.stringify(en):en;
+  }catch(e){
+    trBusy[key]='failed';
+    trErr=t('tr.savefailed');
+    console.warn('translation save failed',key,e);
+  }
+  render();
+}
+
+/* Switch language, remember it, and fetch its strings if they are not
+   already here. Everything renders in English until they arrive. */
+function setLang(tag){
+  LANG=tag;
+  try{ localStorage.setItem('mm-lang',tag); }catch(e){}
+  render();
+  loadLang(tag);
+}
+
+async function trPick(tag){
+  trLang=tag; trErr=null; render();
+  trLoaded[tag]=false;
+  await loadLang(tag);
+}
+
+function vTranslate(){
+  const keys=Object.keys(STRINGS.en);
+  const tag=trLang;
+
+  if(!tag) return `<div class="view"><div class="wrap">
+    <div class="eyebrow">${t('tr.eyebrow')}</div>
+    <h1>${t('tr.title')}</h1>
+    <p class="lede">${tn('tr.lede',keys.length)}</p>
+    <div class="tr-langs">${LANGS.map(l=>`<button class="tr-lang" data-trlang="${l.tag}">
+        <b>${l.name}</b><span>${l.en}</span></button>`).join('')}</div>
+    <p class="note" style="margin-top:20px">${t('tr.listnote')}</p>
+  </div></div>`;
+
+  const done=keys.filter(k=>trDone(tag,k)).length;
+  const pct=Math.round(done/keys.length*100);
+  const was=trEnglishWas[tag]||{};
+
+  const row=k=>{
+    const en=STRINGS.en[k], cur=(STRINGS[tag]||{})[k];
+    const state=trBusy[k];
+    const drift=was[k]!==undefined &&
+      was[k]!==(trIsPlural(en)?JSON.stringify(en):en);
+    const miss=cur&&!trIsPlural(en)?trMissing(en,cur):[];
+    const box=trIsPlural(en)
+      ? `<div class="tr-plurals">${trCats(tag).map(c=>`<label class="tr-pl">
+           <span>${c}</span>
+           <textarea id="tr:${k}:${c}" data-trsave="${k}" rows="2"
+             placeholder="${esc(String(en[c]!==undefined?en[c]:en.other||''))}">${esc(String((cur&&cur[c])||''))}</textarea>
+         </label>`).join('')}</div>`
+      : `<textarea id="tr:${k}" data-trsave="${k}" rows="2"
+           placeholder="${esc(String(en))}">${esc(String(cur||''))}</textarea>`;
+    return `<div class="tr-row${trDone(tag,k)?' has':''}">
+      <div class="tr-en">
+        <div class="tr-key">${k}${state?`<i class="tr-${state}">${t('tr.'+state)}</i>`:''}</div>
+        <div class="tr-src">${trIsPlural(en)
+          ? Object.entries(en).map(([c,v])=>`<span class="tr-encat">${c}</span> ${trSource(v)}`).join('<br>')
+          : trSource(en)}</div>
+        ${drift?`<div class="tr-drift">${t('tr.drift')}</div>`:''}
+        ${miss.length?`<div class="tr-miss">${t('tr.missing',{list:miss.join(' ')})}</div>`:''}
+      </div>
+      <div class="tr-in">${box}</div>
+    </div>`;
+  };
+
+  const groups=TR_GROUPS.map(g=>({g,ks:keys.filter(k=>trGroupOf(k)===g)})).filter(x=>x.ks.length);
+
+  return `<div class="view"><div class="wrap">
+    <div class="tr-top">
+      <div>
+        <div class="eyebrow">${t('tr.eyebrow')}</div>
+        <h1>${langName(tag)}<span class="tr-of">, ${t('tr.progress',{done,total:keys.length})}</span></h1>
+      </div>
+      <div class="tr-acts">
+        <button class="btn ghost" data-trlang="">${t('tr.another')}</button>
+        <button class="btn" data-trpreview="${tag}">${t('tr.preview',{lang:langName(tag)})}</button>
+      </div>
+    </div>
+    <div class="tr-bar"><i style="width:${pct}%"></i></div>
+    ${trErr?`<div class="tr-err">${trErr}</div>`:''}
+    <p class="lede" style="margin-top:14px">${t('tr.blanknote')}</p>
+
+    ${/* One screen at a time. All twelve groups open at once is a page fifty
+          thousand pixels tall — seventy screens of scrolling — and nobody
+          translates an app that way. You sit down and do Today. */
+      groups.map(({g,ks})=>{
+      const gd=ks.filter(k=>trDone(tag,k)).length;
+      const isOpen=trOpen[g.id];
+      const pc=Math.round(gd/ks.length*100);
+      return `<div class="tr-grp${g.kind?' '+g.kind:''}${isOpen?' open':''}">
+        <button class="tr-ghd" data-tropen="${g.id}" aria-expanded="${!!isOpen}">
+          <span class="tr-caret">${isOpen?'&minus;':'+'}</span>
+          <h2>${g.label}</h2>
+          <span class="tr-gbar"><i style="width:${pc}%"></i></span>
+          <span class="tr-gn">${gd}/${ks.length}</span>
+        </button>
+        ${isOpen?`
+          <div class="tr-gsub">
+            <a class="tr-see" href="?${g.go}" target="_blank" rel="noopener">${t('tr.see')}</a>
+          </div>
+          ${g.kind==='instrument'?`<p class="tr-warn">${t('tr.instrument')}</p>`:''}
+          ${g.kind==='content'?`<p class="tr-warn soft">${t('tr.content')}</p>`:''}
+          ${g.kind==='instrument'&&!trOpen['inst-ok']
+            ? `<button class="btn ghost tr-open" data-tropen="inst-ok">${t('tr.openinstrument')}</button>`
+            : ks.map(row).join('')}`:''}
+      </div>`}).join('')}
+  </div></div>`;
+}
+
 /* ============================================================
    LANGUAGE
    JV works across sixteen countries and this app is English-only, so
@@ -1327,7 +1606,23 @@ function vNotes(){
    and this app's English is British — 'en' alone would render 5 Aug 2026 as
    Aug 5, 2026. STRINGS is looked up by tag first, then by the base language,
    so 'cs-CZ' finds a table filed under 'cs'. */
+/* The languages the page offers. This is NOT the full JV list — it is only
+   what the app itself already evidences (the demo group is Czech, and the
+   plural rules were written against these four). Adding one is a single line
+   here; nothing else changes. Confirm the real list with JV before asking
+   any national team to start. */
+const LANGS=[
+ {tag:'cs', name:'Čeština',    en:'Czech'},
+ {tag:'sk', name:'Slovenčina', en:'Slovak'},
+ {tag:'pl', name:'Polski',     en:'Polish'},
+ {tag:'hu', name:'Magyar',     en:'Hungarian'}
+];
+const langName=tag=>{const l=LANGS.find(x=>x.tag===tag);return l?l.name:tag};
+
 let LANG='en-GB';
+/* A leader who picked a language keeps it. Wrapped because Safari in private
+   mode throws on localStorage rather than returning null. */
+try{ const saved=localStorage.getItem('mm-lang'); if(saved) LANG=saved; }catch(e){}
 const strings=()=>STRINGS[LANG]||STRINGS[String(LANG).split('-')[0]]||STRINGS.en;
 const STRINGS={en:{
   /* ---------- Like Jesus ---------- */
@@ -1580,6 +1875,27 @@ const STRINGS={en:{
   'blank.nofurther':  {one:'{n} of your students has gone no further than {ch}.',
                        other:'{n} of your students have gone no further than {ch}.'},
   'blank.note':       'This is your group as a number. With names, it could tell you who has not moved since spring.',
+
+  /* ---------- Translate ---------- */
+  'tr.eyebrow':       'Translate',
+  'tr.title':         'Which language are you working in?',
+  'tr.lede':          {one:'{n} string in the app. Everything a leader reads is here, grouped by the screen it appears on.',
+                       other:'{n} strings in the app. Everything a leader reads is here, grouped by the screen it appears on.'},
+  'tr.listnote':      'This list is only what the app already evidences, not JV&rsquo;s full set of languages. Adding one is a single line of code &mdash; tell us which.',
+  'tr.progress':      '{done} of {total} done',
+  'tr.another':       'Another language',
+  'tr.preview':       'See the app in {lang}',
+  'tr.blanknote':     'Leave anything blank and it stays in English, so a language can go live half-finished and simply get better. Every box saves as you leave it.',
+  'tr.see':           'See this screen',
+  'tr.saving':        'saving',
+  'tr.saved':         'saved',
+  'tr.failed':        'not saved',
+  'tr.savefailed':    'That did not save. Your text is still in the box &mdash; try again in a moment.',
+  'tr.drift':         'The English has changed since this was written. Check it still answers the same thing.',
+  'tr.missing':       'Missing from your text: {list}. The app fills these in with real numbers and names, so they have to survive.',
+  'tr.instrument':    'These are the M-Lens instrument. Paste JV&rsquo;s existing translation &mdash; do not write a new one. If the distance between &ldquo;Mostly true&rdquo; and &ldquo;Consistently true&rdquo; moves, this country&rsquo;s scores stop being comparable with everyone else&rsquo;s, and nothing in the app would show it.',
+  'tr.openinstrument':'I have JV&rsquo;s official translation &mdash; open these',
+  'tr.content':       'JV&rsquo;s teaching content. Use the wording your country already teaches from. The acronyms only spell something in English &mdash; keep the English letters and gloss them, or use your own.',
 
   /* ---------- Notes ---------- */
   'notes.workbench': 'Workbench',
@@ -1854,6 +2170,31 @@ const STRINGS={en:{
   'learn.close':     'Close',
   'jesus.go.map':    'See the map first'
 }};
+
+/* Overrides live in Airtable and are fetched for the active language only.
+   The built-in English renders first and always: a slow or failed fetch
+   leaves a working English app rather than a blank one, and a key with no
+   row falls through to English on its own. */
+let trLoaded={};                    /* tag -> true once fetched */
+async function loadLang(tag){
+  if(!tag||tag.indexOf('en')===0||trLoaded[tag]) return;
+  try{
+    const r=await fetch(CONFIG.stringsEndpoint+'?lang='+encodeURIComponent(tag),
+                        {headers:APP_HDR,cache:'no-store'});
+    if(!r.ok) throw new Error('http '+r.status);
+    const d=await r.json();
+    STRINGS[tag]=d.strings||{};
+    trEnglishWas[tag]=d.english||{};
+    trLoaded[tag]=true;
+  }catch(e){
+    /* Nothing on screen. A leader reading English because the translations
+       did not load is not having an error, and telling them so would only
+       make the app look broken. */
+    console.warn('translations for',tag,'did not load:',e);
+  }
+  render();
+}
+let trEnglishWas={};
 
 function t(key,vars){
   const table=strings();
@@ -2800,7 +3141,8 @@ function phaseWhy(n,cur,R){
    alone can produce a question with a student's name in it.
    In production this call goes through a Netlify function so the key
    stays server-side; set CONFIG.coachEndpoint and it will use that. */
-const CONFIG={coachEndpoint:'/api/claude', notesEndpoint:'/api/notes', sendNames:true};
+const CONFIG={coachEndpoint:'/api/claude', notesEndpoint:'/api/notes',
+              stringsEndpoint:'/api/strings', sendNames:true};
 /* Marks a request as coming from this app. A same-origin GET sends no Origin
    header and this site sends no Referer, so without this the front door in
    netlify/functions/lib/guard.js has nothing to recognise and refuses us. */
@@ -3038,7 +3380,8 @@ function vTime(){
    'jesus' and 'notes' were added later and missed, so every note logged from
    the landing page — which is where the app opens — was filed as "Somewhere". */
 const SCREENS={jesus:'Like Jesus',today:'Today',map:'Your map',check:'Check-up',
-               reports:'Reports',report:'A report',time:'The year',notes:'Notes'};
+               reports:'Reports',report:'A report',time:'The year',notes:'Notes',
+               translate:'Translate'};
 const screenNow=()=>SCREENS[active]||'Somewhere';
 
 let NOTES=[], draftShots=[], storageOK=null, saveErr=null, loadErr=null, justSaved=false, lastShotsFailed=0, confirmDel=null, loadingNotes=false;
@@ -3342,13 +3685,14 @@ function render(){
       `<span>${t('tier.viewingas')}</span>${[['open','tier.open'],['activated','tier.activated']].map(([k,l])=>
         `<button class="${TIER===k?'is':''}" data-tier="${k}">${t(l)}</button>`).join('')}
        <button class="tw-notes${active==='notes'?' is':''}" data-go="notes">${t('bot.title')}${open?`<i>${open}</i>`:''}</button>
+       <button class="tw-notes${active==='translate'?' is':''}" data-go="translate">${t('tr.eyebrow')}</button>
        ${newerBuild
          ? `<button class="tw-build newer" data-build="reload" title="${t('build.newer')}">${t('build.newer')} &middot; ${t('build.reload')}</button>`
          : `<span class="tw-build">${buildLabel()}</span>`}`;
   }catch(err){ console.error('tier switch failed to render', err); }
 
   setDocTitle();
-  const m={jesus:vJesus,today:vToday,map:vMap,check:vCheck,reports:vReports,report:vReport,time:vTime,notes:vNotes};
+  const m={jesus:vJesus,today:vToday,map:vMap,check:vCheck,reports:vReports,report:vReport,time:vTime,notes:vNotes,translate:vTranslate};
   try{
     document.getElementById('app').innerHTML=m[active]();
   }catch(err){
@@ -3361,6 +3705,14 @@ function render(){
 
   if(keep!==null){const t2=document.getElementById('bn-text'); if(t2)t2.value=keep;}
 }
+/* Saved when the box loses focus, not on every keystroke: one row, one write,
+   and nothing to press. change fires for a textarea only if the text actually
+   moved, so tabbing through untouched boxes writes nothing. */
+document.addEventListener('change',e=>{
+  const b=e.target.closest('[data-trsave]');
+  if(b) trSave(b.dataset.trsave);
+});
+
 document.addEventListener('click',e=>{
   /* Clicking into a count selects it, so a leader types over the number
      rather than appending to it. focusin covers tabbing in; click covers
@@ -3373,48 +3725,57 @@ document.addEventListener('click',e=>{
   const tg=e.target.closest('[data-tier]'); if(tg){TIER=tg.dataset.tier; selStudent=null; render(); return}
   const q=e.target.closest('[data-q]'); if(q){quizIx=+q.dataset.q;render();return}
   const hit=k=>e.target.closest('[data-'+k+']');
-  let t;
-  if(t=hit('bot')){botOpen=(t.dataset.bot==='open');render();
-    if(botOpen)setTimeout(()=>{const el=document.getElementById(WHO?'bn-text':'bn-who');el&&el.focus()},60);return}
-  if(t=hit('who')){
-    if(t.dataset.who==='ask'){askingWho=true;render();setTimeout(()=>{const el=document.getElementById('bn-who');el&&el.focus()},40);return}
+  /* `el`, not `t` — a handler that calls the translate function cannot
+     have a local called t. */
+  let el;
+  if(el=hit('bot')){botOpen=(el.dataset.bot==='open');render();
+    if(botOpen)setTimeout(()=>{const node=document.getElementById(WHO?'bn-text':'bn-who');node&&node.focus()},60);return}
+  if(el=hit('who')){
+    if(el.dataset.who==='ask'){askingWho=true;render();setTimeout(()=>{const node=document.getElementById('bn-who');node&&node.focus()},40);return}
     setWho(document.getElementById('bn-who').value); return}
-  if(t=hit('bench')){if(t.dataset.bench==='add')benchAdd(); return}
-  if(t=hit('fix')){benchFix(Number(t.dataset.fix)); return}
-  if(t=hit('del')){
-    const v=t.dataset.del;
+  if(el=hit('bench')){if(el.dataset.bench==='add')benchAdd(); return}
+  if(el=hit('fix')){benchFix(Number(el.dataset.fix)); return}
+  if(el=hit('del')){
+    const v=el.dataset.del;
     if(v==='cancel'){confirmDel=null;render();return}
     if(v.startsWith('ask:')){confirmDel=Number(v.slice(4));render();return}
     benchDelete(Number(v)); return}
-  if(t=hit('tool')){toolInfo=(t.dataset.tool==='close'||toolInfo===t.dataset.tool)?null:t.dataset.tool;render();return}
-  if(t=hit('build')){ location.reload(true); return}
-  if(t=hit('notes')){ if(t.dataset.notes==='refresh') benchLoad(); return}
-  if(t=hit('learn')){learnMore=(t.dataset.learn==='close'||learnMore===t.dataset.learn)?null:t.dataset.learn;render();return}
-  if(t=hit('unshot')){draftShots.splice(+t.dataset.unshot,1);render();return}
-  if(t=hit('sel')){selStudent=(selStudent===+t.dataset.sel?null:+t.dataset.sel);addingTo=null;render();return}
-  if(t=hit('move')){const[i,z]=t.dataset.move.split(':');moveStudent(+i,+z);return}
-  if(t=hit('drop')){dropStudent(+t.dataset.drop);return}
-  if(t=hit('adding')){intake=+t.dataset.adding;intakeErr=null;selStudent=null;render();
-    setTimeout(()=>{const el=document.getElementById('in-name');el&&el.focus()},40);return}
-  if(t=hit('save')){saveIntake();return}
-  if(t=hit('close')){ if(t.dataset.close==='bg'&&e.target!==t)return; intake=null;intakeErr=null;render();return}
-  if(t=hit('zone')){document.getElementById('in-zone').value=t.dataset.zone;return}
-  if(t=hit('prog')){selProgram=+t.dataset.prog;render();return}
-  if(t=hit('freq')){const[i,fq]=t.dataset.freq.split(':');PROGRAMS[+i].freq=fq;render();return}
-  if(t=hit('inv')){const[i,z]=t.dataset.inv.split(':').map(Number);
+  if(el=hit('tool')){toolInfo=(el.dataset.tool==='close'||toolInfo===el.dataset.tool)?null:el.dataset.tool;render();return}
+  if(el=hit('build')){ location.reload(true); return}
+  if(el=hit('notes')){ if(el.dataset.notes==='refresh') benchLoad(); return}
+  if(el=hit('learn')){learnMore=(el.dataset.learn==='close'||learnMore===el.dataset.learn)?null:el.dataset.learn;render();return}
+  if(el=hit('unshot')){draftShots.splice(+el.dataset.unshot,1);render();return}
+  if(el=hit('sel')){selStudent=(selStudent===+el.dataset.sel?null:+el.dataset.sel);addingTo=null;render();return}
+  if(el=hit('move')){const[i,z]=el.dataset.move.split(':');moveStudent(+i,+z);return}
+  if(el=hit('drop')){dropStudent(+el.dataset.drop);return}
+  if(el=hit('adding')){intake=+el.dataset.adding;intakeErr=null;selStudent=null;render();
+    setTimeout(()=>{const node=document.getElementById('in-name');node&&node.focus()},40);return}
+  if(el=hit('save')){saveIntake();return}
+  if(el=hit('close')){ if(el.dataset.close==='bg'&&e.target!==el)return; intake=null;intakeErr=null;render();return}
+  if(el=hit('zone')){document.getElementById('in-zone').value=el.dataset.zone;return}
+  if(el=hit('prog')){selProgram=+el.dataset.prog;render();return}
+  if(el=hit('freq')){const[i,fq]=el.dataset.freq.split(':');PROGRAMS[+i].freq=fq;render();return}
+  if(el=hit('inv')){const[i,z]=el.dataset.inv.split(':').map(Number);
     const ch=PROGRAMS[i].ch, k=ch.indexOf(z); k>-1?ch.splice(k,1):ch.push(z); ch.sort(); render();return}
-  if(t=hit('pdone')){const el=document.getElementById('pn'+t.dataset.pdone);
-    if(el&&el.value.trim())PROGRAMS[+t.dataset.pdone].name=el.value.trim();
+  if(el=hit('pdone')){const node=document.getElementById('pn'+el.dataset.pdone);
+    if(node&&node.value.trim())PROGRAMS[+el.dataset.pdone].name=node.value.trim();
     selProgram=null;render();return}
-  if(t=hit('pdrop')){PROGRAMS.splice(+t.dataset.pdrop,1);selProgram=null;render();return}
-  if(t=hit('newprog')){
-    const k=t.dataset.newprog;
-    if(k==='open'){addingProgram=true;render();setTimeout(()=>{const el=document.getElementById('newpr');el&&el.focus()},30);return}
+  if(el=hit('pdrop')){PROGRAMS.splice(+el.dataset.pdrop,1);selProgram=null;render();return}
+  if(el=hit('newprog')){
+    const k=el.dataset.newprog;
+    if(k==='open'){addingProgram=true;render();setTimeout(()=>{const node=document.getElementById('newpr');node&&node.focus()},30);return}
     if(k==='cancel'){addingProgram=false;render();return}
-    const el=document.getElementById('newpr');
-    if(el&&el.value.trim()){PROGRAMS.push({name:el.value.trim(),freq:'Weekly',n:0,ch:[]});
+    const node=document.getElementById('newpr');
+    if(node&&node.value.trim()){PROGRAMS.push({name:node.value.trim(),freq:'Weekly',n:0,ch:[]});
       addingProgram=false;selProgram=PROGRAMS.length-1;render()}
     return}
+  const tl=e.target.closest('[data-trlang]');
+  if(tl){ const v=tl.dataset.trlang; if(v) trPick(v); else {trLang=null;render();} return }
+  const tp=e.target.closest('[data-trpreview]');
+  if(tp){ setLang(tp.dataset.trpreview); go('today'); return }
+  const to=e.target.closest('[data-tropen]');
+  if(to){ const k=to.dataset.tropen; trOpen[k]=!trOpen[k]; render(); return }
+
   const cc=e.target.closest('[data-coach]');
   if(cc){
     const k=cc.dataset.coach;
@@ -3485,7 +3846,8 @@ document.addEventListener('keydown',e=>{
   if(![...q.keys()].length) return;
   const set=(k,fn)=>{ const v=q.get(k); if(v!==null) fn(v); };
   set('tier',   v=>{ if(v==='open'||v==='activated') TIER=v; });
-  set('screen', v=>{ if(['jesus','today','map','check','reports','report','time','notes'].includes(v)) active=v; });
+  set('screen', v=>{ if(['jesus','today','map','check','reports','report','time','notes','translate']
+                          .includes(v)) active=v; });
   set('report', v=>{ const i=+v; if(REPORTS[i]) { openIx=i; active='report'; } });
   set('phase',  v=>{ const n=+v; if(n>=1&&n<=5){ selPhase=n; active='report'; } });
   set('tool',   v=>{ if(TOOLS[v]||Q.some(x=>x.cat===v)){ toolInfo=v; active='report'; } });
@@ -3495,6 +3857,9 @@ document.addEventListener('keydown',e=>{
 })();
 
 renderTabs();render();benchLoad();
+/* A remembered language is fetched after the first paint, never before it:
+   English is already on screen and correct, so there is nothing to wait for. */
+loadLang(LANG);
 checkBuild(true);
 setInterval(()=>checkBuild(false), 5*60*1000);
 window.addEventListener('focus',()=>checkBuild(false));
