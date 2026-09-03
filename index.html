@@ -1152,7 +1152,7 @@ function blanks(ci){
 const MAP_BLANK_NOTE='This is your group as a number. With names, it could tell you who has not moved since spring.';
 const blanksHTML=(b,note)=>!b?'':`<div class="blanks">
   <p class="bl-line">${b.line}</p>
-  <div class="bl-row">${Array.from({length:Math.min(b.n,6)},()=>'<i></i>').join('')}${b.n>6?`<span class="bl-more">and ${b.n-6} more</span>`:''}</div>
+  <div class="bl-row">${Array.from({length:Math.min(b.n,6)},()=>'<i></i>').join('')}${b.n>6?`<span class="bl-more">${tn('blanks.more',b.n-6)}</span>`:''}</div>
   ${note?`<p class="bl-note">${note}</p>`:''}
 </div>`;
 
@@ -1167,19 +1167,21 @@ const el=(h)=>{const d=document.createElement('div');d.innerHTML=h;return d};
    VIEWS
    ============================================================ */
 const VIEWS=[
- {id:'jesus',   label:'Like Jesus'},
- {id:'today',   label:'Today'},
- {id:'map',     label:'Your map'},
- {id:'check',   label:'Check-up'},
- {id:'reports', label:'Reports'},
- {id:'time',    label:'The year'}
+ /* label is a key, resolved at render time — a tab bar built once at
+    boot would freeze the English in place the moment we add a switcher. */
+ {id:'jesus',   label:'nav.jesus'},
+ {id:'today',   label:'nav.today'},
+ {id:'map',     label:'nav.map'},
+ {id:'check',   label:'nav.check'},
+ {id:'reports', label:'nav.reports'},
+ {id:'time',    label:'nav.time'}
 ];
 let active='jesus', quizIx=0, answers={}, selPhase=null, openIx=REPORTS.length-1, askedCoach=false;
 const rep=()=>REPORTS[openIx];
 
 function renderTabs(){
   document.getElementById('tabs').innerHTML=VIEWS.map(v=>
-    `<button class="tab" role="tab" aria-selected="${v.id===active||(v.id==='reports'&&active==='report')}" data-go="${v.id}">${v.label}</button>`).join('');
+    `<button class="tab" role="tab" aria-selected="${v.id===active||(v.id==='reports'&&active==='report')}" data-go="${v.id}">${t(v.label)}</button>`).join('');
 }
 function go(id){active=id;selPhase=null;selStudent=null;intake=null;intakeErr=null;addingTo=null;selProgram=null;addingProgram=false;coachState={loading:false,questions:null,error:null,answer:null,asking:false};if(id==='check'){quizIx=0;answers={}}renderTabs();render();window.scrollTo({top:0,behavior:'instant'})}
 
@@ -1209,17 +1211,17 @@ function vNotes(){
     const isDone=x.state==='done';
     return `<div class="nt ${isDone?'done':''}">
       <button class="nt-tick" data-fix="${x.id}" aria-pressed="${isDone}"
-              title="${isDone?'Mark as not done':'Mark as done'}">${isDone?'&#10003;':''}</button>
+              title="${plain(isDone?t('notes.untick'):t('notes.tick'))}">${isDone?'&#10003;':''}</button>
       <div class="nt-body">
         <div class="nt-text">${esc(x.text).replace(/\n/g,'<br>')}</div>
-        <div class="nt-meta">${esc(x.who||'Unknown')}${x.area?` &middot; ${esc(x.area)}`:''} &middot; ${
-          new Date(x.at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})} &middot; ${
-          new Date(x.at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</div>
+        <div class="nt-meta">${esc(x.who||t('notes.unknown'))}${x.area?` &middot; ${esc(x.area)}`:''} &middot; ${
+          new Date(x.at).toLocaleDateString(LANG,{day:'numeric',month:'short',year:'numeric'})} &middot; ${
+          new Date(x.at).toLocaleTimeString(LANG,{hour:'2-digit',minute:'2-digit'})}</div>
         ${(()=>{
           const before=(x.shots||[]).filter(sh=>sh&&sh.data);
-          if(!before.length&&!x.after)
+          if(!before.length)
             return (x.shots||[]).some(sh=>sh&&sh.tooBig)
-              ? '<div class="nt-shotnote">A screenshot was attached but was too large to store.</div>' : '';
+              ? `<div class="nt-shotnote">${t('notes.toobig')}</div>` : '';
           /* side by side, so the list can be scanned without opening the app */
           /* The after-shot is a file in the repo at /after/<record id>.jpg,
              served from our own origin. Not an Airtable field: a screenshot
@@ -1240,27 +1242,29 @@ function vNotes(){
         ${x.fix?`<div class="nt-fix"><span>${t('notes.fix')}</span>${esc(x.fix).replace(/\n/g,'<br>')}</div>`:''}
       </div>
       <div class="nt-act">${confirmDel===x.id
-        ? `<button class="nt-del go" data-del="${x.id}">Delete for good</button>
-           <button class="nt-del" data-del="cancel">Keep</button>`
-        : `<button class="nt-del" data-del="ask:${x.id}" title="Delete this note">Delete</button>`}</div>
+        ? `<button class="nt-del go" data-del="${x.id}">${t('notes.del.confirm')}</button>
+           <button class="nt-del" data-del="cancel">${t('notes.del.keep')}</button>`
+        : `<button class="nt-del" data-del="ask:${x.id}" title="${plain(t('notes.del.title'))}">${t('notes.del')}</button>`}</div>
     </div>`;
   };
   return `<div class="view"><div class="wrap">
     <div class="nt-top">
-      <div class="eyebrow">Workbench</div>
+      <div class="eyebrow">${t('notes.workbench')}</div>
       <button class="nt-refresh" data-notes="refresh" ${loadingNotes?'disabled':''}>${
         loadingNotes?t('notes.loading'):t('notes.refresh')}</button>
     </div>
-    <h1>${NOTES.length ? `${open.length} still open<span class="nt-of">, ${done.length} done</span>` : 'Nothing logged yet'}</h1>
-    <p class="lede">Everything logged from the pencil, from everyone. Tick one when it is dealt with. This reads the same records as the base &mdash; there is no second copy.</p>
+    <h1>${NOTES.length ? t('notes.headline',{open:tn('notes.open',open.length),
+                                              done:tn('notes.donecount',done.length)})
+                       : t('notes.none')}</h1>
+    <p class="lede">${t('notes.lede')}</p>
 
     ${!NOTES.length ? `<div class="nt-empty">
         ${storageOK===false
           ? t('notes.failed')
-          : 'When someone writes a note with the pencil, bottom right, it appears here.'}
+          : t('notes.empty')}
       </div>` : `
-      ${open.length?`<div class="nt-sec"><div class="eyebrow">Open</div>${open.map(row).join('')}</div>`:''}
-      ${done.length?`<div class="nt-sec"><div class="eyebrow">Done</div>${done.map(row).join('')}</div>`:''}`}
+      ${open.length?`<div class="nt-sec"><div class="eyebrow">${t('notes.sec.open')}</div>${open.map(row).join('')}</div>`:''}
+      ${done.length?`<div class="nt-sec"><div class="eyebrow">${t('notes.sec.done')}</div>${done.map(row).join('')}</div>`:''}`}
   </div></div>`;
 }
 
@@ -1345,7 +1349,36 @@ const STRINGS={en:{
   'check.go':        'That looks right &mdash; start the statements',
   'check.fixmap':    'Change my map first',
 
+  /* ---------- Tabs ---------- */
+  'nav.jesus':        'Like Jesus',
+  'nav.today':        'Today',
+  'nav.map':          'Your map',
+  'nav.check':        'Check-up',
+  'nav.reports':      'Reports',
+  'nav.time':         'The year',
+  'blanks.more':      {one:'and {n} more', other:'and {n} more'},
+
   /* ---------- Notes ---------- */
+  'notes.workbench': 'Workbench',
+  /* Two independent plurals in one line. tn() resolves each, and this
+     template lets a translator move them and change the separator —
+     which is the part that must not be hard-coded. */
+  'notes.headline':  '{open}<span class="nt-of">, {done}</span>',
+  'notes.open':      {one:'{n} still open', other:'{n} still open'},
+  'notes.donecount': {one:'{n} done',       other:'{n} done'},
+  'notes.none':      'Nothing logged yet',
+  'notes.lede':      'Everything logged from the pencil, from everyone. Tick one when it is dealt with. This reads the same records as the base &mdash; there is no second copy.',
+  'notes.empty':     'When someone writes a note with the pencil, bottom right, it appears here.',
+  'notes.sec.open':  'Open',
+  'notes.sec.done':  'Done',
+  'notes.tick':      'Mark as done',
+  'notes.untick':    'Mark as not done',
+  'notes.unknown':   'Unknown',
+  'notes.toobig':    'A screenshot was attached but was too large to store.',
+  'notes.del':       'Delete',
+  'notes.del.title': 'Delete this note',
+  'notes.del.confirm':'Delete for good',
+  'notes.del.keep':  'Keep',
   'notes.fix':       'What changed',
   'notes.before':    'What you saw',
   'notes.zoom': 'Click to open out',
