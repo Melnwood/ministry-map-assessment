@@ -383,6 +383,12 @@ cap — that is the bug that made the tester's own shots vanish for a week), and
 committing it versions the picture with the change it shows. A note with no
 file renders exactly as it did before: the figure removes itself on error.
 
+Screenshots are thumbnails in the list, capped at 240px and clickable to open
+out. A tester's grab is often a whole scrolled page — one of Dave's ran metres
+deep and buried every note under it. The grid is two fixed columns, so a note
+with only the tester's shot sits in its half and leaves the other half
+visibly empty rather than stretching across the card.
+
 Only for visual fixes. A wording change is explained by the Fix line; a
 screenshot of it adds nothing.
 

@@ -516,14 +516,25 @@ button.tw-build{background:none;border:0;cursor:pointer;padding:0}
   color:var(--ink-45);margin-top:8px}
 .nt-shots{display:flex;flex-wrap:wrap;gap:8px;margin-top:11px}
 .nt-shots img{max-width:220px;max-height:150px;border-radius:7px;border:1px solid var(--line)}
-.nt-ba{display:grid;gap:10px;margin-top:12px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+/* Two fixed columns, never auto-fit: a note with only the tester's shot
+   should sit in its half and leave the other half visibly empty, not
+   stretch across the card. */
+.nt-ba{display:grid;gap:10px;margin-top:12px;grid-template-columns:repeat(2,minmax(0,1fr))}
 .nt-ba figure{margin:0;min-width:0}
 .nt-ba figcaption{font-family:var(--mono);font-size:9px;letter-spacing:.09em;text-transform:uppercase;
   color:var(--ink-45);margin-bottom:5px}
 .nt-ba .after figcaption{color:var(--z3);font-weight:600}
-.nt-ba img{width:100%;border-radius:8px;border:1px solid var(--line);display:block}
+/* A screenshot is a thumbnail here. Tall grabs — a whole scrolled page —
+   were rendering metres deep and burying the rest of the list. Capped, whole
+   image still visible, click to open it out. */
+.nt-ba img{width:100%;max-height:240px;object-fit:contain;object-position:top;
+  background:var(--paper);border-radius:8px;border:1px solid var(--line);
+  display:block;cursor:zoom-in}
+.nt-ba figure.big img{max-height:none;cursor:zoom-out}
 .nt-ba .after img{border-color:var(--z3)}
-@media(max-width:640px){.nt-ba.pair{grid-template-columns:1fr}}
+.nt-ba .zoom{font-family:var(--mono);font-size:9px;letter-spacing:.06em;
+  color:var(--ink-45);margin-top:4px}
+@media(max-width:640px){.nt-ba{grid-template-columns:1fr}}
 .nt-shotnote{font-size:11.5px;color:var(--ink-45);margin-top:8px;font-style:italic}
 .nt-fix{margin-top:11px;padding:9px 11px;background:var(--ink-08);border-radius:8px;
   font-size:13px;line-height:1.5;color:var(--ink-70)}
@@ -1215,12 +1226,15 @@ function vNotes(){
              does not fit a cell, and committing it keeps it versioned with
              the change it shows. If the file is not there the figure removes
              itself, so a note without one looks exactly as it did before. */
-          return `<div class="nt-ba pair">
+          const zoom=`onclick="this.closest('figure').classList.toggle('big')"`;
+          return `<div class="nt-ba">
             ${before.map(sh=>`<figure><figcaption>${t('notes.before')}</figcaption>
-                 <img src="${sh.data}" alt=""></figure>`).join('')}
+                 <img src="${sh.data}" alt="" ${zoom}>
+                 <div class="zoom">${t('notes.zoom')}</div></figure>`).join('')}
             ${x.rec?`<figure class="after"><figcaption>${t('notes.after')}</figcaption>
-                 <img src="after/${esc(x.rec)}.jpg" alt=""
-                      onerror="this.closest('figure').remove()"></figure>`:''}
+                 <img src="after/${esc(x.rec)}.jpg" alt="" ${zoom}
+                      onerror="this.closest('figure').remove()">
+                 <div class="zoom">${t('notes.zoom')}</div></figure>`:''}
           </div>`;})()}
         ${x.context?`<div class="nt-ctx">${esc(x.context)}</div>`:''}
         ${x.fix?`<div class="nt-fix"><span>${t('notes.fix')}</span>${esc(x.fix).replace(/\n/g,'<br>')}</div>`:''}
@@ -1305,7 +1319,8 @@ const STRINGS={en:{
   /* ---------- Notes ---------- */
   'notes.fix':       'What changed',
   'notes.before':    'What you saw',
-  'notes.after':     'What it looks like now',
+  'notes.zoom': 'Click to open out',
+    'notes.after':     'What it looks like now',
   'notes.refresh':   'Refresh',
   'build.label':     'Build {when}',
   'build.local':     'Local copy',
