@@ -516,6 +516,14 @@ button.tw-build{background:none;border:0;cursor:pointer;padding:0}
   color:var(--ink-45);margin-top:8px}
 .nt-shots{display:flex;flex-wrap:wrap;gap:8px;margin-top:11px}
 .nt-shots img{max-width:220px;max-height:150px;border-radius:7px;border:1px solid var(--line)}
+.nt-ba{display:grid;gap:10px;margin-top:12px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.nt-ba figure{margin:0;min-width:0}
+.nt-ba figcaption{font-family:var(--mono);font-size:9px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink-45);margin-bottom:5px}
+.nt-ba .after figcaption{color:var(--z3);font-weight:600}
+.nt-ba img{width:100%;border-radius:8px;border:1px solid var(--line);display:block}
+.nt-ba .after img{border-color:var(--z3)}
+@media(max-width:640px){.nt-ba.pair{grid-template-columns:1fr}}
 .nt-shotnote{font-size:11.5px;color:var(--ink-45);margin-top:8px;font-style:italic}
 .nt-fix{margin-top:11px;padding:9px 11px;background:var(--ink-08);border-radius:8px;
   font-size:13px;line-height:1.5;color:var(--ink-70)}
@@ -1196,11 +1204,24 @@ function vNotes(){
         <div class="nt-meta">${esc(x.who||'Unknown')}${x.area?` &middot; ${esc(x.area)}`:''} &middot; ${
           new Date(x.at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})} &middot; ${
           new Date(x.at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</div>
-        ${(x.shots||[]).filter(sh=>sh&&sh.data).length
-          ? `<div class="nt-shots">${x.shots.filter(sh=>sh&&sh.data).map(sh=>
-              `<img src="${sh.data}" alt="">`).join('')}</div>`
-          : (x.shots||[]).some(sh=>sh&&sh.tooBig)
-            ? `<div class="nt-shotnote">A screenshot was attached but was too large to store.</div>` : ''}
+        ${(()=>{
+          const before=(x.shots||[]).filter(sh=>sh&&sh.data);
+          if(!before.length&&!x.after)
+            return (x.shots||[]).some(sh=>sh&&sh.tooBig)
+              ? '<div class="nt-shotnote">A screenshot was attached but was too large to store.</div>' : '';
+          /* side by side, so the list can be scanned without opening the app */
+          /* The after-shot is a file in the repo at /after/<record id>.jpg,
+             served from our own origin. Not an Airtable field: a screenshot
+             does not fit a cell, and committing it keeps it versioned with
+             the change it shows. If the file is not there the figure removes
+             itself, so a note without one looks exactly as it did before. */
+          return `<div class="nt-ba pair">
+            ${before.map(sh=>`<figure><figcaption>${t('notes.before')}</figcaption>
+                 <img src="${sh.data}" alt=""></figure>`).join('')}
+            ${x.rec?`<figure class="after"><figcaption>${t('notes.after')}</figcaption>
+                 <img src="after/${esc(x.rec)}.jpg" alt=""
+                      onerror="this.closest('figure').remove()"></figure>`:''}
+          </div>`;})()}
         ${x.context?`<div class="nt-ctx">${esc(x.context)}</div>`:''}
         ${x.fix?`<div class="nt-fix"><span>${t('notes.fix')}</span>${esc(x.fix).replace(/\n/g,'<br>')}</div>`:''}
       </div>
@@ -1283,6 +1304,8 @@ const STRINGS={en:{
 
   /* ---------- Notes ---------- */
   'notes.fix':       'What changed',
+  'notes.before':    'What you saw',
+  'notes.after':     'What it looks like now',
   'notes.refresh':   'Refresh',
   'build.label':     'Build {when}',
   'build.local':     'Local copy',
@@ -2895,6 +2918,25 @@ document.addEventListener('keydown',e=>{
   if(e.target.id==='newpr'){document.querySelector('[data-newprog="go"]').click();return}
   if(e.target.id&&e.target.id.startsWith('pn')){selProgram=null;render()}
 });
+/* ---------- deep links ----------
+   ?screen=report&report=2&tier=activated&phase=3 opens exactly that state.
+   Two jobs: a note can link straight to the screen it came from, and a fixed
+   screen can be screenshotted headlessly for the before-and-after on the
+   notes list. Nothing here is required — a bare URL behaves as it always did. */
+(function openFromUrl(){
+  let q; try{ q=new URLSearchParams(location.search); }catch(e){ return; }
+  if(![...q.keys()].length) return;
+  const set=(k,fn)=>{ const v=q.get(k); if(v!==null) fn(v); };
+  set('tier',   v=>{ if(v==='open'||v==='activated') TIER=v; });
+  set('screen', v=>{ if(['jesus','today','map','check','reports','report','time','notes'].includes(v)) active=v; });
+  set('report', v=>{ const i=+v; if(REPORTS[i]) { openIx=i; active='report'; } });
+  set('phase',  v=>{ const n=+v; if(n>=1&&n<=5){ selPhase=n; active='report'; } });
+  set('tool',   v=>{ if(TOOLS[v]||Q.some(x=>x.cat===v)){ toolInfo=v; active='report'; } });
+  set('learn',  v=>{ if(v==='challenges'||v==='phases'){ learnMore=v; active='jesus'; } });
+  set('q',      v=>{ const n=+v; if(n>=0&&n<=Q.length){ quizIx=n; active='check'; } });
+  set('student',v=>{ const n=+v; if(STUDENTS[n]){ selStudent=n; active='map'; } });
+})();
+
 renderTabs();render();benchLoad();
 checkBuild(true);
 setInterval(()=>checkBuild(false), 5*60*1000);

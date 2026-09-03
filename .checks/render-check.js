@@ -7,8 +7,11 @@
   const warn=console.warn;
   console.warn=function(...a){ if(String(a[0]).indexOf('missing string')===0||String(a[0]).indexOf('missing plural')===0) out.missingStrings.push(a[1]); warn.apply(console,a); };
   const views={jesus:'vJesus',today:'vToday',map:'vMap',check:'vCheck',reports:'vReports',report:'vReport',time:'vTime',notes:'vNotes'};
+  const PX='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
   NOTES=[{id:1,rec:'r1',who:'Dave',text:'A note',area:'Today',state:'open',at:'2026-08-31T09:00:00Z',shots:[]},
-         {id:2,rec:'r2',who:'Mel',text:'Done',area:'Your map',state:'done',at:'2026-08-30T09:00:00Z',shots:[]}];
+         {id:2,rec:'r2',who:'Mel',text:'Done',area:'Your map',state:'done',at:'2026-08-30T09:00:00Z',shots:[]},
+         {id:3,rec:'r3',who:'Dave',text:'With a shot',area:'Reports',state:'done',at:'2026-08-29T09:00:00Z',
+          fix:'Fixed it.',shots:[{data:PX}]}];
   ['open','activated'].forEach(function(tier){ TIER=tier;
     Object.keys(views).forEach(function(v){
       active=v; selPhase=null; toolInfo=null; selStudent=null; selProgram=null;
@@ -33,6 +36,13 @@
     try{ selProgram=0; render(); if(!document.querySelector('.mdet')) out.empty.push(tier+'/programme-panel'); }catch(e){ out.threw.push(tier+'/programme-panel: '+e.message); }
     selProgram=null;
   });
+  // a fixed note shows the tester's shot beside the after-shot from /after/
+  try{ TIER='open'; active='notes'; render();
+       var ba=document.querySelector('.nt-ba');
+       if(!ba) out.empty.push('notes/before-after grid');
+       else if(ba.querySelectorAll('figure').length<2) out.empty.push('notes/after-shot figure');
+  }catch(e){ out.threw.push('notes/before-after: '+e.message); }
+
   // the bot, in each of its states
   [['closed',function(){botOpen=false}],
    ['name gate',function(){botOpen=true;WHO=null;askingWho=false}],
