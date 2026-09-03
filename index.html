@@ -823,6 +823,9 @@ button.prow:hover{border-color:var(--ink)}
 <header class="mast">
   <div class="mast-in">
     <div>
+      <!-- Demo data, not chrome: a real leader's group name, their own
+           names and their country come from their record. Nothing here is
+           translated — you do not translate somebody's name. -->
       <div class="grp">CB Frýdlant <em>— youth</em></div>
       <div class="who">Katka &amp; Boža · Czech Republic</div>
     </div>
@@ -892,7 +895,21 @@ const PHASES=[
  {n:5,name:'Leadership Multiplication',short:'Leadership Mult.',span:'1.5 years',who:'Leaders',tool:'REST'}
 ];
 PHASES[4].tool='REST';
-const pname=p=>p.short||p.name;
+/* ---------- Display names for the data tables ----------
+   The tables keep their English values: those are stored on programmes and
+   students and compared in code, so translating them in place would break
+   saved data. Only the label is looked up. All of this is CONTENT — the
+   challenges, the invitation each one makes, the phases and their tools —
+   so it comes from JV's own material, not a translator's judgement. */
+const zname=z=>t('zone.'+z.n+'.name');
+const zask =z=>t('zone.'+z.n+'.ask');
+const zverb=z=>t('zone.'+z.n+'.verb');
+const pname=p=>t('phase.'+p.n+'.short');
+const pfull=p=>t('phase.'+p.n+'.name');
+const pwho =p=>t('phase.'+p.n+'.who');
+const pspan=p=>t('phase.'+p.n+'.span');
+const freqLabel=f=>t('freq.'+f);
+const cameLabel=c=>t('came.'+c.replace(/\s+/g,'_'));
 
 /* ============================================================
    QUESTION BANK — the real M-Lens instrument
@@ -919,10 +936,16 @@ const pname=p=>p.short||p.name;
    to edit. Nothing has to be migrated if the grading is ever retuned. */
 const A_NONE=0, A_LITTLE=1, A_MOSTLY=2, A_ALWAYS=3;
 const A_TRUE=A_MOSTLY;              /* at or above this, a statement counts as true of you */
-const SCALE=[{k:'A',t:'Not yet true of us', v:A_NONE,   early:0, late:0},
-             {k:'B',t:'Starting to be true',v:A_LITTLE, early:4, late:4},
-             {k:'C',t:'Mostly true',        v:A_MOSTLY, early:8, late:6},
-             {k:'D',t:'Consistently true',  v:A_ALWAYS, early:10,late:10}];
+/* `key`, not the label. These four are part of the instrument, not UI
+   chrome: if the distance between "Mostly" and "Consistently" moves in one
+   language, that country's scores stop being comparable with everyone
+   else's, and nothing would show it. They live under scale.* so the
+   translation page can lock them to JV's own M-Lens wording. */
+const SCALE=[{k:'A',key:'scale.none',   v:A_NONE,   early:0, late:0},
+             {k:'B',key:'scale.little', v:A_LITTLE, early:4, late:4},
+             {k:'C',key:'scale.mostly', v:A_MOSTLY, early:8, late:6},
+             {k:'D',key:'scale.always', v:A_ALWAYS, early:10,late:10}];
+const scaleLabel=i=>t(SCALE[i].key);
 const HARDER_FROM=3;                /* this phase onward is graded on `late` */
 const worth=(a,phase)=>SCALE[a][phase>=HARDER_FROM?'late':'early'];
 const Q=[
@@ -971,6 +994,19 @@ const Q=[
  [5,'Multiplication','We are beginning to send out leaders to start ministries in other places or serve in other ministries and churches.'],
  [5,'Multiplication','It is hard to keep up with everything that is happening — the Spirit seems to be expanding the ministry in ways we hadn’t anticipated.']
 ].map((r,i)=>({id:i,phase:r[0],cat:r[1],t:r[2]}));
+/* The statement as it is shown. The table above stays the English record —
+   scores are keyed to it and it is what JV signed off — and the display goes
+   through STRINGS so a country reads its own. INSTRUMENT: these 35 and the
+   category names must come from JV's existing M-Lens translation. A statement
+   reworded in one language quietly stops measuring the same thing, and
+   nothing in the app would show it. */
+const qtext=q=>t('q.'+q.id);
+const catLabel=c=>t('cat.'+c);
+/* What an acronym spells is not the same list as what it scores: TAR is one
+   category, but it spells Teach, Act, Reflect — three words the instrument
+   never measures. They get their own namespace so a country can keep the
+   English acronym and gloss the words, or build its own. */
+const spellLabel=w=>t('spell.'+w);
 
 /* ============================================================
    JV TRAINING TOOLS + the categories each phase is scored on
@@ -1054,7 +1090,7 @@ const STUDENTS=[
 })();
 const MS_MO=2629800000;
 const monthsBetween=(a,b)=>Math.max(0,Math.round((new Date(b)-new Date(a))/MS_MO));
-const fmtShort=d=>new Date(d).toLocaleDateString('en-GB',{month:'short',year:'numeric'});
+const fmtShort=d=>new Date(d).toLocaleDateString(LANG,{month:'short',year:'numeric'});
 const LEADERS=['Katka','Boža'];
 const AGES=['12-14','15-17','18-20','21+'];
 const CAME=['Invited by a student','Invited by a leader','Came with family','Through school or club','Found us themselves'];
@@ -1098,25 +1134,25 @@ const catScores=rep=>{const g={};Q.forEach(q=>{if(NO_SUBTOTAL.has(q.cat))return;
   const o={};for(const k in g)o[k]={v:g[k].reduce((a,b)=>a+b,0)/g[k].length,n:g[k].length};return o};
 /* Band edges sit midway between the four answers, so a category answered
    the same way every time lands in its own band. */
-const BANDS=[{m:2.5,l:'Consistently true',s:'consistent',k:'true'},
-             {m:1.5,l:'Mostly true',      s:'mostly',    k:'true'},
-             {m:0.5,l:'Starting',         s:'starting',  k:'part'},
-             {m:0,  l:'Not yet',          s:'not yet',   k:'not'}];
+/* `l` is gone; the label is looked up where it is shown. `s` stays English:
+   it is an internal handle into the four label sets below, never displayed
+   raw — slugLabel() is what puts it on screen. */
+const BANDS=[{m:2.5,key:'band.consistent',s:'consistent',k:'true'},
+             {m:1.5,key:'band.mostly',    s:'mostly',    k:'true'},
+             {m:0.5,key:'band.starting',  s:'starting',  k:'part'},
+             {m:0,  key:'band.notyet',    s:'not yet',   k:'not'}];
+const SLUG={'consistent':'consistent','mostly':'mostly','starting':'starting','not yet':'notyet'};
 const band=v=>BANDS.find(b=>v>=b.m);
 /* The band labels answer "is this statement true of us?" — right for the
    statements, wrong for the tool letters, which are practices. A letter needs
    to say how often you actually do it. */
-const DOING={'consistent':'You do this consistently',
-             'mostly':'You do this most of the time',
-             'starting':'You have started doing this',
-             'not yet':'You are not doing this yet'};
-const SHORT={'consistent':'consistently','mostly':'most of the time',
-             'starting':'only just started','not yet':'not doing this yet'};
-const doingBand=v=>DOING[band(v).s];
-const shortBand=v=>SHORT[band(v).s];
+const bandLabel =v=>t(band(v).key);              /* is this true of us */
+const doingBand =v=>t('doing.'+SLUG[band(v).s]);  /* how often we do it */
+const shortBand =v=>t('short.'+SLUG[band(v).s]);  /* the same, in a clause */
+const slugLabel =v=>t('slug.'+SLUG[band(v).s]);   /* the bare word, for the why-line */
 const pipLevel=v=>Math.round(v)+1;
 const pips=v=>{const f=pipLevel(v);return `<span class="pips">${[1,2,3,4].map(i=>`<i class="${i<=f?'on':''}"></i>`).join('')}</span>`};
-const fmtDate=r=>new Date(r.d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+const fmtDate=r=>new Date(r.d).toLocaleDateString(LANG,{day:'numeric',month:'short',year:'numeric'});
 
 const FREQ_RANK={'Weekly':4,'Bi-weekly':3,'Monthly':2,'Yearly':1};
 
@@ -1135,24 +1171,22 @@ const currentPhase=s=>{for(const p of PHASES){if(s[p.n]<7)return p.n}return 5};
    Never turn this into an advert. */
 function blanks(ci){
   const c=zoneCounts(ci);
-  const one=(n,a,b)=>n===1?a:b;
-  if(c[3]>0&&c[4]===0) return {n:c[3],
-    line:`${c[3]} of your students ${one(c[3],'has','have')} reached Follow Me &amp; Fish. ${one(c[3],'That student has not','None of them has')} been sent.`};
-  if(c[0]>0&&c[1]===0) return {n:c[0],
-    line:`${c[0]} ${one(c[0],'student is','students are')} coming and looking at Jesus. ${one(c[0],'That student has not','None of them has')} been asked to give their life to Christ.`};
+  /* Whole sentences per count, not clauses stitched together with has/have.
+     English needs two forms; Czech needs three, in different places. */
+  if(c[3]>0&&c[4]===0) return {n:c[3], line:tn('blank.reached',c[3])};
+  if(c[0]>0&&c[1]===0) return {n:c[0], line:tn('blank.looking',c[0])};
   const biggest=c.indexOf(Math.max(...c));
   if(c[biggest]<1) return null;
   /* "gone no further than I Am Sending You" is not a criticism, it is the
      top of the map. Say the good version of it. */
-  if(biggest===ZONES.length-1) return {n:c[biggest],
-    line:`${c[biggest]} of your students ${one(c[biggest],'has','have')} been sent out to lead.`};
+  if(biggest===ZONES.length-1) return {n:c[biggest], line:tn('blank.sent',c[biggest])};
   return {n:c[biggest],
-    line:`${c[biggest]} of your students ${one(c[biggest],'has','have')} gone no further than ${plain(ZONES[biggest].name)}.`};
+    line:tn('blank.nofurther',c[biggest],{ch:plain(zname(ZONES[biggest]))})};
 }
-const MAP_BLANK_NOTE='This is your group as a number. With names, it could tell you who has not moved since spring.';
+const MAP_BLANK_NOTE=()=>t('blank.note');
 const blanksHTML=(b,note)=>!b?'':`<div class="blanks">
   <p class="bl-line">${b.line}</p>
-  <div class="bl-row">${Array.from({length:Math.min(b.n,6)},()=>'<i></i>').join('')}${b.n>6?`<span class="bl-more">and ${b.n-6} more</span>`:''}</div>
+  <div class="bl-row">${Array.from({length:Math.min(b.n,6)},()=>'<i></i>').join('')}${b.n>6?`<span class="bl-more">${tn('blanks.more',b.n-6)}</span>`:''}</div>
   ${note?`<p class="bl-note">${note}</p>`:''}
 </div>`;
 
@@ -1167,19 +1201,21 @@ const el=(h)=>{const d=document.createElement('div');d.innerHTML=h;return d};
    VIEWS
    ============================================================ */
 const VIEWS=[
- {id:'jesus',   label:'Like Jesus'},
- {id:'today',   label:'Today'},
- {id:'map',     label:'Your map'},
- {id:'check',   label:'Check-up'},
- {id:'reports', label:'Reports'},
- {id:'time',    label:'The year'}
+ /* label is a key, resolved at render time — a tab bar built once at
+    boot would freeze the English in place the moment we add a switcher. */
+ {id:'jesus',   label:'nav.jesus'},
+ {id:'today',   label:'nav.today'},
+ {id:'map',     label:'nav.map'},
+ {id:'check',   label:'nav.check'},
+ {id:'reports', label:'nav.reports'},
+ {id:'time',    label:'nav.time'}
 ];
 let active='jesus', quizIx=0, answers={}, selPhase=null, openIx=REPORTS.length-1, askedCoach=false;
 const rep=()=>REPORTS[openIx];
 
 function renderTabs(){
   document.getElementById('tabs').innerHTML=VIEWS.map(v=>
-    `<button class="tab" role="tab" aria-selected="${v.id===active||(v.id==='reports'&&active==='report')}" data-go="${v.id}">${v.label}</button>`).join('');
+    `<button class="tab" role="tab" aria-selected="${v.id===active||(v.id==='reports'&&active==='report')}" data-go="${v.id}">${t(v.label)}</button>`).join('');
 }
 function go(id){active=id;selPhase=null;selStudent=null;intake=null;intakeErr=null;addingTo=null;selProgram=null;addingProgram=false;coachState={loading:false,questions:null,error:null,answer:null,asking:false};if(id==='check'){quizIx=0;answers={}}renderTabs();render();window.scrollTo({top:0,behavior:'instant'})}
 
@@ -1209,17 +1245,17 @@ function vNotes(){
     const isDone=x.state==='done';
     return `<div class="nt ${isDone?'done':''}">
       <button class="nt-tick" data-fix="${x.id}" aria-pressed="${isDone}"
-              title="${isDone?'Mark as not done':'Mark as done'}">${isDone?'&#10003;':''}</button>
+              title="${plain(isDone?t('notes.untick'):t('notes.tick'))}">${isDone?'&#10003;':''}</button>
       <div class="nt-body">
         <div class="nt-text">${esc(x.text).replace(/\n/g,'<br>')}</div>
-        <div class="nt-meta">${esc(x.who||'Unknown')}${x.area?` &middot; ${esc(x.area)}`:''} &middot; ${
-          new Date(x.at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})} &middot; ${
-          new Date(x.at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</div>
+        <div class="nt-meta">${esc(x.who||t('notes.unknown'))}${x.area?` &middot; ${esc(x.area)}`:''} &middot; ${
+          new Date(x.at).toLocaleDateString(LANG,{day:'numeric',month:'short',year:'numeric'})} &middot; ${
+          new Date(x.at).toLocaleTimeString(LANG,{hour:'2-digit',minute:'2-digit'})}</div>
         ${(()=>{
           const before=(x.shots||[]).filter(sh=>sh&&sh.data);
-          if(!before.length&&!x.after)
+          if(!before.length)
             return (x.shots||[]).some(sh=>sh&&sh.tooBig)
-              ? '<div class="nt-shotnote">A screenshot was attached but was too large to store.</div>' : '';
+              ? `<div class="nt-shotnote">${t('notes.toobig')}</div>` : '';
           /* side by side, so the list can be scanned without opening the app */
           /* The after-shot is a file in the repo at /after/<record id>.jpg,
              served from our own origin. Not an Airtable field: a screenshot
@@ -1240,27 +1276,29 @@ function vNotes(){
         ${x.fix?`<div class="nt-fix"><span>${t('notes.fix')}</span>${esc(x.fix).replace(/\n/g,'<br>')}</div>`:''}
       </div>
       <div class="nt-act">${confirmDel===x.id
-        ? `<button class="nt-del go" data-del="${x.id}">Delete for good</button>
-           <button class="nt-del" data-del="cancel">Keep</button>`
-        : `<button class="nt-del" data-del="ask:${x.id}" title="Delete this note">Delete</button>`}</div>
+        ? `<button class="nt-del go" data-del="${x.id}">${t('notes.del.confirm')}</button>
+           <button class="nt-del" data-del="cancel">${t('notes.del.keep')}</button>`
+        : `<button class="nt-del" data-del="ask:${x.id}" title="${plain(t('notes.del.title'))}">${t('notes.del')}</button>`}</div>
     </div>`;
   };
   return `<div class="view"><div class="wrap">
     <div class="nt-top">
-      <div class="eyebrow">Workbench</div>
+      <div class="eyebrow">${t('notes.workbench')}</div>
       <button class="nt-refresh" data-notes="refresh" ${loadingNotes?'disabled':''}>${
         loadingNotes?t('notes.loading'):t('notes.refresh')}</button>
     </div>
-    <h1>${NOTES.length ? `${open.length} still open<span class="nt-of">, ${done.length} done</span>` : 'Nothing logged yet'}</h1>
-    <p class="lede">Everything logged from the pencil, from everyone. Tick one when it is dealt with. This reads the same records as the base &mdash; there is no second copy.</p>
+    <h1>${NOTES.length ? t('notes.headline',{open:tn('notes.open',open.length),
+                                              done:tn('notes.donecount',done.length)})
+                       : t('notes.none')}</h1>
+    <p class="lede">${t('notes.lede')}</p>
 
     ${!NOTES.length ? `<div class="nt-empty">
         ${storageOK===false
           ? t('notes.failed')
-          : 'When someone writes a note with the pencil, bottom right, it appears here.'}
+          : t('notes.empty')}
       </div>` : `
-      ${open.length?`<div class="nt-sec"><div class="eyebrow">Open</div>${open.map(row).join('')}</div>`:''}
-      ${done.length?`<div class="nt-sec"><div class="eyebrow">Done</div>${done.map(row).join('')}</div>`:''}`}
+      ${open.length?`<div class="nt-sec"><div class="eyebrow">${t('notes.sec.open')}</div>${open.map(row).join('')}</div>`:''}
+      ${done.length?`<div class="nt-sec"><div class="eyebrow">${t('notes.sec.done')}</div>${done.map(row).join('')}</div>`:''}`}
   </div></div>`;
 }
 
@@ -1285,7 +1323,12 @@ function vNotes(){
    4. A missing key falls back to English and warns, so a half-finished
       language still renders rather than showing blanks.
    ============================================================ */
-let LANG='en';
+/* A full BCP-47 tag, not a bare language: dates and plurals both key off it,
+   and this app's English is British — 'en' alone would render 5 Aug 2026 as
+   Aug 5, 2026. STRINGS is looked up by tag first, then by the base language,
+   so 'cs-CZ' finds a table filed under 'cs'. */
+let LANG='en-GB';
+const strings=()=>STRINGS[LANG]||STRINGS[String(LANG).split('-')[0]]||STRINGS.en;
 const STRINGS={en:{
   /* ---------- Like Jesus ---------- */
   'jesus.eyebrow':   'Growing a healthy youth ministry',
@@ -1310,13 +1353,255 @@ const STRINGS={en:{
   'jesus.q2.tag':    'Five Phases of Christ&rsquo;s ministry',
   'jesus.go.check':  'Start your check-up',
 
+  /* ---------- Today ---------- */
+  'today.head.moved': {one:'{n} student moved forward<br>since <em>the spring</em>.',
+                       other:'{n} students moved forward<br>since <em>the spring</em>.'},
+  'today.head.further':{one:'{n} more student has gone further<br>than in <em>the spring</em>.',
+                       other:'{n} more students have gone further<br>than in <em>the spring</em>.'},
+  'today.head.fewer': {one:'{n} fewer student is further on<br>than in <em>the spring</em>.',
+                       other:'{n} fewer students are further on<br>than in <em>the spring</em>.'},
+  'today.head.same':  'Your group is the same shape<br>as it was in <em>the spring</em>.',
+  'today.where':      'Where your students are',
+  'today.students':   'students',
+  'today.plinth.named':'Each student is counted once, at the furthest challenge they have reached',
+  'today.plinth.open':'Each number is how many have reached that challenge, and no further',
+  'today.phases':     'Ministry phases',
+  'today.plinth.phase':'Each layer is a phase, and how long you have been in it',
+  'today.latest':     'Your latest report',
+  'today.delta':      {one:'{n} thing to do next &middot; weakest part of {phase}: <b class="dn">{weakest} &mdash; {band}</b>',
+                       other:'{n} things to do next &middot; weakest part of {phase}: <b class="dn">{weakest} &mdash; {band}</b>'},
+  'today.open':       'Open &rarr;',
+  'today.newcheck':   'Start a new check-up',
+  'today.allreports': {one:'All {n} report', other:'All {n} reports'},
+  'today.moved':      'See how you have moved',
+
+  /* How long a ministry has sat in a phase. */
+  'span.under':       'under a month',
+  'span.months':      {one:'{n} month', other:'{n} months'},
+  'span.years':       {one:'{n} year',  other:'{n} years'},
+  'span.ym':          '{y}y {m}m',
+  'span.sofar':       '{span} so far',
+
   /* ---------- Check-up, step 1 ---------- */
   'check.next':      {one:'Then {n} statement about your ministry, one at a time. Nothing here is skipped &mdash; this part is answered from your map, and you answer the rest.',
                       other:'Then {n} statements about your ministry, one at a time. Nothing here is skipped &mdash; this part is answered from your map, and you answer the rest.'},
   'check.go':        'That looks right &mdash; start the statements',
   'check.fixmap':    'Change my map first',
 
+  'app.title':        'Ministry Map + Check-up',
+
+  /* ---------- Tabs ---------- */
+  'nav.jesus':        'Like Jesus',
+  'nav.today':        'Today',
+  'nav.map':          'Your map',
+  'nav.check':        'Check-up',
+  'nav.reports':      'Reports',
+  'nav.time':         'The year',
+  'blanks.more':      {one:'and {n} more', other:'and {n} more'},
+
+  /* ---------- The answer scale — INSTRUMENT, not chrome ----------
+     Take these from JV's existing M-Lens translation. Do not compose new
+     wording: the gap between these four is what the score measures. */
+  'scale.none':       'Not yet true of us',
+  'scale.little':     'Starting to be true',
+  'scale.mostly':     'Mostly true',
+  'scale.always':     'Consistently true',
+
+  /* ---------- Check-up, step 1 ---------- */
+  'check.eyebrow':    'Ministry check-up · step 1 of 2',
+  'check.title':      'You have already done <em>half of this</em>',
+  'check.lede':       'This part is about your students and what you run, and it all comes off your map — so there is nothing to count. Have a look and make sure it matches what you would say out loud.',
+  'check.frommap':    'All of this comes off your map',
+  'check.k.students': 'Students in your group',
+  'check.k.people':   'People',
+  'check.k.programs': 'Programs',
+  'check.v.programs': '{n} running, covering {made} of the 5 challenges',
+  'check.k.notcovered':'Not covered',
+  'check.v.notcovered':{one:'{list} <span class="known-why">&mdash; none of the programs you offer specifically develop people in this challenge</span>',
+                        other:'{list} <span class="known-why">&mdash; none of the programs you offer specifically develop people in these challenges</span>'},
+  'check.v.allcovered':'Nothing &mdash; every challenge has something that asks it',
+  'check.wrong':      'If something is wrong here, change it on your map and it changes here too.',
+  'check.answernote': 'Answer for your group as it actually is right now, not how you hope it will be.',
+
+  /* ---------- An acronym or a category, opened ---------- */
+  'tool.eyebrow':     '{phase} &middot; JV training tool',
+  'tool.measured':    'Measured in {phase}, alongside {others}.',
+  'tool.sec.phase':   'The {n} statements of this phase',
+  'tool.sec.cat':     {one:'{n} statement measures this', other:'{n} statements measure this'},
+  'tool.start':       {one:'<b>Where to start.</b> This one is not yet true of you. {acr} is the tool you already have for it.',
+                       other:'<b>Where to start.</b> These {n} are not yet true of you. {acr} is the tool you already have for them.'},
+  'tool.allgood':     '<b>All of these are true of you.</b> Nothing here is the thing holding this phase back.',
+
+  /* ---------- CONTENT: the five challenges ----------
+     JV's own wording. Take it from their material; do not compose it. */
+  'zone.1.name':'Come &amp; See',       'zone.1.ask':'Come and look at Jesus for yourself &mdash; nothing is being asked of you yet.', 'zone.1.verb':'invited to come and see',
+  'zone.2.name':'Repent &amp; Believe', 'zone.2.ask':'Turn from your old life and give it to Christ.',                                 'zone.2.verb':'asked to give their life to Christ',
+  'zone.3.name':'Follow Me',            'zone.3.ask':'Let Jesus lead your whole life, not just your Sunday.',                          'zone.3.verb':'asked to follow Jesus daily',
+  'zone.4.name':'Follow Me &amp; Fish', 'zone.4.ask':'Come with me and help reach the people who are still outside.',                  'zone.4.verb':'asked to help reach others',
+  'zone.5.name':'I Am Sending You',     'zone.5.ask':'Go and lead this somewhere I am not.',                                           'zone.5.verb':'asked to lead somewhere new',
+
+  /* ---------- CONTENT: the five phases ----------
+     `short` is what fits on a cake layer and may equal the name. The spans
+     are NOT in the M-Lens documents — they carry an asterisk in the app.
+     Do not translate them as though they were sourced. */
+  'phase.1.name':'Preparation',               'phase.1.short':'Preparation',       'phase.1.who':'Everyone',  'phase.1.span':'30 years',
+  'phase.2.name':'Foundation',                'phase.2.short':'Foundation',        'phase.2.who':'Disciples', 'phase.2.span':'1.5 years',
+  'phase.3.name':'Ministry Training',         'phase.3.short':'Ministry Training', 'phase.3.who':'Workers',   'phase.3.span':'6\u20139 months',
+  'phase.4.name':'Expansion',                 'phase.4.short':'Expansion',         'phase.4.who':'Workers',   'phase.4.span':'6\u20139 months',
+  'phase.5.name':'Leadership Multiplication', 'phase.5.short':'Leadership Mult.',  'phase.5.who':'Leaders',   'phase.5.span':'1.5 years',
+
+  /* ---------- How often a programme runs, and how a student arrived ----------
+     The English stays the stored value; only these labels are shown. */
+  'freq.Weekly':'Weekly', 'freq.Bi-weekly':'Bi-weekly', 'freq.Monthly':'Monthly', 'freq.Yearly':'Yearly',
+  'came.Invited_by_a_student':'Invited by a student',
+  'came.Invited_by_a_leader':'Invited by a leader',
+  'came.Came_with_family':'Came with family',
+  'came.Through_school_or_club':'Through school or club',
+  'came.Found_us_themselves':'Found us themselves',
+
+  /* ---------- INSTRUMENT: the 35 M-Lens statements ----------
+     Verbatim from JV's diagnostic. These must be replaced with JV's own
+     translation of the same instrument, never newly composed: the score
+     only means the same thing in Warsaw as in Prague if the statement
+     does. The translation page shows these locked for that reason. */
+  /* phase 1 */
+  'q.0': 'I understand that my mission is to make disciples. I prioritize disciple-making in my schedule and time.',
+  'q.1': 'I am motivated to do ministry by love for God and love for people.',
+  'q.2': 'I know I have been called by God into his mission, and want to serve out of obedience to him, not just because I was asked to take a role by someone else.',
+  'q.3': 'As I look back over the last year I can see I am steadily growing in wisdom and favor with God and people.',
+  'q.4': 'I feel empowered to serve others because of relationship with Jesus, with the Spirit and with the Father.',
+  'q.5': 'I am a disciple of Jesus and want to see others come to know him and grow in their relationship with him.',
+  'q.6': 'I am willing to take the burden and privilege of serving as a shepherd of part of God’s flock, under the great shepherd.',
+  /* phase 2 */
+  'q.7': 'I spend time with students in a variety of settings outside of youth group meetings. I know what is going on in their world and am engaged in it.',
+  'q.8': 'Our youth group deeply loves and cares for each other. New people feel welcome, and group members intentionally reach out to each other. There is a minimum of gossip, relational competition, or cliques.',
+  'q.9': 'Our youth group has a feeling of expectation. The leaders have vision for the future and communicate it often to the students. We see potential in them and speak it to them.',
+  'q.10': 'The students know who Jesus is, what he has done for them, and who they are because of him. Their view of Jesus isn’t heavily distorted by current culture or church legalism.',
+  'q.11': 'The youth leader(s) pray often for their group, and students see them model prayer in front of them. They set aside time to cover our ministry in prayer.',
+  'q.12': 'Our youth group regularly opens God’s Word and studies it together. We don’t just talk about our opinions on spiritual and relational topics, but instead, open God’s Word and let it speak.',
+  'q.13': 'Our youth group is a healthy environment where people steadily grow in their relationships with God and with others.',
+  /* phase 3 */
+  'q.14': 'Students in our group are asking how they can serve and beginning to take ownership for the health of our group.',
+  'q.15': 'A smaller team within our youth group is being regularly and purposefully equipped to do the work of ministry.',
+  'q.16': 'This ministry team knows how to do personal evangelism, and are practicing how to do it with their friends.',
+  'q.17': 'There is an intentional strategy for how to train the ministry team, including good teaching, carefully crafted experiences, and intentional reflection.',
+  'q.18': 'Some of the ministry team members are discipling individuals or leading small groups. They are helping shepherd young people in an ongoing way toward spiritual maturity.',
+  'q.19': 'The ministry team members are given specific responsibilities in the youth group to purposefully develop their character and skills.',
+  'q.20': 'I am spending more time with a few so that I can reach and shepherd more young people through them.',
+  /* phase 4 */
+  'q.21': 'Our youth group has frequent and regular events focused on group evangelism, where the ministry team is mobilized to share the gospel.',
+  'q.22': 'Every month our group is in contact with more non-Christian young people.',
+  'q.23': 'Unbelievers are regularly coming to Christ and becoming a part of our ministry.',
+  'q.24': 'News about the impact of our ministry and lives that are being changed is spreading on its own.',
+  'q.25': 'Our team is being stretched to reach into new areas and try new ways of reaching the lost.',
+  'q.26': 'Our team has learned how to handle persecution, failure and opposition without stopping or giving up.',
+  'q.27': 'Our ministry is experiencing steady growth, both internally and externally.',
+  /* phase 5 */
+  'q.28': 'Our leaders have identified and invited a select few to be trained and equipped for current and future leadership, based on their fruitfulness as ministry team members.',
+  'q.29': 'The main leader has entrusted parts of the ministry to emerging leaders.',
+  'q.30': 'The ministry has been restructured for multiplication with new systems and subgroups to increase shepherding effectiveness.',
+  'q.31': 'The leader is supporting and training these new leaders through ongoing equipping and care.',
+  'q.32': 'The leadership team is learning to pay the personal price of leadership multiplication, as they follow Jesus into personal sacrifice that brings life to others.',
+  'q.33': 'We are beginning to send out leaders to start ministries in other places or serve in other ministries and churches.',
+  'q.34': 'It is hard to keep up with everything that is happening — the Spirit seems to be expanding the ministry in ways we hadn’t anticipated.',
+
+  /* INSTRUMENT: the categories each statement is scored under. */
+  'cat.All':             'All',
+  'cat.Bible':           'Bible',
+  'cat.CPR':             'CPR',
+  'cat.Call':            'Call',
+  'cat.Character':       'Character',
+  'cat.Empowerment':     'Empowerment',
+  'cat.Entrust':         'Entrust',
+  'cat.Evangelize':      'Evangelize',
+  'cat.Expansion':       'Expansion',
+  'cat.Jesus':           'Jesus',
+  'cat.Love':            'Love',
+  'cat.Multiplication':  'Multiplication',
+  'cat.Prayer':          'Prayer',
+  'cat.Relationships':   'Relationships',
+  'cat.Restructure':     'Restructure',
+  'cat.Serve':           'Serve',
+  'cat.Shepherd':        'Shepherd',
+  'cat.Support':         'Support',
+  'cat.TAR':             'TAR',
+  'cat.Team':            'Team',
+  'cat.Train':           'Train',
+  'cat.Vision':          'Vision',
+
+  /* What each acronym spells. CCE and SIX spell their own categories;
+     TAR, CPR and REST spell words the instrument never scores. */
+  'spell.Act':           'Act',
+  'spell.Bible':         'Bible',
+  'spell.Call':          'Call',
+  'spell.Character':     'Character',
+  'spell.Cultivate':     'Cultivate',
+  'spell.Empowerment':   'Empowerment',
+  'spell.Entrust':       'Entrust',
+  'spell.Jesus':         'Jesus',
+  'spell.Love':          'Love',
+  'spell.Plant':         'Plant',
+  'spell.Prayer':        'Prayer',
+  'spell.Reap':          'Reap',
+  'spell.Reflect':       'Reflect',
+  'spell.Relationships': 'Relationships',
+  'spell.Restructure':   'Restructure',
+  'spell.Support':       'Support',
+  'spell.Teach':         'Teach',
+  'spell.Train':         'Train',
+  'spell.Vision':        'Vision',
+
+  /* ---------- How true, and how often ---------- */
+  'band.consistent':  'Consistently true',
+  'band.mostly':      'Mostly true',
+  'band.starting':    'Starting',
+  'band.notyet':      'Not yet',
+  'doing.consistent': 'You do this consistently',
+  'doing.mostly':     'You do this most of the time',
+  'doing.starting':   'You have started doing this',
+  'doing.notyet':     'You are not doing this yet',
+  'short.consistent': 'consistently',
+  'short.mostly':     'most of the time',
+  'short.starting':   'only just started',
+  'short.notyet':     'not doing this yet',
+  'slug.consistent':  'consistent',
+  'slug.mostly':      'mostly',
+  'slug.starting':    'starting',
+  'slug.notyet':      'not yet',
+  'report.latest':    'LATEST',
+
+  /* ---------- What the counts alone can say ---------- */
+  'blank.reached':    {one:'{n} of your students has reached Follow Me &amp; Fish. That student has not been sent.',
+                       other:'{n} of your students have reached Follow Me &amp; Fish. None of them has been sent.'},
+  'blank.looking':    {one:'{n} student is coming and looking at Jesus. That student has not been asked to give their life to Christ.',
+                       other:'{n} students are coming and looking at Jesus. None of them has been asked to give their life to Christ.'},
+  'blank.sent':       {one:'{n} of your students has been sent out to lead.',
+                       other:'{n} of your students have been sent out to lead.'},
+  'blank.nofurther':  {one:'{n} of your students has gone no further than {ch}.',
+                       other:'{n} of your students have gone no further than {ch}.'},
+  'blank.note':       'This is your group as a number. With names, it could tell you who has not moved since spring.',
+
   /* ---------- Notes ---------- */
+  'notes.workbench': 'Workbench',
+  /* Two independent plurals in one line. tn() resolves each, and this
+     template lets a translator move them and change the separator —
+     which is the part that must not be hard-coded. */
+  'notes.headline':  '{open}<span class="nt-of">, {done}</span>',
+  'notes.open':      {one:'{n} still open', other:'{n} still open'},
+  'notes.donecount': {one:'{n} done',       other:'{n} done'},
+  'notes.none':      'Nothing logged yet',
+  'notes.lede':      'Everything logged from the pencil, from everyone. Tick one when it is dealt with. This reads the same records as the base &mdash; there is no second copy.',
+  'notes.empty':     'When someone writes a note with the pencil, bottom right, it appears here.',
+  'notes.sec.open':  'Open',
+  'notes.sec.done':  'Done',
+  'notes.tick':      'Mark as done',
+  'notes.untick':    'Mark as not done',
+  'notes.unknown':   'Unknown',
+  'notes.toobig':    'A screenshot was attached but was too large to store.',
+  'notes.del':       'Delete',
+  'notes.del.title': 'Delete this note',
+  'notes.del.confirm':'Delete for good',
+  'notes.del.keep':  'Keep',
   'notes.fix':       'What changed',
   'notes.before':    'What you saw',
   'notes.zoom': 'Click to open out',
@@ -1328,6 +1613,234 @@ const STRINGS={en:{
   'build.reload':    'Reload',
   'notes.loading':   'Loading&hellip;',
   'notes.failed':    'The list could not be loaded. Nothing is lost &mdash; try Refresh.',
+
+  /* ---------- Shared words ---------- */
+  'common.cancel':    'Cancel',
+  'common.add':       'Add',
+  'common.done':      'Done',
+  'common.remove':    'Remove',
+
+  /* ---------- Adding a student ---------- */
+  'intake.eyebrow':   'New student',
+  'intake.title':     'Who has joined you?',
+  'intake.lede':      'Every field here earns its place later &mdash; how they came tells you whether your students are inviting their friends, and who knows them tells you whether anyone actually does.',
+  'intake.err.name':  'A first name is the one thing this cannot go without.',
+  'intake.first':     'First name',
+  'intake.init':      'Last initial',
+  'intake.init.ph':   'H',
+  'intake.age':       'Age',
+  'intake.since':     'First came',
+  'intake.zone':      'Furthest challenge they have reached',
+  'intake.how':       'How they came',
+  'intake.by':        'Invited by',
+  'intake.known':     'Who knows them best',
+  'intake.nobody':    'Nobody yet',
+  'intake.note':      'Anything worth remembering',
+  'intake.note.ph':   'Optional &mdash; a sentence you would want to read in six months',
+  'intake.privacy':   'First name and last initial only &mdash; never a full name. Stays on your device and in your group&rsquo;s own records.',
+  'intake.save':      'Add student',
+
+  /* ---------- The map ---------- */
+  'map.eyebrow':      'Ministry Map',
+  'map.title':        'Everything you run, and<br>everyone you have, <em>side by side</em>',
+  'map.lede':         'Five challenges across the top. What you run above, who you have below. Read straight down a column and you can see where an invitation is being made with nobody there to hear it &mdash; or where people are waiting and nothing ever asks them.',
+  'map.programs':     'Programs',
+  'map.running':      'running',
+  'map.addprog':      '+ Add a programme',
+  'map.people':       'People',
+  'map.names':        'Names',
+  'map.new':          'new',
+  'map.note':         'The programs you offer are above, the people you care for are below.',
+  'map.note.overlap': 'A programme can make two challenges, so the numbers across add up to more than the number running.',
+  'map.aria.fewer':   'One fewer',
+  'map.aria.more':    'One more',
+  'map.aria.count':   'How many at {ch}',
+  'map.aria.addhere': 'Add a student here',
+
+  /* ---------- A student, or a programme, opened ---------- */
+  'mdet.since':       'Coming since {date}',
+  'mdet.knownby':     '{who} knows them',
+  'mdet.nobody':      'nobody is following them',
+  'mdet.move':        'Move them to the furthest challenge they have reached',
+  'prog.name':        'Programme name',
+  'prog.which':       'Which challenges this programme actually makes',
+  'ask.done':         'Someone from Josiah Venture in your country will be in touch. Nothing changes here until you have spoken to them.',
+
+  /* ---------- All reports ---------- */
+  'reports.note':     'Each one keeps what was true the day you took it, so you can look back and see how far your group has come.',
+
+  /* ---------- One report ---------- */
+  'report.back':      '&larr; All reports',
+  'report.cover.students':'students on the map',
+  'report.cover.phase':'phase {n} of 5',
+  'report.cover.upfrom':'up from {prev}',
+  'report.cover.beyond':'at Follow Me &amp; Fish or beyond',
+  'report.cover.invites':'invitations your programs make',
+  'report.sec.phase': 'What phase you are in',
+  'report.tap':       'TAP A LAYER',
+  'report.cake.hint': 'Tap any layer to read what that phase is about, what is true of you in it, and its score.',
+  'report.how':       'How {phase} works',
+  'report.tool.tag':  'JV TRAINING TOOL',
+  'report.tool.title':'What {tool} stands for',
+  'report.tool.scale':'How often each part of this phase actually happens, read from your own answers.',
+  'report.statements':{one:'{n} statement', other:'{n} statements'},
+
+  /* The three things to do next. Whole sentences, because the numbers sit
+     mid-clause and no language agrees with English about where. */
+  'report.act.freq':  '<b>Students are only {verb} once a year.</b> {n} of them have not been asked yet, and {prog} is the only time it happens. That invitation does not need a programme — it needs someone willing to make it more often than once a year.',
+  'report.act.freq.w':'instrument: <span>CPR &mdash; {band}</span> &middot; map: {prog} runs {freq}',
+  'report.act.gap':   '<b>You never actually ask anyone to go.</b> {sent} student has been sent, and {ready} more have reached Follow Me &amp; Fish &mdash; but none of them has been asked to lead something of their own. That is a conversation, not a programme.',
+  'report.act.gap.w': 'instrument: <span>Entrust &mdash; {band}</span> &middot; map: {ready} at Follow Me &amp; Fish, none sent',
+  'report.act.weak':  '<b>{cat} is your weakest untouched area &mdash; {band}.</b> That is the work of {phase} &mdash; the phase you have just entered, not a failure of the one you left.',
+  'report.act.weak.w':{one:'instrument: {cat} from {n} statement, lowest of {of}',
+                       other:'instrument: {cat} from {n} statements, lowest of {of}'},
+
+  'report.every':     'Every category',
+  'report.measured':  '{n} MEASURED',
+  'report.yourphase': 'your phase',
+
+  /* ---------- A phase card ----------
+     STORY — essence, about, turn, risk, door — is deliberately NOT here.
+     It is placeholder prose written for this prototype, not JV's, and it
+     renders behind an asterisk saying so. Keeping it out of STRINGS keeps
+     it off the translation page: nobody should be asked to translate
+     wording that is going to be replaced. */
+  'phase.tf.true':    'True of you',
+  'phase.tf.part':    'Starting to be true',
+  'phase.tf.not':     'Not yet true',
+  'phase.stance.now': 'This is where you are now.',
+  'phase.stance.past':'You have come through this.',
+  'phase.stance.ahead':'Not yet &mdash; this is on the other side of {phase}.',
+  'phase.outof':      '{score} out of 10.',
+  'phase.ast':        'Placeholder wording',
+  'phase.turn':       'The turn',
+  'phase.carry':      'Strongest in {phase}, the phase before',
+  'phase.wrong':      'Where this goes wrong',
+  'phase.here':       'When you are here',
+  'phase.finished':   'How you know you have finished {phase}',
+  'phase.note':       '<b>*</b> Placeholder wording, written for this prototype &mdash; not JV&rsquo;s. These parts need the real text.',
+
+  'map.lede.named':   'Five challenges across the top. What you run above, who you have below. Tap a name to move them &mdash; only once you have actually asked, and they have said so.',
+  'ask.why':          'The map is not for us. It&rsquo;s for the conversation you&rsquo;ll have about it.',
+  'ask.q':            'Would you like someone to walk through this with you? It&rsquo;s free.',
+  'ask.go':           'Yes, get in touch',
+
+  /* ---------- What the roster knows that counts cannot ---------- */
+  'ms.invited':       'came because another student invited them',
+  'ms.invited.why':   'Your check-up asks whether students invite friends without being asked. This answers it from the map instead of from memory.',
+  'ms.mo':            'mo',
+  'ms.wait':          'from first coming to being asked to give their life to Christ',
+  'ms.wait.why':      {one:'Typical wait across the {n} student who has been asked. Only the date they first came makes this knowable.',
+                       other:'Typical wait across the {n} students who have been asked. Only the date they first came makes this knowable.'},
+  'ms.neverasked':    {one:'student has never been asked', other:'students have never been asked'},
+  'ms.longest':       {one:'{who} has been coming {n} month.', other:'{who} has been coming {n} months.'},
+  'ms.allasked':      'Everyone has been asked.',
+  'ms.nofollow':      {one:'student nobody is following', other:'students nobody is following'},
+  'ms.allfollowed':   'Every student has a leader who knows them.',
+
+  /* ---------- All reports ---------- */
+  'reports.eyebrow':  {one:'{n} check-up kept', other:'{n} check-ups kept'},
+  'reports.title':    'Every time you check in,<br>you keep <em>the whole picture</em>',
+  'reports.lede':     'Nothing gets written over. Take a check-up whenever it helps — every one is kept.',
+  'reports.d.up':     'stepped up from {phase}',
+  'reports.d.down':   'back to {phase}',
+  'reports.d.same':   'same phase',
+  'reports.d.more':   {one:'+{n} student', other:'+{n} students'},
+  'reports.d.fewer':  {one:'-{n} student', other:'-{n} students'},
+  'reports.d.weakest':'weakest: {cat}',
+  'reports.d.first':  'first check-up',
+
+  /* ---------- The coach ---------- */
+  'coach.real':       'Written from your answers and your students together',
+  'coach.demo':       'Example questions &mdash; not generated yet',
+  'coach.run':        'Read my report',
+  'coach.again':      'Ask again',
+  'coach.thinking':   'Thinking&hellip;',
+  'coach.loading':    'Reading your answers and your roster together&hellip;',
+  'coach.error':      'Could not reach the coach &mdash; {why}. The questions above are the built-in examples.',
+  'coach.ask.ph':     'Or ask your own question about this report&hellip;',
+  'coach.ask':        'Ask',
+  'coach.names':      'Send student names',
+  'coach.names.on':   'Names are included so questions can be specific.',
+  'coach.names.off':  'Names replaced with &ldquo;a student&rdquo; before sending.',
+
+  /* ---------- The year ---------- */
+  'time.eyebrow':     '{from} &rarr; {to} &middot; {months} &middot; {checks}',
+  'time.checkups':    {one:'{n} check-up', other:'{n} check-ups'},
+  'time.title':       'From {t0} students to {t1},<br>and {from} to <em>{phase}</em>.',
+  'time.students':    {one:'{n} student', other:'{n} students'},
+  'time.more':        'more students',
+  'time.more.named':  '{n} joined, none lost',
+  'time.more.open':   'net change &mdash; counts cannot show who left',
+  'time.crossed':     'challenges crossed',
+  'time.crossed.sub': 'by {a} of the original {b}',
+  'time.further':     'further on than a year ago',
+  'time.further.sub': 'at Follow Me or beyond &mdash; not necessarily the same students',
+  'time.became':      'statements became true',
+  'time.became.sub':  'none went backward',
+  'time.climbed':     'phases climbed',
+  'time.climbed.sub': '{a} &rarr; {b}',
+  'time.shape':       'How the shape changed',
+  'time.thennow':     'THEN AND NOW',
+  'time.shape.note':  'The base widened and the top filled in.',
+  'time.shape.moved': 'A year ago nobody was being sent; {who} has gone from {from} to {to}.',
+  'time.shape.stillnone':'A year ago nobody was being sent, and that is still true.',
+  'time.legs':        'How long you spent in each phase',
+  'time.legs.tag':    'FROM YOUR CHECK-UPS',
+  'time.now':         'now',
+  'time.approx':      '~{n} mo',
+  'time.legs.note':   'Measured between check-ups, so it is only as precise as how often you take one &mdash; a phase change is dated to the check-up that first showed it, not the day it happened.',
+  'time.sec.became':  'What became true',
+  'time.nstatements': {one:'{n} STATEMENT', other:'{n} STATEMENTS'},
+  'time.nowtrue':     'Now true that was not',
+  'time.unmoved':     'Unmoved all year',
+  'time.andmore':     {one:'and {n} more, all in {phase}.', other:'and {n} more, all in {phase}.'},
+  'time.slipped':     {one:'{n} statement went backward this year.', other:'{n} statements went backward this year.'},
+  'time.stuck':       'Who has not moved',
+  'time.stuck.n':     '{n} OF THE ORIGINAL {of}',
+  'time.stuck.unknown':'NOT KNOWN FROM COUNTS',
+  'time.stuck.note':  {one:'Same challenge as {n} month ago. Not a failure &mdash; but if nobody has had a real conversation with them, this is the list to start from.',
+                       other:'Same challenge as {n} months ago. Not a failure &mdash; but if nobody has had a real conversation with them, this is the list to start from.'},
+  'time.stuck.blank': {one:'Counts cannot answer this one. The same number at an invitation {n} month apart can be the same students standing still, or different students passing through. Only names tell them apart.',
+                       other:'Counts cannot answer this one. The same number at an invitation {n} months apart can be the same students standing still, or different students passing through. Only names tell them apart.'},
+  'time.every':       'Every check-up',
+  'time.taptoopen':   'TAP TO OPEN',
+
+  'report.weakest':   'Weakest part: <b>{part}</b>.',
+  'report.weakest.istool':'{tool} is the tool for this phase &mdash; {spells}. You already have it; this is the part of the phase you are furthest from, so it is the tool to go back to rather than something new to learn.',
+  'report.weakest.partof':'That is one part of {tool}, the tool for this phase. The tool is the answer, not the diagnosis.',
+  'report.weakest.beside':'{tool} is the tool for this phase. This part is measured beside it, and it is the one you are furthest from.',
+  'report.donext':    'Do this next',
+  'report.bothsources':'FROM BOTH SOURCES',
+  'report.questions': 'Questions worth sitting with',
+  'report.coachtag':  'COACH',
+  'report.invites':   'Where each invitation gets made',
+  'report.mapdata':   'MAP DATA &mdash; NOT RE-ENTERED',
+  'report.notcovered':'not covered',
+
+  /* ---------- Workbench: the pencil, the tier switch, the fallback ---------- */
+  'bot.write':        'Write a note',
+  'bot.title':        'Notes',
+  'bot.localcopy':    'local copy &mdash; will not save',
+  'bot.whoask':       'Who is logging notes?',
+  'bot.whochange':    'Change who is logging',
+  'bot.save':         'Save',
+  'bot.start':        'Start',
+  'bot.whohint':      'Kept on this device so you only say it once. It goes on every note so we know who found what.',
+  'bot.loggingas':    'Logging as <b>{who}</b>',
+  'bot.change':       'change',
+  'bot.textph':       'What felt wrong? A new idea? Something confusing?',
+  'bot.shot':         'Screenshot',
+  'bot.log':          'Log it',
+  'bot.notsaved':     'Not saved &mdash; {why}. Your note is still in the box, so nothing is lost. Try again in a moment.',
+  'bot.saved':        {one:'Saved. {n} note so far.', other:'Saved. {n} notes so far.'},
+  'bot.shotsfailed':  {one:'{n} screenshot could not be attached.', other:'{n} screenshots could not be attached.'},
+  'bot.pastehint':    '&#8984;V pastes a screenshot straight in.',
+  'tier.viewingas':   'viewing as',
+  'tier.open':        'Open',
+  'tier.activated':   'Activated',
+  'err.screen':       'This screen did not load. Nothing you have entered is lost &mdash; try another tab.',
+  'err.tellus':       'Please tell us with the pencil, bottom right. It helps to say what you were doing.',
 
   /* ---------- Learn more ---------- */
   'learn.more':      'Learn more',
@@ -1343,7 +1856,7 @@ const STRINGS={en:{
 }};
 
 function t(key,vars){
-  const table=STRINGS[LANG]||STRINGS.en;
+  const table=strings();
   let str = table[key]!==undefined ? table[key] : STRINGS.en[key];
   if(str===undefined){ console.warn('missing string:',key); return key; }
   return vars ? String(str).replace(/\{(\w+)\}/g,(m,k)=>vars[k]!==undefined?vars[k]:m) : str;
@@ -1354,7 +1867,7 @@ function t(key,vars){
    the active language. English only ever uses `one` and `other`; adding
    Czech means adding `few`, and nothing in the code changes. */
 function tn(key,n,vars){
-  const table=STRINGS[LANG]||STRINGS.en;
+  const table=strings();
   const set = table[key]!==undefined ? table[key] : STRINGS.en[key];
   if(!set){ console.warn('missing plural:',key); return key; }
   let cat='other';
@@ -1432,9 +1945,9 @@ function phaseYearsHTML(){
     cells+=`<span class="jsbar" style="grid-row:${i+1};grid-column:1">
       <i style="width:${w}%;--t:${t}">${pname(p)}</i></span>`;
     if(skip){skip=false;return}
-    const nxt=order[i+1], pair=nxt&&nxt.span===p.span;
+    const nxt=order[i+1], pair=nxt&&pspan(nxt)===pspan(p);
     cells+=`<span class="jsyr${pair?' pair':''}" style="grid-row:${i+1}${pair?' / span 2':''};grid-column:2">
-      ${p.span}<sup class="ph-ast">*</sup></span>`;
+      ${pspan(p)}<sup class="ph-ast">*</sup></span>`;
     if(pair) skip=true;
   });
   return `<div class="jstack">${cells}</div>`;
@@ -1449,9 +1962,10 @@ function challengeRoadSVG(){
   /* Names sit under their own number rather than in a list below, so the
      diagram says which challenge is which without the eye counting across.
      Two balanced lines when a name is too long for one. */
-  const split=t=>{
-    if(t.length<=11) return [t];
-    const w=t.split(' ');
+  /* `str`, not `t` — the parameter shadowed the translate function. */
+  const split=str=>{
+    if(str.length<=11) return [str];
+    const w=str.split(' ');
     let at=1,best=1e9;
     for(let i=1;i<w.length;i++){
       const d=Math.abs(w.slice(0,i).join(' ').length-w.slice(i).join(' ').length);
@@ -1459,7 +1973,7 @@ function challengeRoadSVG(){
     }
     return [w.slice(0,at).join(' '), w.slice(at).join(' ')];
   };
-  const amp=t=>t.replace(/&/g,'&amp;');
+  const amp=str=>str.replace(/&/g,'&amp;');
   return `<svg class="jroad" viewBox="0 0 720 214" role="img"
        aria-label="${t('jesus.road.alt')}">
     <g fill="none" stroke="var(--ink-15)" stroke-width="1.4">
@@ -1478,7 +1992,7 @@ function challengeRoadSVG(){
     </g>
     ${xs.map((x,i)=>`<circle cx="${x}" cy="150" r="14" fill="var(${ZONES[i].v})"/>
       <text x="${x}" y="156" class="jr-n" text-anchor="middle">${i+1}</text>
-      ${split(plain(ZONES[i].name)).map((ln,j)=>
+      ${split(plain(zname(ZONES[i]))).map((ln,j)=>
         `<text x="${x}" y="${186+j*15}" class="jr-name" text-anchor="middle">${amp(ln)}</text>`).join('')}`).join('')}
   </svg>`;
 }
@@ -1496,11 +2010,13 @@ function vToday(){
      a roster knows. So the open tier says the honest smaller thing. */
   const moved=hasNames()?STUDENTS.filter(s=>s.hist[2]>s.hist[1]&&s.hist[1]>0).length:null;
   const d=deeper(2)-deeper(1);
-  const head=hasNames()
-    ? `${moved} students moved forward<br>since <em>the spring</em>.`
-    : d>0 ? `${d} more student${d===1?'':'s'} ${d===1?'has':'have'} gone further<br>than in <em>the spring</em>.`
-    : d<0 ? `${-d} fewer student${d===-1?'':'s'} ${d===-1?'is':'are'} further on<br>than in <em>the spring</em>.`
-    : `Your group is the same shape<br>as it was in <em>the spring</em>.`;
+  /* Four whole sentences rather than assembled fragments. English needs
+     student/students and has/have; other languages agree far more than
+     that, and none of it survives being glued together from pieces. */
+  const head=hasNames() ? tn('today.head.moved',moved)
+    : d>0 ? tn('today.head.further',d)
+    : d<0 ? tn('today.head.fewer',-d)
+    : t('today.head.same');
 
   /* The road. The five challenges read left to right, the way the training
      deck draws them. Column height is the count, never a stylised shape —
@@ -1515,38 +2031,39 @@ function vToday(){
 
     <div class="duo">
       <div class="duo-half">
-        <div class="eyebrow">Where your students are</div>
-        <div class="big-n">${tot}<em>students</em></div>
+        <div class="eyebrow">${t('today.where')}</div>
+        <div class="big-n">${tot}<em>${t('today.students')}</em></div>
         <div class="duo-vis">${road}</div>
-        <div class="plinth">${hasNames()?'Each student is counted once, at the furthest challenge they have reached':'Each number is how many have reached that challenge, and no further'}</div>
+        <div class="plinth">${hasNames()?t('today.plinth.named'):t('today.plinth.open')}</div>
       </div>
       <div class="duo-rule"></div>
       <div class="duo-half">
-        <div class="eyebrow">Ministry phases</div>
+        <div class="eyebrow">${t('today.phases')}</div>
         <div class="big-n ph">${pname(PHASES[ph-1])}</div>
         <div class="duo-vis">${phaseCakeHTML(sc,ph,false)}</div>
-        <div class="plinth">Each layer is a phase, and how long you have been in it</div>
+        <div class="plinth">${t('today.plinth.phase')}</div>
       </div>
     </div>
 
     <button class="repcard newest big" data-open="${REPORTS.length-1}">
       <div class="rc-date"><span class="d">${fmtDate(L)}</span><span class="t">${L.t}</span></div>
       <div class="rc-mid">
-        <div class="rc-phase"><i></i>Your latest report</div>
+        <div class="rc-phase"><i></i>${t('today.latest')}</div>
         <div class="rc-delta">${(()=>{const g=reportGist(L);
           /* the weakest category is not always part of the phase's tool —
              for Ministry Training and Expansion the tool is one category
              among several, so name the phase, not the acronym */
-          return `${g.actions} thing${g.actions===1?'':'s'} to do next &middot; weakest part of ${pname(PHASES[g.phase-1])}: <b class="dn">${g.weakest} &mdash; ${g.band}</b>`})()}</div>
+          return tn('today.delta',g.actions,{phase:pname(PHASES[g.phase-1]),
+                    weakest:catLabel(g.weakest), band:g.band})})()}</div>
       </div>
-      <div class="rc-n"><b>${tot}</b><span>students</span></div>
-      <div class="rc-go">Open &rarr;</div>
+      <div class="rc-n"><b>${tot}</b><span>${t('today.students')}</span></div>
+      <div class="rc-go">${t('today.open')}</div>
     </button>
 
     <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap">
-      <button class="btn" data-go="check">Start a new check-up</button>
-      <button class="btn ghost" data-go="reports">All ${REPORTS.length} reports</button>
-      <button class="btn ghost" data-go="time">See how you have moved</button>
+      <button class="btn" data-go="check">${t('today.newcheck')}</button>
+      <button class="btn ghost" data-go="reports">${tn('today.allreports',REPORTS.length)}</button>
+      <button class="btn ghost" data-go="time">${t('today.moved')}</button>
     </div>
   </div></div>`;
 }
@@ -1590,7 +2107,7 @@ function phaseCakeHTML(sc,ph,tappable){
     const cls=`phtier ${st} ${v?'':'empty'}${tappable&&selPhase===p.n?' sel':''}`;
     const inner=`<span class="phn">${pname(p)}</span><b>${spans[p.n]?spanLabel(spans[p.n]):(p.n<ph?'&mdash;':'')}</b>`;
     return tappable
-      ? `<button class="${cls}" style="width:${w}%" data-phase="${p.n}" aria-label="${p.name}">${inner}</button>`
+      ? `<button class="${cls}" style="width:${w}%" data-phase="${p.n}" aria-label="${plain(pfull(p))}">${inner}</button>`
       : `<div class="${cls}" style="width:${w}%">${inner}</div>`;
   }).join('')}</div>`;
 }
@@ -1598,9 +2115,13 @@ function phaseCakeHTML(sc,ph,tappable){
 const spanLabel=x=>{
   if(!x) return '';
   const m=x.months;
-  const t=m<1?'under a month':m<18?`${m} month${m===1?'':'s'}`
-      :m%12===0?`${m/12} years`:`${Math.floor(m/12)}y ${m%12}m`;
-  return x.current?`${t} so far`:t;
+  /* `label`, not `t` — the local name used to shadow the translate
+     function, which would have made every string in here unreachable. */
+  const label = m<1 ? t('span.under')
+      : m<18 ? tn('span.months',m)
+      : m%12===0 ? tn('span.years',m/12)
+      : t('span.ym',{y:Math.floor(m/12), m:m%12});
+  return x.current ? t('span.sofar',{span:label}) : label;
 };
 
 /* The road: five milestones left to right, column height = how many people.
@@ -1620,7 +2141,7 @@ function roadHTML(ri,opts){
     <div class="road-row rail">${ZONES.map((z,i)=>
       `<span class="mile-dot${c[i]?'':' empty'}" style="${c[i]?`background:var(${z.v})`:''}"></span>`).join('')}</div>
     <div class="road-row labs">${ZONES.map((z,i)=>
-      `<div class="lab${c[i]?'':' empty'}"><span>${z.name}</span><b>${c[i]}</b></div>`).join('')}</div>
+      `<div class="lab${c[i]?'':' empty'}"><span>${zname(z)}</span><b>${c[i]}</b></div>`).join('')}</div>
     <div class="road-row bars">${ZONES.map((z,i)=>
       `<span>${c[i]?`<i style="height:${12+80*(c[i]/mx)}%;background:var(${z.v})"></i>`:''}</span>`).join('')}</div>
   </div>`;
@@ -1670,7 +2191,7 @@ const val=id=>{const el=document.getElementById(id);return el?el.value:''};
 function saveIntake(){
   const first=val('in-name').trim(), init=val('in-init').trim().toUpperCase().slice(0,1);
   const name=first+(init?' '+init+'.':'');
-  if(!first){intakeErr='A first name is the one thing this cannot go without.';render();return}
+  if(!first){intakeErr=t('intake.err.name');render();return}
   const z=+val('in-zone')||1, came=val('in-came');
   const h=[0,0,0]; h[NOW]=z;
   STUDENTS.push({id:Math.max(0,...STUDENTS.map(x=>x.id))+1,name,hist:h,zone:z,
@@ -1685,41 +2206,41 @@ function saveIntake(){
 
 function intakeHTML(){
   const today=new Date().toISOString().slice(0,10);
-  return `<div class="sheet" data-close="bg"><div class="sheetin" role="dialog" aria-label="Add a student">
+  return `<div class="sheet" data-close="bg"><div class="sheetin" role="dialog" aria-label="${plain(t('intake.title'))}">
     <div class="sh-hd">
-      <div><div class="eyebrow">New student</div><h2>Who has joined you?</h2></div>
+      <div><div class="eyebrow">${t('intake.eyebrow')}</div><h2>${t('intake.title')}</h2></div>
       <button class="sh-x" data-close="x">&times;</button>
     </div>
-    <p class="sh-lede">Every field here earns its place later &mdash; how they came tells you whether your students are inviting their friends, and who knows them tells you whether anyone actually does.</p>
+    <p class="sh-lede">${t('intake.lede')}</p>
     ${intakeErr?`<div class="sh-err">${intakeErr}</div>`:''}
 
     <div class="fgrid four">
-      <label class="fld wide"><span>First name</span><input id="in-name" placeholder="First name" autofocus></label>
-      <label class="fld"><span>Last initial</span><input id="in-init" maxlength="1" placeholder="H"></label>
-      <label class="fld"><span>Age</span><select id="in-age">${AGES.map(a=>`<option ${a==='15-17'?'selected':''}>${a}</option>`).join('')}</select></label>
-      <label class="fld"><span>First came</span><input id="in-since" type="date" value="${today}"></label>
+      <label class="fld wide"><span>${t('intake.first')}</span><input id="in-name" placeholder="${plain(t('intake.first'))}" autofocus></label>
+      <label class="fld"><span>${t('intake.init')}</span><input id="in-init" maxlength="1" placeholder="${plain(t('intake.init.ph'))}"></label>
+      <label class="fld"><span>${t('intake.age')}</span><select id="in-age">${AGES.map(a=>`<option ${a==='15-17'?'selected':''}>${a}</option>`).join('')}</select></label>
+      <label class="fld"><span>${t('intake.since')}</span><input id="in-since" type="date" value="${today}"></label>
     </div>
 
-    <div class="fld"><span>Furthest challenge they have reached</span>
+    <div class="fld"><span>${t('intake.zone')}</span>
       <div class="zpick">${ZONES.map(z=>`<label class="zp" style="--zc:var(${z.v})">
         <input type="radio" name="in-zone-r" value="${z.n}" ${z.n===intake?'checked':''} data-zone="${z.n}">
-        <b>${z.name}</b><em>${z.ask}</em></label>`).join('')}</div>
+        <b>${zname(z)}</b><em>${zask(z)}</em></label>`).join('')}</div>
       <input type="hidden" id="in-zone" value="${intake}">
     </div>
 
     <div class="fgrid">
-      <label class="fld"><span>How they came</span><select id="in-came" data-came>${CAME.map(x=>`<option>${x}</option>`).join('')}</select></label>
-      <label class="fld" id="bywrap" style="display:${CAME[0]==='Invited by a student'?'':'none'}"><span>Invited by</span>
+      <label class="fld"><span>${t('intake.how')}</span><select id="in-came" data-came>${CAME.map(x=>`<option value="${esc(x)}">${cameLabel(x)}</option>`).join('')}</select></label>
+      <label class="fld" id="bywrap" style="display:${CAME[0]==='Invited by a student'?'':'none'}"><span>${t('intake.by')}</span>
         <select id="in-by"><option value="">&mdash;</option>${STUDENTS.map(x=>`<option>${x.name}</option>`).join('')}</select></label>
-      <label class="fld"><span>Who knows them best</span>
-        <select id="in-known"><option value="">Nobody yet</option>${LEADERS.map(l=>`<option>${l}</option>`).join('')}</select></label>
+      <label class="fld"><span>${t('intake.known')}</span>
+        <select id="in-known"><option value="">${t('intake.nobody')}</option>${LEADERS.map(l=>`<option>${l}</option>`).join('')}</select></label>
     </div>
 
-    <label class="fld"><span>Anything worth remembering</span><input id="in-note" placeholder="Optional &mdash; a sentence you would want to read in six months"></label>
+    <label class="fld"><span>${t('intake.note')}</span><input id="in-note" placeholder="${plain(t('intake.note.ph'))}"></label>
 
     <div class="sh-foot">
-      <span class="note">First name and last initial only &mdash; never a full name. Stays on your device and in your group&rsquo;s own records.</span>
-      <div><button class="btn ghost" data-close="x">Cancel</button><button class="btn" data-save="1">Add student</button></div>
+      <span class="note">${t('intake.privacy')}</span>
+      <div><button class="btn ghost" data-close="x">${t('common.cancel')}</button><button class="btn" data-save="1">${t('intake.save')}</button></div>
     </div>
   </div></div>`;
 }
@@ -1743,46 +2264,46 @@ function mapGridHTML(){
 
   let h='<div class="mgwrap"><div class="mgrid">';
 
-  h+='<div class="mg-gut mg-title">Programs</div>';
-  h+=ZONES.map(z=>`<div class="mg-ch" style="--zc:var(${z.v})"><i>${z.n}</i>${z.name}</div>`).join('');
+  h+=`<div class="mg-gut mg-title">${t('map.programs')}</div>`;
+  h+=ZONES.map(z=>`<div class="mg-ch" style="--zc:var(${z.v})"><i>${z.n}</i>${zname(z)}</div>`).join('');
 
-  h+=`<div class="mg-gut mg-count"><b>${PROGRAMS.length}</b><span>running</span></div>`;
+  h+=`<div class="mg-gut mg-count"><b>${PROGRAMS.length}</b><span>${t('map.running')}</span></div>`;
   h+=ZONES.map(z=>{const n=cov[z.n].length;
     return `<div class="mg-num${n?'':' zero'}" style="--zc:var(${z.v})">${n}</div>`}).join('');
 
   FREQS.forEach(fq=>{
-    h+=`<div class="mg-gut mg-freq">${fq}</div>`;
+    h+=`<div class="mg-gut mg-freq">${freqLabel(fq)}</div>`;
     h+=ZONES.map(z=>{const items=inCell(z.n,fq);
       return `<div class="mg-cell" style="--zc:var(${z.v})">${items.length
         ? items.map(x=>`<button class="pchip${selProgram===x.pi?' is':''}" data-prog="${x.pi}" style="--zc:var(${z.v})">${esc(x.p.name)}</button>`).join('')
         : '<span class="mg-dash">&ndash;</span>'}</div>`}).join('');
   });
   h+='<div class="mg-gut mg-freq"></div>';
-  h+='<div class="mg-wide"><button class="mg-addb" data-newprog="open">+ Add a programme</button></div>';
+  h+=`<div class="mg-wide"><button class="mg-addb" data-newprog="open">${t('map.addprog')}</button></div>`;
 
   h+='<div class="mg-rule"></div>';
 
-  h+='<div class="mg-gut mg-title">People</div>';
-  h+=ZONES.map(z=>`<div class="mg-ch" style="--zc:var(${z.v})"><i>${z.n}</i>${z.name}</div>`).join('');
+  h+=`<div class="mg-gut mg-title">${t('map.people')}</div>`;
+  h+=ZONES.map(z=>`<div class="mg-ch" style="--zc:var(${z.v})"><i>${z.n}</i>${zname(z)}</div>`).join('');
 
-  h+=`<div class="mg-gut mg-count"><b id="cnt-tot">${tot}</b><span>students</span></div>`;
+  h+=`<div class="mg-gut mg-count"><b id="cnt-tot">${tot}</b><span>${t('today.students')}</span></div>`;
   h+=ZONES.map((z,i)=>named
       ? `<div class="mg-num${c[i]?'':' zero'}" style="--zc:var(${z.v})">${c[i]}</div>`
       : `<div class="mg-num edit" style="--zc:var(${z.v})">
-           <button class="stp" data-cnt="${i}:-1" aria-label="One fewer">&minus;</button>
+           <button class="stp" data-cnt="${i}:-1" aria-label="${plain(t('map.aria.fewer'))}">&minus;</button>
            <input class="cnv" id="cnv${i}" data-cntv="${i}" type="text" inputmode="numeric"
-                  value="${c[i]}" aria-label="How many at ${plain(z.name)}">
-           <button class="stp" data-cnt="${i}:1" aria-label="One more">+</button>
+                  value="${c[i]}" aria-label="${plain(t('map.aria.count',{ch:plain(zname(z))}))}">
+           <button class="stp" data-cnt="${i}:1" aria-label="${plain(t('map.aria.more'))}">+</button>
          </div>`).join('');
 
   if(named){
-    h+='<div class="mg-gut mg-freq">Names</div>';
+    h+=`<div class="mg-gut mg-freq">${t('map.names')}</div>`;
     h+=ZONES.map(z=>{const inz=STUDENTS.filter(x=>x.hist[NOW]===z.n);
       return `<div class="mg-cell" style="--zc:var(${z.v})">${inz.map(x=>{
         const d=x.hist[NOW]-(x.hist[1]||x.hist[NOW]);
-        const tag=!x.hist[1]?'<i class="mv">new</i>':d>0?`<i class="mv">+${d}</i>`:d<0?`<i class="mv back">${d}</i>`:'';
+        const tag=!x.hist[1]?`<i class="mv">${t('map.new')}</i>`:d>0?`<i class="mv">+${d}</i>`:d<0?`<i class="mv back">${d}</i>`:'';
         return `<button class="schip${selStudent===x.id?' is':''}" data-sel="${x.id}" style="--zc:var(${z.v})">${esc(x.name)}${tag}</button>`;
-      }).join('')}<button class="schip add" data-adding="${z.n}" aria-label="Add a student here">+</button></div>`}).join('');
+      }).join('')}<button class="schip add" data-adding="${z.n}" aria-label="${plain(t('map.aria.addhere'))}">+</button></div>`}).join('');
   }
 
   h+='</div></div>';
@@ -1790,8 +2311,8 @@ function mapGridHTML(){
      may make two challenges, so the row across can come to more than the
      number running. The paper form has the same property. */
   const sum=ZONES.reduce((t,z)=>t+cov[z.n].length,0);
-  h+=`<p class="mg-note">The programs you offer are above, the people you care for are below.${
-    sum>PROGRAMS.length?' A programme can make two challenges, so the numbers across add up to more than the number running.':''}</p>`;
+  h+=`<p class="mg-note">${t('map.note')}${
+    sum>PROGRAMS.length?' '+t('map.note.overlap'):''}</p>`;
   return h;
 }
 
@@ -1803,22 +2324,22 @@ function mapDetailHTML(){
     const x=STUDENTS.find(s2=>s2.id===selStudent);
     if(x) return `<div class="mdet">
       <div class="mdet-hd"><b>${esc(x.name)}</b>
-        <span>Coming since ${fmtShort(x.since)} &middot; ${monthsBetween(x.since,new Date().toISOString().slice(0,10))} months${x.knownBy?` &middot; ${esc(x.knownBy)} knows them`:' &middot; <b class="warn">nobody is following them</b>'}</span>
-        <button class="mdet-x" data-sel="${x.id}" aria-label="Close">&times;</button></div>
-      <div class="chip-move">${ZONES.map(t=>`<button class="mvb ${t.n===x.hist[NOW]?'is':''}" style="--zc:var(${t.v})" data-move="${x.id}:${t.n}" title="${plain(t.name)}">${t.n}</button>`).join('')}</div>
-      <div class="chip-act"><span>Move them to the furthest challenge they have reached</span><button data-drop="${x.id}">Remove</button></div>
+        <span>${t('mdet.since',{date:fmtShort(x.since)})} &middot; ${tn('span.months',monthsBetween(x.since,new Date().toISOString().slice(0,10)))}${x.knownBy?' &middot; '+t('mdet.knownby',{who:esc(x.knownBy)}):' &middot; <b class="warn">'+t('mdet.nobody')+'</b>'}</span>
+        <button class="mdet-x" data-sel="${x.id}" aria-label="${plain(t('learn.close'))}">&times;</button></div>
+      <div class="chip-move">${ZONES.map(t=>`<button class="mvb ${t.n===x.hist[NOW]?'is':''}" style="--zc:var(${t.v})" data-move="${x.id}:${t.n}" title="${plain(zname(t))}">${t.n}</button>`).join('')}</div>
+      <div class="chip-act"><span>${t('mdet.move')}</span><button data-drop="${x.id}">${t('common.remove')}</button></div>
     </div>`;
   }
   if(addingProgram) return `<div class="mdet">
-    <input class="pnin" id="newpr" placeholder="Programme name" autofocus>
-    <div class="chip-act"><button class="prim" data-newprog="go">Add</button><button data-newprog="cancel">Cancel</button></div></div>`;
+    <input class="pnin" id="newpr" placeholder="${plain(t('prog.name'))}" autofocus>
+    <div class="chip-act"><button class="prim" data-newprog="go">${t('common.add')}</button><button data-newprog="cancel">${t('common.cancel')}</button></div></div>`;
   if(selProgram!=null&&PROGRAMS[selProgram]){
     const p=PROGRAMS[selProgram], pi=selProgram;
     return `<div class="mdet">
       <input class="pnin" id="pn${pi}" value="${esc(p.name)}">
-      <div class="pfreq">${FREQS.map(fq=>`<button class="fq ${fq===p.freq?'is':''}" data-freq="${pi}:${fq}">${fq}</button>`).join('')}</div>
-      <div class="pinv">${ZONES.map(z=>`<button class="inv ${p.ch.includes(z.n)?'on':''}" style="--zc:var(${z.v})" data-inv="${pi}:${z.n}">${z.name}</button>`).join('')}</div>
-      <div class="chip-act"><span>Which challenges this programme actually makes</span><button class="prim" data-pdone="${pi}">Done</button><button data-pdrop="${pi}">Remove</button></div>
+      <div class="pfreq">${FREQS.map(fq=>`<button class="fq ${fq===p.freq?'is':''}" data-freq="${pi}:${fq}">${freqLabel(fq)}</button>`).join('')}</div>
+      <div class="pinv">${ZONES.map(z=>`<button class="inv ${p.ch.includes(z.n)?'on':''}" style="--zc:var(${z.v})" data-inv="${pi}:${z.n}">${zname(z)}</button>`).join('')}</div>
+      <div class="chip-act"><span>${t('prog.which')}</span><button class="prim" data-pdone="${pi}">${t('common.done')}</button><button data-pdrop="${pi}">${t('common.remove')}</button></div>
     </div>`;
   }
   return '';
@@ -1832,14 +2353,14 @@ function vMap(){ return hasNames()?vMapNamed():vMapOpen() }
 function vMapOpen(){
   const b=blanks(NOW);
   return `<div class="view"><div class="wrap">
-    <div class="eyebrow">Ministry Map</div>
-    <h1>Everything you run, and<br>everyone you have, <em>side by side</em></h1>
-    <p class="lede">Five challenges across the top. What you run above, who you have below. Read straight down a column and you can see where an invitation is being made with nobody there to hear it &mdash; or where people are waiting and nothing ever asks them.</p>
+    <div class="eyebrow">${t('map.eyebrow')}</div>
+    <h1>${t('map.title')}</h1>
+    <p class="lede">${t('map.lede')}</p>
 
     ${mapGridHTML()}
     ${mapDetailHTML()}
 
-    <div id="blanks-slot">${blanksHTML(b,MAP_BLANK_NOTE)}</div>
+    <div id="blanks-slot">${blanksHTML(b,MAP_BLANK_NOTE())}</div>
 
     ${askHTML()}
   </div></div>`;
@@ -1855,26 +2376,26 @@ function refreshCounts(){
   const tot=document.getElementById('cnt-tot');
   if(tot) tot.textContent=String(c.reduce((a,b)=>a+b,0));
   const slot=document.getElementById('blanks-slot');
-  if(slot) slot.innerHTML=blanksHTML(blanks(NOW),MAP_BLANK_NOTE);
+  if(slot) slot.innerHTML=blanksHTML(blanks(NOW),MAP_BLANK_NOTE());
 }
 
 function askHTML(){
   if(askedCoach) return `<div class="ask done">
-    <p>Someone from Josiah Venture in your country will be in touch. Nothing changes here until you have spoken to them.</p></div>`;
+    <p>${t('ask.done')}</p></div>`;
   return `<div class="ask">
-    <p class="ask-why">The map is not for us. It&rsquo;s for the conversation you&rsquo;ll have about it.</p>
+    <p class="ask-why">${t('ask.why')}</p>
     <div class="ask-row">
-      <span>Would you like someone to walk through this with you? It&rsquo;s free.</span>
-      <button class="cbtn solid" data-ask="go">Yes, get in touch</button>
+      <span>${t('ask.q')}</span>
+      <button class="cbtn solid" data-ask="go">${t('ask.go')}</button>
     </div>
   </div>`;
 }
 
 function vMapNamed(){
   return `<div class="view"><div class="wrap">
-    <div class="eyebrow">Ministry Map</div>
-    <h1>Everything you run, and<br>everyone you have, <em>side by side</em></h1>
-    <p class="lede">Five challenges across the top. What you run above, who you have below. Tap a name to move them &mdash; only once you have actually asked, and they have said so.</p>
+    <div class="eyebrow">${t('map.eyebrow')}</div>
+    <h1>${t('map.title')}</h1>
+    <p class="lede">${t('map.lede.named')}</p>
 
     ${(()=>{
       const byS=STUDENTS.filter(x=>x.came==='Invited by a student').length;
@@ -1887,17 +2408,17 @@ function vMapNamed(){
       const longest=waiting[0];
       return `<div class="mapstats">
         <div class="ms"><b>${byS}<span class="of">/${STUDENTS.length}</span></b>
-          <span>came because another student invited them</span>
-          <em>Your check-up asks whether students invite friends without being asked. This answers it from the map instead of from memory.</em></div>
-        <div class="ms ${med>9?'warn':''}"><b>${med===null?'&mdash;':med}<span class="of"> mo</span></b>
-          <span>from first coming to being asked to give their life to Christ</span>
-          <em>Typical wait across the ${asked.length} students who have been asked. Only the date they first came makes this knowable.</em></div>
+          <span>${t('ms.invited')}</span>
+          <em>${t('ms.invited.why')}</em></div>
+        <div class="ms ${med>9?'warn':''}"><b>${med===null?'&mdash;':med}<span class="of"> ${t('ms.mo')}</span></b>
+          <span>${t('ms.wait')}</span>
+          <em>${tn('ms.wait.why',asked.length)}</em></div>
         <div class="ms ${waiting.length?'warn':''}"><b>${waiting.length}</b>
-          <span>${waiting.length===1?'student has never been asked':'students have never been asked'}</span>
-          <em>${longest?`${esc(longest.name)} has been coming ${longest.mo} months.`:'Everyone has been asked.'}</em></div>
+          <span>${tn('ms.neverasked',waiting.length)}</span>
+          <em>${longest?tn('ms.longest',longest.mo,{who:esc(longest.name)}):t('ms.allasked')}</em></div>
         <div class="ms ${unknown.length?'warn':''}"><b>${unknown.length}</b>
-          <span>${unknown.length===1?'student nobody is following':'students nobody is following'}</span>
-          <em>${unknown.length?unknown.map(x=>esc(x.name)).join(', '):'Every student has a leader who knows them.'}</em></div>
+          <span>${tn('ms.nofollow',unknown.length)}</span>
+          <em>${unknown.length?unknown.map(x=>esc(x.name)).join(', '):t('ms.allfollowed')}</em></div>
       </div>`})()}
 
     ${mapGridHTML()}
@@ -1928,14 +2449,14 @@ function learnMoreHTML(){
     <div class="lm-list">${ch
       ? ZONES.map(z=>`<div class="lm" style="--zc:var(${z.v})">
           <div class="lm-n">${z.n}</div>
-          <div><div class="lm-name">${z.name}</div><div class="lm-say">${z.ask}</div></div>
+          <div><div class="lm-name">${zname(z)}</div><div class="lm-say">${zask(z)}</div></div>
         </div>`).join('')
       : PHASES.map(p=>{const T=TOOLS[p.tool];
           return `<div class="lm" style="--zc:var(--phase)">
             <div class="lm-n">${p.n}</div>
-            <div><div class="lm-name">${p.name}</div>
-              <div class="lm-say"><b>${p.tool}</b> &middot; ${T.spells.join(' &middot; ')}</div>
-              <div class="lm-meta">${t('learn.ph.who')} ${p.who} &middot; ${t('learn.ph.span')} ${p.span}<sup class="ph-ast">*</sup></div>
+            <div><div class="lm-name">${pfull(p)}</div>
+              <div class="lm-say"><b>${p.tool}</b> &middot; ${T.spells.map(spellLabel).join(' &middot; ')}</div>
+              <div class="lm-meta">${t('learn.ph.who')} ${pwho(p)} &middot; ${t('learn.ph.span')} ${pspan(p)}<sup class="ph-ast">*</sup></div>
             </div></div>`}).join('')}</div>
     ${ch?'':`<p class="ph-note"><b>*</b> ${t('jesus.spans.note').replace(/^<b>\*<\/b>\s*/,'')}</p>`}
   </div></div>`;
@@ -1951,22 +2472,23 @@ function toolInfoHTML(){
   const qs=Q.filter(q=>isAcr?q.phase===T.phase&&T.words.includes(q.cat):q.cat===toolInfo);
   const notYet=qs.filter(q=>ansIn(R,q)<A_TRUE);
   return `<div class="tipwrap" data-tool="close"><div class="tip" role="dialog" aria-label="${isAcr?acr:toolInfo}">
-    <button class="tip-x" data-tool="close" aria-label="Close">&times;</button>
-    <div class="eyebrow">${pname(ph)} &middot; JV training tool</div>
-    <div class="tip-hd">${isAcr?acr:toolInfo}</div>
+    <button class="tip-x" data-tool="close" aria-label="${plain(t('learn.close'))}">&times;</button>
+    <div class="eyebrow">${t('tool.eyebrow',{phase:pname(ph)})}</div>
+    <div class="tip-hd">${isAcr?acr:catLabel(toolInfo)}</div>
     ${isAcr
-      ? `<div class="tip-spells">${T.spells.map(w=>`<span>${w}</span>`).join('')}</div>
+      ? `<div class="tip-spells">${T.spells.map(w=>`<span>${spellLabel(w)}</span>`).join('')}</div>
 `
-      : `<p class="tip-line quiet">Measured in ${pname(ph)}, alongside ${T.words.filter(w=>w!==toolInfo).join(', ')}.</p>`}
+      : `<p class="tip-line quiet">${t('tool.measured',{phase:pname(ph),
+             others:T.words.filter(w=>w!==toolInfo).map(catLabel).join(', ')})}</p>`}
     <div class="eyebrow tip-sec">${isAcr
-      ? `The ${qs.length} statements of this phase`
-      : `${qs.length} statement${qs.length===1?'':'s'} measure${qs.length===1?'s':''} this`}</div>
+      ? t('tool.sec.phase',{n:qs.length})
+      : tn('tool.sec.cat',qs.length)}</div>
     <ul class="tip-qs">${qs.map(q=>{const a=ansIn(R,q);
-      return `<li class="${a>=A_TRUE?'yes':a===A_NONE?'no':'part'}"><i></i><span>${q.t}</span>
-        <em>${isAcr?`${q.cat} &middot; `:''}${SCALE[a].t}</em></li>`}).join('')}</ul>
+      return `<li class="${a>=A_TRUE?'yes':a===A_NONE?'no':'part'}"><i></i><span>${qtext(q)}</span>
+        <em>${isAcr?`${catLabel(q.cat)} &middot; `:''}${scaleLabel(a)}</em></li>`}).join('')}</ul>
     ${notYet.length
-      ? `<p class="tip-do"><b>Where to start.</b> ${notYet.length===1?'This one is':`These ${notYet.length} are`} not yet true of you. ${acr} is the tool you already have for ${notYet.length===1?'it':'them'}.</p>`
-      : `<p class="tip-do"><b>All of these are true of you.</b> Nothing here is the thing holding this phase back.</p>`}
+      ? `<p class="tip-do">${tn('tool.start',notYet.length,{acr})}</p>`
+      : `<p class="tip-do">${t('tool.allgood')}</p>`}
   </div></div>`;
 }
 
@@ -1983,21 +2505,21 @@ function vCheck(){
 
   if(quizIx===0){
     return `<div class="view"><div class="wrap"><div class="q-shell">
-      <div class="eyebrow">Ministry check-up · step 1 of 2</div>
-      <h1>You have already done <em>half of this</em></h1>
-      <p class="lede">This part is about your students and what you run, and it all comes off your map — so there is nothing to count. Have a look and make sure it matches what you would say out loud.</p>
-      <div class="eyebrow" style="margin-top:26px;margin-bottom:8px">All of this comes off your map</div>
+      <div class="eyebrow">${t('check.eyebrow')}</div>
+      <h1>${t('check.title')}</h1>
+      <p class="lede">${t('check.lede')}</p>
+      <div class="eyebrow" style="margin-top:26px;margin-bottom:8px">${t('check.frommap')}</div>
       <div class="known">
-        <div class="known-row"><div class="known-k">Students in your group</div><div class="known-v">${tot}</div></div>
-        <div class="known-row stacked"><div class="known-k">People</div>
+        <div class="known-row"><div class="known-k">${t('check.k.students')}</div><div class="known-v">${tot}</div></div>
+        <div class="known-row stacked"><div class="known-k">${t('check.k.people')}</div>
           <div class="known-v"><div class="chal-stack">${ZONES.map((z,i)=>
-            `<div class="chal-row"><span class="chal-dot" style="background:var(${z.v})"></span><span class="chal-n">${z.name}</span><b>${c[i]}</b></div>`).join('')}</div></div></div>
-        <div class="known-row"><div class="known-k">Programs</div><div class="known-v">${PROGRAMS.length} running, covering ${madeBy} of the 5 challenges</div></div>
-        <div class="known-row"><div class="known-k">Not covered</div><div class="known-v">${neverMade.length
-          ? `${neverMade.map(z=>z.name).join(' · ')} <span class="known-why">&mdash; none of the programs you offer specifically develop people in ${neverMade.length===1?'this challenge':'these challenges'}</span>`
-          : 'Nothing &mdash; every challenge has something that asks it'}</div></div>
+            `<div class="chal-row"><span class="chal-dot" style="background:var(${z.v})"></span><span class="chal-n">${zname(z)}</span><b>${c[i]}</b></div>`).join('')}</div></div></div>
+        <div class="known-row"><div class="known-k">${t('check.k.programs')}</div><div class="known-v">${t('check.v.programs',{n:PROGRAMS.length,made:madeBy})}</div></div>
+        <div class="known-row"><div class="known-k">${t('check.k.notcovered')}</div><div class="known-v">${neverMade.length
+          ? tn('check.v.notcovered',neverMade.length,{list:neverMade.map(zname).join(' · ')})
+          : t('check.v.allcovered')}</div></div>
       </div>
-      <p class="note" style="margin-top:18px">If something is wrong here, change it on your map and it changes here too.</p>
+      <p class="note" style="margin-top:18px">${t('check.wrong')}</p>
       <p class="check-next">${tn('check.next',Q.length)}</p>
       <div style="margin-top:24px;display:flex;gap:10px">
         <button class="btn" data-q="1">${t('check.go')}</button>
@@ -2011,12 +2533,12 @@ function vCheck(){
   const q=Q[i], ph=PHASES[q.phase-1];
   return `<div class="view"><div class="wrap"><div class="q-shell">
     <div class="q-prog"><i style="width:${(i/Q.length)*100}%"></i></div>
-    <div class="q-meta"><span>${pname(ph)} · ${q.cat}</span><span>${i+1} / ${Q.length}</span></div>
-    <div class="q-text">${q.t}</div>
+    <div class="q-meta"><span>${pname(ph)} · ${catLabel(q.cat)}</span><span>${i+1} / ${Q.length}</span></div>
+    <div class="q-text">${qtext(q)}</div>
     <div class="q-opts">
-      ${SCALE.map(o=>`<button class="opt" data-ans="${o.v}"><span class="k">${o.k}</span>${o.t}</button>`).join('')}
+      ${SCALE.map(o=>`<button class="opt" data-ans="${o.v}"><span class="k">${o.k}</span>${t(o.key)}</button>`).join('')}
     </div>
-    <p class="note" style="margin-top:22px">Answer for your group as it actually is right now, not how you hope it will be.</p>
+    <p class="note" style="margin-top:22px">${t('check.answernote')}</p>
   </div></div></div>`;
 }
 
@@ -2031,20 +2553,23 @@ function vReports(){
     let delta='';
     if(prev){
       const bits=[];
-      if(ph>pph) bits.push(`<b class="up">stepped up from ${pname(PHASES[pph-1])}</b>`);
-      else if(ph<pph) bits.push(`<b class="dn">back to ${pname(PHASES[ph-1])}</b>`);
-      else bits.push('same phase');
-      if(dt>0) bits.push(`+${dt} students`); else if(dt<0) bits.push(`${dt} students`);
-      const g=reportGist(r); if(g.weakest) bits.push(`weakest: ${g.weakest}`);
+      /* Independent clauses in a list, not one sentence cut into pieces —
+         each is whole and a translator can rewrite it without the others. */
+      if(ph>pph) bits.push(`<b class="up">${t('reports.d.up',{phase:pname(PHASES[pph-1])})}</b>`);
+      else if(ph<pph) bits.push(`<b class="dn">${t('reports.d.down',{phase:pname(PHASES[ph-1])})}</b>`);
+      else bits.push(t('reports.d.same'));
+      if(dt>0) bits.push(tn('reports.d.more',dt)); else if(dt<0) bits.push(tn('reports.d.fewer',-dt));
+      const g=reportGist(r); if(g.weakest) bits.push(t('reports.d.weakest',{cat:catLabel(g.weakest)}));
       delta=bits.join(' · ');
-    } else { const g0=reportGist(r); delta='first check-up'+(g0.weakest?` &middot; weakest: ${g0.weakest}`:''); }
+    } else { const g0=reportGist(r);
+      delta=t('reports.d.first')+(g0.weakest?' &middot; '+t('reports.d.weakest',{cat:catLabel(g0.weakest)}):''); }
     return {r,i,sc,ph,tot,delta};
   }).reverse();
 
   return `<div class="view"><div class="wrap">
-    <div class="eyebrow">${REPORTS.length} check-ups kept</div>
-    <h1>Every time you check in,<br>you keep <em>the whole picture</em></h1>
-    <p class="lede">Nothing gets written over. Take a check-up whenever it helps — every one is kept.</p>
+    <div class="eyebrow">${tn('reports.eyebrow',REPORTS.length)}</div>
+    <h1>${t('reports.title')}</h1>
+    <p class="lede">${t('reports.lede')}</p>
     <div style="margin-top:26px;display:flex;flex-direction:column;gap:10px">
       ${rows.map(x=>`<button class="repcard ${x.i===REPORTS.length-1?'newest':''}" data-open="${x.i}">
         <div class="rc-date"><span class="d">${fmtDate(x.r)}</span><span class="t">${x.r.t}</span></div>
@@ -2052,11 +2577,11 @@ function vReports(){
           <div class="rc-phase"><i></i>${pname(PHASES[x.ph-1])}</div>
           <div class="rc-delta">${x.delta}</div>
         </div>
-        <div class="rc-n"><b>${x.tot}</b><span>students</span></div>
-        <div class="rc-go">Open &rarr;</div>
+        <div class="rc-n"><b>${x.tot}</b><span>${t('today.students')}</span></div>
+        <div class="rc-go">${t('today.open')}</div>
       </button>`).join('')}
     </div>
-    <p class="note" style="margin-top:18px">Each one keeps what was true the day you took it, so you can look back and see how far your group has come.</p>
+    <p class="note" style="margin-top:18px">${t('reports.note')}</p>
   </div></div>`;
 }
 
@@ -2074,34 +2599,38 @@ function vReport(){
   const gapZone=ZONES.find(z=>!cov[z.n].length);
   const acts=[];
   if(weakFreq){const wz=weakFreq.z, only=cov[wz.n][0];
-    acts.push({b:`<b>Students are only ${wz.verb} once a year.</b> ${c[wz.n-1]+c[0]} of them have not been asked yet, and ${only.name} is the only time it happens. That invitation does not need a programme — it needs someone willing to make it more often than once a year.`,
-    w:`instrument: <span>CPR &mdash; ${band(cats.CPR.v).s}</span> &middot; map: ${only.name} runs ${only.freq.toLowerCase()}`});}
-  if(gapZone) acts.push({b:`<b>You never actually ask anyone to go.</b> ${c[4]} student has been sent, and ${c[3]} more have reached Follow Me &amp; Fish &mdash; but none of them has been asked to lead something of their own. That is a conversation, not a programme.`,
-    w:`instrument: <span>Entrust &mdash; ${band(cats.Entrust.v).s}</span> &middot; map: ${zoneCounts(R.r)[3]} at Follow Me &amp; Fish, none sent`});
+    /* TRANSLATION TRAP: toLowerCase on a frequency word is an English
+       habit. German capitalises nouns and Czech declines them, so a
+       translator may need the frequency to arrive unchanged — the key
+       carries the whole clause so they can rewrite around it. */
+    acts.push({b:t('report.act.freq',{verb:zverb(wz), n:c[wz.n-1]+c[0], prog:only.name}),
+    w:t('report.act.freq.w',{band:slugLabel(cats.CPR.v), prog:only.name, freq:only.freq.toLowerCase()})});}
+  if(gapZone) acts.push({b:t('report.act.gap',{sent:c[4], ready:c[3]}),
+    w:t('report.act.gap.w',{band:slugLabel(cats.Entrust.v), ready:zoneCounts(R.r)[3]})});
   const used=acts.map(a=>a.w).join(' ');
   const fresh=low.find(k=>!used.includes(k[0]))||low[0];
-  acts.push({b:`<b>${fresh[0]} is your weakest untouched area &mdash; ${band(fresh[1].v).s}.</b> That is the work of ${PHASES[ph-1].name} &mdash; the phase you have just entered, not a failure of the one you left.`,
-    w:`instrument: ${fresh[0]} from ${fresh[1].n} statement${fresh[1].n>1?'s':''}, lowest of ${ranked.length}`});
+  acts.push({b:t('report.act.weak',{cat:catLabel(fresh[0]), band:slugLabel(fresh[1].v), phase:pfull(PHASES[ph-1])}),
+    w:tn('report.act.weak.w',fresh[1].n,{cat:catLabel(fresh[0]), of:ranked.length})});
 
   return `<div class="view"><div class="wrap">
-    <button class="backlink" data-go="reports">&larr; All reports</button>
+    <button class="backlink" data-go="reports">${t('report.back')}</button>
 
     <div class="cover">
-      <div class="cover-date">${fmtDate(R)} &middot; ${R.t}${openIx===REPORTS.length-1?' <span class="pill">LATEST</span>':''}</div>
+      <div class="cover-date">${fmtDate(R)} &middot; ${R.t}${openIx===REPORTS.length-1?` <span class="pill">${t('report.latest')}</span>`:''}</div>
       <div class="cover-grid">
-        <div class="cv"><b>${tot}</b><span>students on the map</span></div>
-        <div class="cv"><b class="ph">${pname(PHASES[ph-1])}</b><span>phase ${ph} of 5${prev&&ph>pph?` &middot; up from ${pname(PHASES[pph-1])}`:''}</span></div>
-        <div class="cv"><b>${c[3]+c[4]}</b><span>at Follow Me &amp; Fish or beyond</span></div>
-        <div class="cv"><b>${ZONES.filter(z=>cov[z.n].length).length}<span class="of">/5</span></b><span>invitations your programs make</span></div>
+        <div class="cv"><b>${tot}</b><span>${t('report.cover.students')}</span></div>
+        <div class="cv"><b class="ph">${pname(PHASES[ph-1])}</b><span>${t('report.cover.phase',{n:ph})}${prev&&ph>pph?' &middot; '+t('report.cover.upfrom',{prev:pname(PHASES[pph-1])}):''}</span></div>
+        <div class="cv"><b>${c[3]+c[4]}</b><span>${t('report.cover.beyond')}</span></div>
+        <div class="cv"><b>${ZONES.filter(z=>cov[z.n].length).length}<span class="of">/5</span></b><span>${t('report.cover.invites')}</span></div>
       </div>
       <div class="cover-bar">${c.map((n,i)=>n?`<div style="flex:${n};background:var(${ZONES[i].v})"></div>`:'').join('')}</div>
     </div>
 
     <div class="sec">
-      <div class="sec-hd"><h2>What phase you are in</h2><span class="n">TAP A LAYER</span></div>
+      <div class="sec-hd"><h2>${t('report.sec.phase')}</h2><span class="n">${t('report.tap')}</span></div>
       <div class="card">
         ${phaseCakeHTML(sc,ph,true)}
-        <p class="note" style="margin-top:12px">Each layer is a phase, and how long you have been in it. ${selPhase?'':'Tap any layer to read what that phase is about, what is true of you in it, and its score.'}</p>
+        <p class="note" style="margin-top:12px">${t('today.plinth.phase')}. ${selPhase?'':t('report.cake.hint')}</p>
         ${selPhase?phaseWhy(selPhase,ph,R):''}
       </div>
     </div>
@@ -2109,48 +2638,48 @@ function vReport(){
     ${(()=>{const tk=PHASES[ph-1].tool,T=TOOLS[tk];
       const parts=T.words.map(w=>[w,cats[w]]).filter(x=>x[1]);
       return `<div class="sec">
-      <div class="sec-hd"><h2>How ${pname(PHASES[ph-1])} works</h2><span class="n">JV TRAINING TOOL</span></div>
+      <div class="sec-hd"><h2>${t('report.how',{phase:pname(PHASES[ph-1])})}</h2><span class="n">${t('report.tool.tag')}</span></div>
       <div class="toolbox">
-        <div class="tb-head"><button class="tb-acr" data-tool="${tk}" title="What ${tk} stands for">${tk}</button><p>${T.spells.join(' &middot; ')}</p></div>
-        <p class="tb-scale">How often each part of this phase actually happens, read from your own answers.</p>
+        <div class="tb-head"><button class="tb-acr" data-tool="${tk}" title="${plain(t('report.tool.title',{tool:tk}))}">${tk}</button><p>${T.spells.map(spellLabel).join(' &middot; ')}</p></div>
+        <p class="tb-scale">${t('report.tool.scale')}</p>
         <div class="tb-words">
-          ${parts.map(x=>{const b=band(x[1].v);return `<button class="tw ${b.k}" data-tool="${x[0]}"><div class="tw-w">${x[0]}${isTool(x[0])&&T.letters.length===1&&x[0]!==tk?` <span class="acrtag mine">${tk}</span>`:''}</div>
+          ${parts.map(x=>{const b=band(x[1].v);return `<button class="tw ${b.k}" data-tool="${x[0]}"><div class="tw-w">${catLabel(x[0])}${isTool(x[0])&&T.letters.length===1&&x[0]!==tk?` <span class="acrtag mine">${tk}</span>`:''}</div>
             ${pips(x[1].v)}<div class="tw-v">${doingBand(x[1].v)}</div>
-            <div class="tw-n">${x[1].n} statement${x[1].n>1?'s':''}</div></button>`}).join('')}
+            <div class="tw-n">${tn('report.statements',x[1].n)}</div></button>`}).join('')}
         </div>
       </div>
       ${(()=>{const w=parts.slice().sort((a,b)=>a[1].v-b[1].v)[0];
         if(!w) return '';
-        return `<p class="note" style="margin-top:12px">Weakest part: <b>${w[0]}</b>. ${
+        return `<p class="note" style="margin-top:12px">${t('report.weakest',{part:catLabel(w[0])})} ${
           w[0]===tk
-            ? `${tk} is the tool for this phase &mdash; ${T.spells.join(', ').toLowerCase()}. You already have it; this is the part of the phase you are furthest from, so it is the tool to go back to rather than something new to learn.`
+            ? t('report.weakest.istool',{tool:tk, spells:T.spells.map(spellLabel).join(', ').toLowerCase()})
           : isTool(w[0])
-            ? `That is one part of ${tk}, the tool for this phase. The tool is the answer, not the diagnosis.`
-            : `${tk} is the tool for this phase. This part is measured beside it, and it is the one you are furthest from.`}</p>`})()}
+            ? t('report.weakest.partof',{tool:tk})
+            : t('report.weakest.beside',{tool:tk})}</p>`})()}
     </div>`})()}
 
     <div class="sec">
-      <div class="sec-hd"><h2>Do this next</h2><span class="n">FROM BOTH SOURCES</span></div>
+      <div class="sec-hd"><h2>${t('report.donext')}</h2><span class="n">${t('report.bothsources')}</span></div>
       ${acts.map((a,ix)=>`<div class="act"><div class="num">0${ix+1}</div><div class="bd">${a.b}<div class="why">${a.w}</div></div></div>`).join('')}
     </div>
 
     <div class="sec">
-      <div class="sec-hd"><h2>Questions worth sitting with</h2><span class="n">COACH</span></div>
+      <div class="sec-hd"><h2>${t('report.questions')}</h2><span class="n">${t('report.coachtag')}</span></div>
       ${coachHTML()}
     </div>
 
     <div class="sec">
-      <div class="sec-hd"><h2>Where each invitation gets made</h2><span class="n">MAP DATA &mdash; NOT RE-ENTERED</span></div>
+      <div class="sec-hd"><h2>${t('report.invites')}</h2><span class="n">${t('report.mapdata')}</span></div>
       <div class="zonebar">
         ${ZONES.map((z,i)=>`<div class="zcol" style="--zc:var(${z.v})">
-          <div class="zhd"><div class="zname">${z.name}</div><div class="zcount">${c[i]}</div></div>
-          <div class="zbody">${cov[z.n].length?cov[z.n].map(p=>`<div class="chip"><span>${p.name}</span><span class="mv ${p.freq==='Yearly'?'back':''}">${p.freq}</span></div>`).join(''):'<div class="chip" style="background:none;box-shadow:inset 0 0 0 1.5px var(--ink-15);color:var(--ink-45);font-style:italic">not covered</div>'}</div>
+          <div class="zhd"><div class="zname">${zname(z)}</div><div class="zcount">${c[i]}</div></div>
+          <div class="zbody">${cov[z.n].length?cov[z.n].map(p=>`<div class="chip"><span>${p.name}</span><span class="mv ${p.freq==='Yearly'?'back':''}">${freqLabel(p.freq)}</span></div>`).join(''):`<div class="chip" style="background:none;box-shadow:inset 0 0 0 1.5px var(--ink-15);color:var(--ink-45);font-style:italic">${t('report.notcovered')}</div>`}</div>
         </div>`).join('')}
       </div>
     </div>
 
     <div class="sec">
-      <div class="sec-hd"><h2>Every category</h2><span class="n">${ranked.length} MEASURED</span></div>
+      <div class="sec-hd"><h2>${t('report.every')}</h2><span class="n">${t('report.measured',{n:ranked.length})}</span></div>
       ${(()=>{
         /* Grouped by phase, and inside a phase in the tool's own order —
            so REST reads Restructure, Entrust, Support, Train. Sorting the
@@ -2160,7 +2689,7 @@ function vReport(){
         const order=[]; PHASES.forEach(ps=>TOOLS[ps.tool].words.forEach(w=>order.push(w)));
         return order.filter(w=>cats[w]).map(w=>[w,cats[w]]);})()
         .map(k=>{const b=band(k[1].v),acr=CAT_TOOL[k[0]],mine=CAT_PHASE[k[0]]===ph;
-        return `<div class="bar ${b.k}"><div class="lb">${k[0]}${acr?`<span class="acrtag ${mine?'mine':''}">${acr}</span>`:''}${mine?'<span class="tag">your phase</span>':''}</div>${pips(k[1].v)}<div class="vl">${b.l}</div></div>`}).join('')}
+        return `<div class="bar ${b.k}"><div class="lb">${catLabel(k[0])}${acr?`<span class="acrtag ${mine?'mine':''}">${acr}</span>`:''}${mine?`<span class="tag">${t('report.yourphase')}</span>`:''}</div>${pips(k[1].v)}<div class="vl">${bandLabel(k[1].v)}</div></div>`}).join('')}
     </div>
   </div></div>`;
 }
@@ -2217,51 +2746,51 @@ function phaseWhy(n,cur,R){
   const p=PHASES[n-1], st=STORY[n];
   const qs=Q.filter(q=>q.phase===n).map(q=>({...q,a:ansIn(R,q)}));
   const tiers=[
-    {k:'true', hd:'True of you',        list:qs.filter(q=>q.a>=A_TRUE)},
-    {k:'part', hd:'Starting to be true',list:qs.filter(q=>q.a===A_LITTLE)},
-    {k:'not',  hd:'Not yet true',       list:qs.filter(q=>q.a===A_NONE)}
+    {k:'true', hd:t('phase.tf.true'), list:qs.filter(q=>q.a>=A_TRUE)},
+    {k:'part', hd:t('phase.tf.part'), list:qs.filter(q=>q.a===A_LITTLE)},
+    {k:'not',  hd:t('phase.tf.not'),  list:qs.filter(q=>q.a===A_NONE)}
   ];
   const prev=n>1?Q.filter(q=>q.phase===n-1).map(q=>({...q,a:ansIn(R,q)})).sort((a,b)=>b.a-a.a).slice(0,2):[];
   const sc=scoresOf(R);
 
   let stance;
-  if(n===cur) stance='This is where you are now.';
-  else if(n<cur) stance='You have come through this.';
-  else stance=`Not yet &mdash; this is on the other side of ${pname(PHASES[cur-1])}.`;
+  if(n===cur) stance=t('phase.stance.now');
+  else if(n<cur) stance=t('phase.stance.past');
+  else stance=t('phase.stance.ahead',{phase:pname(PHASES[cur-1])});
 
   const tk=p.tool, T=TOOLS[tk];
   return `<div class="why-panel">
     <div class="ph-head">
-      <div class="ph-essence">&ldquo;${st.essence}&rdquo;<sup class="ph-ast" title="Placeholder wording">*</sup></div>
-      <div class="ph-stance">${stance} ${sc[n].toFixed(1)} out of 10.</div>
+      <div class="ph-essence">&ldquo;${st.essence}&rdquo;<sup class="ph-ast" title="${plain(t('phase.ast'))}">*</sup></div>
+      <div class="ph-stance">${stance} ${t('phase.outof',{score:sc[n].toFixed(1)})}</div>
     </div>
     <div class="ph-meta">
-      <span><b>${tk}</b>${T.spells.join(' &middot; ')}</span>
-      <span><b>Aimed at</b>${p.who}</span>
-      <span><b>Typically</b>${p.span}<sup class="ph-ast">*</sup></span>
+      <span><b>${tk}</b>${T.spells.map(spellLabel).join(' &middot; ')}</span>
+      <span><b>${t('learn.ph.who')}</b>${pwho(p)}</span>
+      <span><b>${t('learn.ph.span')}</b>${pspan(p)}<sup class="ph-ast">*</sup></span>
     </div>
 
     <p class="ph-about">${st.about}<sup class="ph-ast">*</sup></p>
-    ${st.turn?`<div class="ph-turn"><span>The turn<sup class="ph-ast">*</sup></span>${st.turn}</div>`:''}
+    ${st.turn?`<div class="ph-turn"><span>${t('phase.turn')}<sup class="ph-ast">*</sup></span>${st.turn}</div>`:''}
 
     <div class="tf-grid">
-      ${tiers.map(t=>`<div>
-        <div class="tf-hd ${t.k}">${t.hd}<span>${t.list.length}</span></div>
-        ${t.list.length?t.list.map(q=>`<div class="tf ${t.k}">${q.t}</div>`).join(''):'<div class="tf none">&mdash;</div>'}
+      ${tiers.map(tr=>`<div>
+        <div class="tf-hd ${tr.k}">${tr.hd}<span>${tr.list.length}</span></div>
+        ${tr.list.length?tr.list.map(q=>`<div class="tf ${tr.k}">${qtext(q)}</div>`).join(''):'<div class="tf none">&mdash;</div>'}
       </div>`).join('')}
     </div>
 
     ${prev.length?`<div class="ph-carry">
-      <div class="eyebrow">Strongest in ${pname(PHASES[n-2])}, the phase before</div>
-      ${prev.map(q=>`<div class="carry-line">${q.t}</div>`).join('')}
+      <div class="eyebrow">${t('phase.carry',{phase:pname(PHASES[n-2])})}</div>
+      ${prev.map(q=>`<div class="carry-line">${qtext(q)}</div>`).join('')}
     </div>`:''}
 
     <div class="ph-foot">
-      <div><div class="eyebrow">Where this goes wrong<sup class="ph-ast">*</sup></div><p>${st.risk}</p></div>
-      <div><div class="eyebrow">${n===5?'When you are here':`How you know you have finished ${pname(p)}`}<sup class="ph-ast">*</sup></div><p>${st.door}</p></div>
+      <div><div class="eyebrow">${t('phase.wrong')}<sup class="ph-ast">*</sup></div><p>${st.risk}</p></div>
+      <div><div class="eyebrow">${n===5?t('phase.here'):t('phase.finished',{phase:pname(p)})}<sup class="ph-ast">*</sup></div><p>${st.door}</p></div>
     </div>
 
-    <p class="ph-note"><b>*</b> Placeholder wording, written for this prototype &mdash; not JV&rsquo;s. These parts need the real text.</p>
+    <p class="ph-note">${t('phase.note')}</p>
   </div>`;
 }
 
@@ -2288,6 +2817,9 @@ function coachPayload(){
     phase:P.name, aimedAt:P.who,
     tool:{acronym:P.tool, isLetterOfTool:T.letters,
           parts:T.words.map(w=>cats[w]?`${w}: ${band(cats[w].v).l.toLowerCase()} (from ${cats[w].n} statement${cats[w].n>1?'s':''})`:w)},
+    /* English on purpose: the coach prompt quotes the instrument as JV
+       wrote it, so the model reasons against one fixed wording whatever
+       language the leader is reading in. */
     trueOfUs:Q.filter(q=>q.phase===ph&&ansIn(R,q)>=A_TRUE).map(q=>q.t),
     notYetTrue:Q.filter(q=>q.phase===ph&&ansIn(R,q)===A_NONE).map(q=>q.t),
     furthestInvitationSaidYesTo:ZONES.map((z,i)=>({invitation:plain(z.name),means:plain(z.ask),students:c[i]})),
@@ -2360,20 +2892,20 @@ function coachHTML(){
   const list=st.questions||COACH_DEMO;
   return `<div class="coach">
     <div class="coach-top">
-      <div class="eyebrow">${st.questions?'Written from your answers and your students together':'Example questions &mdash; not generated yet'}</div>
-      <button class="cbtn" data-coach="run" ${st.loading?'disabled':''}>${st.loading?'Thinking&hellip;':(st.questions?'Ask again':'Read my report')}</button>
+      <div class="eyebrow">${st.questions?t('coach.real'):t('coach.demo')}</div>
+      <button class="cbtn" data-coach="run" ${st.loading?'disabled':''}>${st.loading?t('coach.thinking'):(st.questions?t('coach.again'):t('coach.run'))}</button>
     </div>
-    ${st.loading?'<div class="cq skel">Reading your answers and your roster together&hellip;</div>':
+    ${st.loading?`<div class="cq skel">${t('coach.loading')}</div>`:
       list.map(x=>`<div class="cq">${x.q}<span class="from">${x.from}</span></div>`).join('')}
-    ${st.error?`<div class="cerr">Could not reach the coach &mdash; ${st.error}. The questions above are the built-in examples.</div>`:''}
+    ${st.error?`<div class="cerr">${t('coach.error',{why:st.error})}</div>`:''}
     <div class="cask">
-      <input id="cq" type="text" placeholder="Or ask your own question about this report&hellip;" ${st.asking?'disabled':''}>
-      <button class="cbtn solid" data-coach="ask" ${st.asking?'disabled':''}>${st.asking?'&hellip;':'Ask'}</button>
+      <input id="cq" type="text" placeholder="${plain(t('coach.ask.ph'))}" ${st.asking?'disabled':''}>
+      <button class="cbtn solid" data-coach="ask" ${st.asking?'disabled':''}>${st.asking?'&hellip;':t('coach.ask')}</button>
     </div>
     ${st.answer?`<div class="canswer">${st.answer.split('\n').filter(Boolean).map(p=>`<p>${p}</p>`).join('')}</div>`:''}
     <div class="cfoot">
-      <label><input type="checkbox" data-coach="names" ${CONFIG.sendNames?'checked':''}> Send student names</label>
-      <span>${CONFIG.sendNames?'Names are included so questions can be specific.':'Names replaced with &ldquo;a student&rdquo; before sending.'}</span>
+      <label><input type="checkbox" data-coach="names" ${CONFIG.sendNames?'checked':''}> ${t('coach.names')}</label>
+      <span>${CONFIG.sendNames?t('coach.names.on'):t('coach.names.off')}</span>
     </div>
   </div>`;
 }
@@ -2417,73 +2949,79 @@ function vTime(){
   const stat=(n,l,sub)=>`<div class="jstat"><b>${n}</b><span>${l}</span>${sub?`<em>${sub}</em>`:''}</div>`;
 
   return `<div class="view"><div class="wrap">
-    <div class="eyebrow">${fmtDate(F)} &rarr; ${fmtDate(L)} &middot; ${months} months &middot; ${REPORTS.length} check-ups</div>
-    <h1>From ${t0} students to ${t1},<br>and Foundation to <em>${pname(PHASES[lPh-1])}</em>.</h1>
+    <div class="eyebrow">${t('time.eyebrow',{from:fmtDate(F), to:fmtDate(L),
+        months:tn('span.months',months), checks:tn('time.checkups',REPORTS.length)})}</div>
+    <!-- Was: "and Foundation to X", with Foundation hard-coded where the
+         phase the year STARTED in belongs. Only right when the year began in
+         Foundation, which the demo data happens to do — so it was invisible. -->
+    <h1>${t('time.title',{t0, t1, from:pname(PHASES[fPh-1]), phase:pname(PHASES[lPh-1])})}</h1>
 
     <div class="jstats">
-      ${stat((t1-t0>=0?'+':'')+(t1-t0),'more students',named?joined.length+' joined, none lost':'net change &mdash; counts cannot show who left')}
+      ${stat((t1-t0>=0?'+':'')+(t1-t0),t('time.more'),named?t('time.more.named',{n:joined.length}):t('time.more.open'))}
       ${named
-        ? stat(crossings,'challenges crossed','by '+advanced.length+' of the original '+started.length)
-        : stat((dDeep>=0?'+':'')+dDeep,'further on than a year ago','at Follow Me or beyond &mdash; not necessarily the same students')}
-      ${stat(became.length+'/35','statements became true','none went backward')}
-      ${stat(lPh-fPh,'phases climbed',pname(PHASES[fPh-1])+' &rarr; '+pname(PHASES[lPh-1]))}
+        ? stat(crossings,t('time.crossed'),t('time.crossed.sub',{a:advanced.length,b:started.length}))
+        : stat((dDeep>=0?'+':'')+dDeep,t('time.further'),t('time.further.sub'))}
+      ${stat(became.length+'/35',t('time.became'),t('time.became.sub'))}
+      ${stat(lPh-fPh,t('time.climbed'),t('time.climbed.sub',{a:pname(PHASES[fPh-1]),b:pname(PHASES[lPh-1])}))}
     </div>
 
     <div class="sec">
-      <div class="sec-hd"><h2>How the shape changed</h2><span class="n">THEN AND NOW</span></div>
+      <div class="sec-hd"><h2>${t('time.shape')}</h2><span class="n">${t('time.thennow')}</span></div>
       ${(()=>{const mx=Math.max(1,...zoneCounts(F.r),...zoneCounts(L.r));
         return `<div class="tnstack">
-          <div class="tn-one"><div class="tn-lab">${fmtDate(F)}<span>${t0} students</span></div>
+          <div class="tn-one"><div class="tn-lab">${fmtDate(F)}<span>${tn('time.students',t0)}</span></div>
             ${roadHTML(F.r,{mx})}</div>
-          <div class="tn-one now"><div class="tn-lab">${fmtDate(L)}<span>${t1} students</span></div>
+          <div class="tn-one now"><div class="tn-lab">${fmtDate(L)}<span>${tn('time.students',t1)}</span></div>
             ${roadHTML(L.r,{mx})}</div>
         </div>`})()}
-      <p class="note" style="margin-top:14px">The base widened and the top filled in.${furthest?` A year ago nobody was being sent; ${furthest.name} has gone from ${ZONES[furthest.hist[F.r]-1].name.replace(/&amp;/g,'&')} to ${ZONES[furthest.hist[L.r]-1].name.replace(/&amp;/g,'&')}.`:named?' A year ago nobody was being sent, and that is still true.':''}</p>
+      <p class="note" style="margin-top:14px">${t('time.shape.note')}${furthest?' '+t('time.shape.moved',{who:furthest.name,
+          from:plain(zname(ZONES[furthest.hist[F.r]-1])), to:plain(zname(ZONES[furthest.hist[L.r]-1]))})
+        :named?' '+t('time.shape.stillnone'):''}</p>
     </div>
 
     <div class="sec">
-      <div class="sec-hd"><h2>How long you spent in each phase</h2><span class="n">FROM YOUR CHECK-UPS</span></div>
+      <div class="sec-hd"><h2>${t('time.legs')}</h2><span class="n">${t('time.legs.tag')}</span></div>
       <div class="legs">
         ${legs.map((g,i)=>`<div class="leg ${i===legs.length-1?'now':''}" style="width:${g.w}%">
           <span class="lg-n">${pname(PHASES[g.p-1])}</span>
-          <span class="lg-t">${i===legs.length-1?'now':'~'+g.mo+' mo'}</span></div>`).join('')}
+          <span class="lg-t">${i===legs.length-1?t('time.now'):t('time.approx',{n:g.mo})}</span></div>`).join('')}
       </div>
-      <p class="note" style="margin-top:12px">Measured between check-ups, so it is only as precise as how often you take one &mdash; a phase change is dated to the check-up that first showed it, not the day it happened.</p>
+      <p class="note" style="margin-top:12px">${t('time.legs.note')}</p>
     </div>
 
     <div class="sec">
-      <div class="sec-hd"><h2>What became true</h2><span class="n">${became.length} STATEMENTS</span></div>
+      <div class="sec-hd"><h2>${t('time.sec.became')}</h2><span class="n">${tn('time.nstatements',became.length)}</span></div>
       <div class="tf-grid" style="grid-template-columns:1fr 1fr">
         <div>
-          <div class="tf-hd true">Now true that was not${''}<span>${became.length}</span></div>
-          ${became.map(q=>`<div class="tf true">${q.t}<span class="qp">${pname(PHASES[q.phase-1])} &middot; ${q.cat}</span></div>`).join('')}
+          <div class="tf-hd true">${t('time.nowtrue')}<span>${became.length}</span></div>
+          ${became.map(q=>`<div class="tf true">${qtext(q)}<span class="qp">${pname(PHASES[q.phase-1])} &middot; ${catLabel(q.cat)}</span></div>`).join('')}
         </div>
         <div>
-          <div class="tf-hd not">Unmoved all year<span>${frozen.length}</span></div>
-          ${frozen.slice(0,6).map(q=>`<div class="tf not">${q.t}<span class="qp">${pname(PHASES[q.phase-1])} &middot; ${q.cat}</span></div>`).join('')}
-          ${frozen.length>6?`<p class="note" style="margin-top:10px">and ${frozen.length-6} more, all in ${pname(PHASES[4])}.</p>`:''}
+          <div class="tf-hd not">${t('time.unmoved')}<span>${frozen.length}</span></div>
+          ${frozen.slice(0,6).map(q=>`<div class="tf not">${qtext(q)}<span class="qp">${pname(PHASES[q.phase-1])} &middot; ${catLabel(q.cat)}</span></div>`).join('')}
+          ${frozen.length>6?`<p class="note" style="margin-top:10px">${tn('time.andmore',frozen.length-6,{phase:pname(PHASES[4])})}</p>`:''}
         </div>
       </div>
-      ${slipped.length?`<p class="note" style="margin-top:14px">${slipped.length} statement${slipped.length>1?'s':''} went backward this year.</p>`:''}
+      ${slipped.length?`<p class="note" style="margin-top:14px">${tn('time.slipped',slipped.length)}</p>`:''}
     </div>
 
     <div class="sec">
-      <div class="sec-hd"><h2>Who has not moved</h2><span class="n">${named?`${stuck.length} OF THE ORIGINAL ${started.length}`:'NOT KNOWN FROM COUNTS'}</span></div>
+      <div class="sec-hd"><h2>${t('time.stuck')}</h2><span class="n">${named?t('time.stuck.n',{n:stuck.length,of:started.length}):t('time.stuck.unknown')}</span></div>
       ${named
-        ? `<div class="stuckrow">${stuck.map(x=>`<span class="sc" style="--zc:var(${ZONES[x.hist[L.r]-1].v})">${x.name}<em>${ZONES[x.hist[L.r]-1].name}</em></span>`).join('')}</div>
-           <p class="note" style="margin-top:12px">Same challenge as ${months} months ago. Not a failure &mdash; but if nobody has had a real conversation with them, this is the list to start from.</p>`
-        : blanksHTML(blanks(L.r),`Counts cannot answer this one. The same number at an invitation ${months} months apart can be the same students standing still, or different students passing through. Only names tell them apart.`)}
+        ? `<div class="stuckrow">${stuck.map(x=>`<span class="sc" style="--zc:var(${ZONES[x.hist[L.r]-1].v})">${x.name}<em>${zname(ZONES[x.hist[L.r]-1])}</em></span>`).join('')}</div>
+           <p class="note" style="margin-top:12px">${tn('time.stuck.note',months)}</p>`
+        : blanksHTML(blanks(L.r),tn('time.stuck.blank',months))}
     </div>
 
     <div class="sec">
-      <div class="sec-hd"><h2>Every check-up</h2><span class="n">TAP TO OPEN</span></div>
+      <div class="sec-hd"><h2>${t('time.every')}</h2><span class="n">${t('time.taptoopen')}</span></div>
       <div class="track">
         ${REPORTS.map((r,i)=>{const p=currentPhase(scoresOf(r));
           return `<button class="stop ${i===REPORTS.length-1?'now':''}" data-open="${i}">
             <span class="dot"></span>
             <span class="st-d">${fmtDate(r)}</span>
             <span class="st-p">${pname(PHASES[p-1])}</span>
-            <span class="st-n">${totalAt(r.r)} students</span></button>`}).join('')}
+            <span class="st-n">${tn('time.students',totalAt(r.r))}</span></button>`}).join('')}
       </div>
     </div>
   </div></div>`;
@@ -2530,8 +3068,8 @@ const buildLabel=()=>{
   if(!onTheWeb()||!BUILD||BUILD.at==='local') return t('build.local');
   const d=new Date(BUILD.at);
   if(isNaN(d)) return t('build.local');
-  return t('build.label',{when:d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})+
-    ', '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})});
+  return t('build.label',{when:d.toLocaleDateString(LANG,{day:'numeric',month:'short'})+
+    ', '+d.toLocaleTimeString(LANG,{hour:'2-digit',minute:'2-digit'})});
 };
 
 /* What the app knew when a note was written. One line, one field — the tester
@@ -2722,37 +3260,37 @@ let botOpen=false;
 
 function botHTML(){
   const n=NOTES.length;
-  if(!botOpen) return `<button class="fab" data-bot="open" aria-label="Write a note">
+  if(!botOpen) return `<button class="fab" data-bot="open" aria-label="${plain(t('bot.write'))}">
       <span class="fabi">&#9998;</span></button>`;
 
   return `<div class="botwrap"><div class="bot">
     <div class="bot-hd">
-      <b>Notes</b>${onTheWeb()?'':'<span class="bot-local">local copy &mdash; will not save</span>'}
-      <button class="bot-x" data-bot="close" aria-label="Close">&times;</button>
+      <b>${t('bot.title')}</b>${onTheWeb()?'':`<span class="bot-local">${t('bot.localcopy')}</span>`}
+      <button class="bot-x" data-bot="close" aria-label="${plain(t('learn.close'))}">&times;</button>
     </div>
     <div class="bot-body">
       ${(!WHO||askingWho)?`<div class="whogate">
-        <label class="fld"><span>${WHO?'Change who is logging':'Who is logging notes?'}</span>
-          <input id="bn-who" placeholder="First name" value="${WHO||''}" autofocus></label>
-        <button class="btn bot-go" data-who="set">${WHO?'Save':'Start'}</button>
-        <p class="bot-hint">Kept on this device so you only say it once. It goes on every note so we know who found what.</p>
+        <label class="fld"><span>${WHO?t('bot.whochange'):t('bot.whoask')}</span>
+          <input id="bn-who" placeholder="${plain(t('intake.first'))}" value="${WHO||''}" autofocus></label>
+        <button class="btn bot-go" data-who="set">${WHO?t('bot.save'):t('bot.start')}</button>
+        <p class="bot-hint">${t('bot.whohint')}</p>
       </div>`:`
-      <div class="wholine">Logging as <b>${WHO}</b><button data-who="ask">change</button></div>
-      <textarea id="bn-text" placeholder="What felt wrong? A new idea? Something confusing?" rows="4"></textarea>`}
+      <div class="wholine">${t('bot.loggingas',{who:WHO})}<button data-who="ask">${t('bot.change')}</button></div>
+      <textarea id="bn-text" placeholder="${plain(t('bot.textph'))}" rows="4"></textarea>`}
       ${(!WHO||askingWho)?'':`
       ${draftShots.length?`<div class="shots">${draftShots.map((sh,i)=>
         `<div class="shot"><img src="${sh.data}" alt=""><button data-unshot="${i}">&times;</button></div>`).join('')}</div>`:''}
       <div class="bnrow">
-        <label class="shotbtn">Screenshot<input type="file" accept="image/*" multiple id="bn-file"></label>
-        <button class="btn bot-go" data-bench="add">Log it</button>
+        <label class="shotbtn">${t('bot.shot')}<input type="file" accept="image/*" multiple id="bn-file"></label>
+        <button class="btn bot-go" data-bench="add">${t('bot.log')}</button>
       </div>`}
       ${(!WHO||askingWho)?'':saveErr
-        ? `<p class="bot-hint warn">Not saved &mdash; ${saveErr}. Your note is still in the box, so nothing is lost. Try again in a moment.</p>`
+        ? `<p class="bot-hint warn">${t('bot.notsaved',{why:saveErr})}</p>`
 
         : justSaved
-          ? `<p class="bot-hint ok">Saved. ${n} note${n===1?'':'s'} so far.${
-              lastShotsFailed?` ${lastShotsFailed} screenshot${lastShotsFailed===1?'':'s'} could not be attached.`:''}</p>`
-          : `<p class="bot-hint">&#8984;V pastes a screenshot straight in.</p>`}
+          ? `<p class="bot-hint ok">${tn('bot.saved',n)}${
+              lastShotsFailed?' '+tn('bot.shotsfailed',lastShotsFailed):''}</p>`
+          : `<p class="bot-hint">${t('bot.pastehint')}</p>`}
 
       ${(!WHO||askingWho)||!n?'':(()=>{
         const open=NOTES.filter(x=>x.state!=='done').length;
@@ -2782,6 +3320,11 @@ function botHTML(){
    bot down with it — the one moment you most want to report a problem is the
    moment the screen is broken, and that was exactly when the pencil vanished.
    A broken view now says so on screen instead of going blank. */
+/* The <title> tag in the head is the fallback shown before the script runs.
+   Once STRINGS is loaded the real one is set from it, so the browser tab is
+   in the leader's language too. */
+function setDocTitle(){ try{ document.title=plain(t('app.title')); }catch(e){} }
+
 function render(){
   const ta=document.getElementById('bn-text'); const keep=(ta&&ta.value)?ta.value:null;
 
@@ -2796,14 +3339,15 @@ function render(){
        are workbench controls and neither belongs to the product. */
     const open=NOTES.filter(x=>x.state!=='done').length;
     document.getElementById('tiersw').innerHTML=
-      `<span>viewing as</span>${[['open','Open'],['activated','Activated']].map(([k,l])=>
-        `<button class="${TIER===k?'is':''}" data-tier="${k}">${l}</button>`).join('')}
-       <button class="tw-notes${active==='notes'?' is':''}" data-go="notes">Notes${open?`<i>${open}</i>`:''}</button>
+      `<span>${t('tier.viewingas')}</span>${[['open','tier.open'],['activated','tier.activated']].map(([k,l])=>
+        `<button class="${TIER===k?'is':''}" data-tier="${k}">${t(l)}</button>`).join('')}
+       <button class="tw-notes${active==='notes'?' is':''}" data-go="notes">${t('bot.title')}${open?`<i>${open}</i>`:''}</button>
        ${newerBuild
          ? `<button class="tw-build newer" data-build="reload" title="${t('build.newer')}">${t('build.newer')} &middot; ${t('build.reload')}</button>`
          : `<span class="tw-build">${buildLabel()}</span>`}`;
   }catch(err){ console.error('tier switch failed to render', err); }
 
+  setDocTitle();
   const m={jesus:vJesus,today:vToday,map:vMap,check:vCheck,reports:vReports,report:vReport,time:vTime,notes:vNotes};
   try{
     document.getElementById('app').innerHTML=m[active]();
@@ -2811,9 +3355,7 @@ function render(){
     console.error('view "'+active+'" failed to render', err);
     document.getElementById('app').innerHTML=
       `<div class="view"><div class="wrap"><div class="cerr" style="margin-top:40px">
-        This screen did not load. Nothing you have entered is lost &mdash; try another tab.
-        <br><br>Please tell us with the pencil, bottom right. It helps to say what you
-        were doing.<br><br><code style="font-size:12px;opacity:.8">${active}: ${String(err&&err.message||err)}</code>
+        ${t('err.screen')}<br><br>${t('err.tellus')}<br><br><code style="font-size:12px;opacity:.8">${active}: ${String(err&&err.message||err)}</code>
       </div></div></div>`;
   }
 
