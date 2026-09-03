@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,600&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --ink:#16202E; --ink-70:rgba(22,32,46,.70); --ink-45:rgba(22,32,46,.45); --ink-15:rgba(22,32,46,.15); --ink-08:rgba(22,32,46,.08);
+  --ink:#16202E; --ink-70:rgba(22,32,46,.70); --ink-45:rgba(22,32,46,.64); --ink-15:rgba(22,32,46,.15); --ink-08:rgba(22,32,46,.08);
   --ground:#E8EAE6; --surface:#FBFBFA; --line:#D3D7D1;
   --z1:#4C6B8A; --z2:#5E8A88; --z3:#8A9455; --z4:#C58A3B; --z5:#B04A38;
   --mark:#16202E; --phase:#4A3BAE; --phase-08:rgba(74,59,174,.085);
@@ -966,7 +966,9 @@ const TOOLS={
  SIX: {phase:2, words:['Relationships','Love','Vision','Jesus','Prayer','Bible'],
        letters:['Relationships','Love','Vision','Jesus','Prayer','Bible'],
        spells:['Relationships','Love','Vision','Jesus','Prayer','Bible'],},
- TAR: {phase:3, words:['Serve','TAR','Evangelize','Shepherd'],
+ /* the tool leads: a panel headed TAR that lists Serve first reads as
+    though Serve is the tool */
+ TAR: {phase:3, words:['TAR','Serve','Evangelize','Shepherd'],
        letters:['TAR'], spells:['Teach','Act','Reflect'],},
  CPR: {phase:4, words:['CPR','Expansion','Team'],
        letters:['CPR'], spells:['Cultivate','Plant','Reap'],},
@@ -1475,7 +1477,7 @@ function vToday(){
         <div class="eyebrow">Ministry phases</div>
         <div class="big-n ph">${pname(PHASES[ph-1])}</div>
         <div class="duo-vis">${phaseCakeHTML(sc,ph,false)}</div>
-        <div class="plinth">Each layer is how far that phase is cleared</div>
+        <div class="plinth">Each layer is a phase, and how long you have been in it</div>
       </div>
     </div>
 
@@ -1530,8 +1532,13 @@ function phaseCakeHTML(sc,ph,tappable){
   const spans=phaseSpans();
   return `<div class="phcake">${[...PHASES].reverse().map(p=>{
     const st=p.n===ph?'on':(p.n<ph?'done':'ahead'), v=sc[p.n];
-    /* 48% floor so the longest phase name still fits in an empty layer */
-    const w=48+52*(v/10);
+    /* An even step, widest at the base — the same shape as the diagram on
+       Like Jesus, so the two read as one thing. Width was the phase score
+       until 2 Sep 2026; Dave asked three times for a stair step and Mel
+       agreed. It measures nothing now, so nothing may claim it does: the
+       caption says what a layer is, and the score lives on the phase card
+       where it is written as a number. */
+    const w=100-(p.n-1)*12;
     const cls=`phtier ${st} ${v?'':'empty'}${tappable&&selPhase===p.n?' sel':''}`;
     const inner=`<span class="phn">${pname(p)}</span><b>${spans[p.n]?spanLabel(spans[p.n]):(p.n<ph?'&mdash;':'')}</b>`;
     return tappable
@@ -1735,7 +1742,7 @@ function mapGridHTML(){
      may make two challenges, so the row across can come to more than the
      number running. The paper form has the same property. */
   const sum=ZONES.reduce((t,z)=>t+cov[z.n].length,0);
-  h+=`<p class="mg-note">Read down a column: what you run, and who is there.${
+  h+=`<p class="mg-note">The programs you offer are above, the people you care for are below.${
     sum>PROGRAMS.length?' A programme can make two challenges, so the numbers across add up to more than the number running.':''}</p>`;
   return h;
 }
@@ -1939,7 +1946,7 @@ function vCheck(){
             `<div class="chal-row"><span class="chal-dot" style="background:var(${z.v})"></span><span class="chal-n">${z.name}</span><b>${c[i]}</b></div>`).join('')}</div></div></div>
         <div class="known-row"><div class="known-k">Programs</div><div class="known-v">${PROGRAMS.length} running, covering ${madeBy} of the 5 challenges</div></div>
         <div class="known-row"><div class="known-k">Not covered</div><div class="known-v">${neverMade.length
-          ? `${neverMade.map(z=>z.name).join(' · ')} <span class="known-why">&mdash; nothing you run asks ${neverMade.length===1?'this':'these'}</span>`
+          ? `${neverMade.map(z=>z.name).join(' · ')} <span class="known-why">&mdash; none of the programs you offer specifically develop people in ${neverMade.length===1?'this challenge':'these challenges'}</span>`
           : 'Nothing &mdash; every challenge has something that asks it'}</div></div>
       </div>
       <p class="note" style="margin-top:18px">If something is wrong here, change it on your map and it changes here too.</p>
@@ -2046,7 +2053,7 @@ function vReport(){
       <div class="sec-hd"><h2>What phase you are in</h2><span class="n">TAP A LAYER</span></div>
       <div class="card">
         ${phaseCakeHTML(sc,ph,true)}
-        <p class="note" style="margin-top:12px">Each layer is how far that phase is cleared. ${selPhase?'':'Tap any layer to read what that phase is about, and what is true of you in it.'}</p>
+        <p class="note" style="margin-top:12px">Each layer is a phase, and how long you have been in it. ${selPhase?'':'Tap any layer to read what that phase is about, what is true of you in it, and its score.'}</p>
         ${selPhase?phaseWhy(selPhase,ph,R):''}
       </div>
     </div>
@@ -2096,7 +2103,15 @@ function vReport(){
 
     <div class="sec">
       <div class="sec-hd"><h2>Every category</h2><span class="n">${ranked.length} MEASURED</span></div>
-      ${ranked.map(k=>{const b=band(k[1].v),acr=CAT_TOOL[k[0]],mine=CAT_PHASE[k[0]]===ph;
+      ${(()=>{
+        /* Grouped by phase, and inside a phase in the tool's own order —
+           so REST reads Restructure, Entrust, Support, Train. Sorting the
+           whole list by score scattered the letters and the acronym beside
+           each one stopped meaning anything. The weakest is still called
+           out by name in the panel above. */
+        const order=[]; PHASES.forEach(ps=>TOOLS[ps.tool].words.forEach(w=>order.push(w)));
+        return order.filter(w=>cats[w]).map(w=>[w,cats[w]]);})()
+        .map(k=>{const b=band(k[1].v),acr=CAT_TOOL[k[0]],mine=CAT_PHASE[k[0]]===ph;
         return `<div class="bar ${b.k}"><div class="lb">${k[0]}${acr?`<span class="acrtag ${mine?'mine':''}">${acr}</span>`:''}${mine?'<span class="tag">your phase</span>':''}</div>${pips(k[1].v)}<div class="vl">${b.l}</div></div>`}).join('')}
     </div>
   </div></div>`;
