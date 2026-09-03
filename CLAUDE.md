@@ -271,12 +271,39 @@ One sentence, if it is ever needed outside this repo: *the check-up tells
 you what is true of your ministry; coaching is where it becomes about
 people, and that is where the names live.*
 
-## Fonts, before any Cyrillic language
+## Fonts — checked 3 Sep 2026, and fixed
 
-Fraunces and Archivo need checking for Cyrillic coverage, or Bulgarian,
-Ukrainian and Serbian will silently fall back to a system font and look like
-a different product. Unresolved, and it does not surface until somebody adds
-one of those languages to `LANGS`.
+**Fraunces and Archivo ship no Cyrillic.** Both carry `latin`, `latin-ext`
+and `vietnamese` only. That was fine while the app was English and stays
+fine for every Latin-script language we have — `latin-ext` covers Czech,
+Slovak, Polish, Hungarian, Romanian, Croatian, Slovenian, Latvian and
+Lithuanian in full, diacritics and all, including Romanian's comma-below
+ș and ț. But Bulgarian, Ukrainian and Serbian had **no glyph at all**:
+headlines and body text would have dropped to whatever the device happened
+to have, while the labels stayed in Plex Mono. Most of the page, in a
+different typeface.
+
+Fixed by adding **Literata** behind Fraunces and **IBM Plex Sans** behind
+Archivo in the font stacks. CSS falls back per character, so Cyrillic takes
+those two and everything else is untouched. Plex Mono already had Cyrillic,
+so the labels needed nothing — and Plex Sans shares its design, which is why
+it is the one chosen for the body.
+
+**This costs Latin readers nothing.** Google serves each face with a
+`unicode-range`, so a browser downloads a file only when a character in that
+range is on the page. Verified: on the English app 91 faces are declared and
+9 load, none of them Literata or Plex Sans; put one Cyrillic word on the page
+and exactly the Cyrillic-range faces of those two arrive.
+
+Adding a Cyrillic language to `LANGS` now needs no font work. Greek would —
+neither fallback is loaded with the Greek subset requested.
+
+## Program, not programme
+
+**Decided 3 Sep 2026 by Mel.** The app said "Programs" in two headings and
+"programme" in five other strings. It is `program` everywhere a leader reads
+it now. Settled before translation started, so sixteen countries are not each
+guessing which one to render.
 
 ## Writing a Fix on a note
 

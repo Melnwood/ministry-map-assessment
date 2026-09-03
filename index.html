@@ -6,7 +6,18 @@
 <title>Ministry Map + Check-up</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,600&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- Fraunces and Archivo ship no Cyrillic — checked 3 Sep 2026, they carry
+     latin, latin-ext and vietnamese only. latin-ext covers every Latin CEE
+     language we have (Czech, Slovak, Polish, Hungarian, Romanian, Croatian,
+     Slovenian, Latvian, Lithuanian all render fully), but Bulgarian,
+     Ukrainian and Serbian have no glyph at all and would fall back to
+     whatever the device happens to have.
+     Literata and IBM Plex Sans are here to catch exactly those. Google
+     serves each face with a unicode-range, so a browser downloads a file
+     only when a character in that range is on the page: an English or Czech
+     reader never fetches a byte of either. IBM Plex Sans also shares its
+     design with the Plex Mono already used for every label. -->
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,600&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;0,7..72,800;1,7..72,600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --ink:#16202E; --ink-70:rgba(22,32,46,.70); --ink-45:rgba(22,32,46,.64); --ink-15:rgba(22,32,46,.15); --ink-08:rgba(22,32,46,.08);
@@ -24,7 +35,13 @@
   --ok:#5F6836;      --ok-bg:rgba(138,148,85,.16);    /* --z3, likewise */
   --z3-bg:rgba(138,148,85,.14);
   --r:14px; --maxw:1080px;
-  --display:'Fraunces',Georgia,serif; --body:'Archivo',system-ui,sans-serif; --mono:'IBM Plex Mono',monospace;
+  /* Per-character fallback: the browser takes each glyph from the first
+     font in the stack that has it, so Cyrillic drops to Literata / Plex Sans
+     while everything else stays Fraunces / Archivo. Plex Mono already ships
+     Cyrillic, so the labels needed nothing. */
+  --display:'Fraunces','Literata',Georgia,serif;
+  --body:'Archivo','IBM Plex Sans',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',monospace;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%}
@@ -1745,7 +1762,7 @@ const STRINGS={en:{
   'phase.4.name':'Expansion',                 'phase.4.short':'Expansion',         'phase.4.who':'Workers',   'phase.4.span':'6\u20139 months',
   'phase.5.name':'Leadership Multiplication', 'phase.5.short':'Leadership Mult.',  'phase.5.who':'Leaders',   'phase.5.span':'1.5 years',
 
-  /* ---------- How often a programme runs, and how a student arrived ----------
+  /* ---------- How often a program runs, and how a student arrived ----------
      The English stays the stored value; only these labels are shown. */
   'freq.Weekly':'Weekly', 'freq.Bi-weekly':'Bi-weekly', 'freq.Monthly':'Monthly', 'freq.Yearly':'Yearly',
   'came.Invited_by_a_student':'Invited by a student',
@@ -1962,24 +1979,24 @@ const STRINGS={en:{
   'map.lede':         'Five challenges across the top. What you run above, who you have below. Read straight down a column and you can see where an invitation is being made with nobody there to hear it &mdash; or where people are waiting and nothing ever asks them.',
   'map.programs':     'Programs',
   'map.running':      'running',
-  'map.addprog':      '+ Add a programme',
+  'map.addprog':      '+ Add a program',
   'map.people':       'People',
   'map.names':        'Names',
   'map.new':          'new',
   'map.note':         'The programs you offer are above, the people you care for are below.',
-  'map.note.overlap': 'A programme can make two challenges, so the numbers across add up to more than the number running.',
+  'map.note.overlap': 'A program can make two challenges, so the numbers across add up to more than the number running.',
   'map.aria.fewer':   'One fewer',
   'map.aria.more':    'One more',
   'map.aria.count':   'How many at {ch}',
   'map.aria.addhere': 'Add a student here',
 
-  /* ---------- A student, or a programme, opened ---------- */
+  /* ---------- A student, or a program, opened ---------- */
   'mdet.since':       'Coming since {date}',
   'mdet.knownby':     '{who} knows them',
   'mdet.nobody':      'nobody is following them',
   'mdet.move':        'Move them to the furthest challenge they have reached',
-  'prog.name':        'Programme name',
-  'prog.which':       'Which challenges this programme actually makes',
+  'prog.name':        'Program name',
+  'prog.which':       'Which challenges this program actually makes',
   'ask.done':         'Someone from Josiah Venture in your country will be in touch. Nothing changes here until you have spoken to them.',
 
   /* ---------- All reports ---------- */
@@ -2003,9 +2020,9 @@ const STRINGS={en:{
 
   /* The three things to do next. Whole sentences, because the numbers sit
      mid-clause and no language agrees with English about where. */
-  'report.act.freq':  '<b>Students are only {verb} once a year.</b> {n} of them have not been asked yet, and {prog} is the only time it happens. That invitation does not need a programme — it needs someone willing to make it more often than once a year.',
+  'report.act.freq':  '<b>Students are only {verb} once a year.</b> {n} of them have not been asked yet, and {prog} is the only time it happens. That invitation does not need a program — it needs someone willing to make it more often than once a year.',
   'report.act.freq.w':'instrument: <span>CPR &mdash; {band}</span> &middot; map: {prog} runs {freq}',
-  'report.act.gap':   '<b>You never actually ask anyone to go.</b> {sent} student has been sent, and {ready} more have reached Follow Me &amp; Fish &mdash; but none of them has been asked to lead something of their own. That is a conversation, not a programme.',
+  'report.act.gap':   '<b>You never actually ask anyone to go.</b> {sent} student has been sent, and {ready} more have reached Follow Me &amp; Fish &mdash; but none of them has been asked to lead something of their own. That is a conversation, not a program.',
   'report.act.gap.w': 'instrument: <span>Entrust &mdash; {band}</span> &middot; map: {ready} at Follow Me &amp; Fish, none sent',
   'report.act.weak':  '<b>{cat} is your weakest untouched area &mdash; {band}.</b> That is the work of {phase} &mdash; the phase you have just entered, not a failure of the one you left.',
   'report.act.weak.w':{one:'instrument: {cat} from {n} statement, lowest of {of}',
