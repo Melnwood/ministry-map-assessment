@@ -480,6 +480,11 @@ button.tw:hover{background:var(--ink-08)}
 .lm-say b{font-family:var(--mono);font-weight:600;letter-spacing:.05em}
 .lm-meta{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;
   color:var(--ink-45);margin-top:5px}
+.tw-build{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;color:var(--ink-45);
+  margin-left:10px;white-space:nowrap}
+button.tw-build{background:none;border:0;cursor:pointer;padding:0}
+.tw-build.newer{color:#fff;background:var(--z5);border-radius:99px;padding:4px 10px;font-weight:600}
+.nt-ctx{font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;color:var(--ink-45);margin-top:5px}
 /* the notes page */
 .tw-notes{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;padding:4px 9px;border-radius:99px;
   background:none;border:1px solid var(--ink-15);color:var(--ink-45);cursor:pointer;margin-left:10px;
@@ -1196,6 +1201,7 @@ function vNotes(){
               `<img src="${sh.data}" alt="">`).join('')}</div>`
           : (x.shots||[]).some(sh=>sh&&sh.tooBig)
             ? `<div class="nt-shotnote">A screenshot was attached but was too large to store.</div>` : ''}
+        ${x.context?`<div class="nt-ctx">${esc(x.context)}</div>`:''}
         ${x.fix?`<div class="nt-fix"><span>${t('notes.fix')}</span>${esc(x.fix).replace(/\n/g,'<br>')}</div>`:''}
       </div>
       <div class="nt-act">${confirmDel===x.id
@@ -1278,6 +1284,10 @@ const STRINGS={en:{
   /* ---------- Notes ---------- */
   'notes.fix':       'What changed',
   'notes.refresh':   'Refresh',
+  'build.label':     'Build {when}',
+  'build.local':     'Local copy',
+  'build.newer':     'A newer version is ready',
+  'build.reload':    'Reload',
   'notes.loading':   'Loading&hellip;',
   'notes.failed':    'The list could not be loaded. Nothing is lost &mdash; try Refresh.',
 
@@ -2456,6 +2466,47 @@ const SCREENS={jesus:'Like Jesus',today:'Today',map:'Your map',check:'Check-up',
 const screenNow=()=>SCREENS[active]||'Somewhere';
 
 let NOTES=[], draftShots=[], storageOK=null, saveErr=null, loadErr=null, justSaved=false, lastShotsFailed=0, confirmDel=null, loadingNotes=false;
+
+/* ---------- which build am I looking at ----------
+   Dave reported the same chart three times, partly because nothing told him
+   whether the page in front of him contained the fix. version.json is written
+   at deploy; the app reads it once at boot, shows the time in the workbench
+   strip, and re-checks on a timer and whenever the tab is refocused. If the
+   stamp has moved, the page in front of you is stale and says so. */
+let BUILD=null, newerBuild=false;
+async function readBuild(){
+  try{
+    const r=await fetch('/version.json?t='+Date.now(),{cache:'no-store'});
+    if(!r.ok) return null;
+    return await r.json();
+  }catch(e){ return null; }
+}
+async function checkBuild(first){
+  const v=await readBuild();
+  if(!v) return;
+  if(first){ BUILD=v; }
+  else if(BUILD && v.at!==BUILD.at && !newerBuild){ newerBuild=true; }
+  render();
+}
+const buildLabel=()=>{
+  if(!onTheWeb()||!BUILD||BUILD.at==='local') return t('build.local');
+  const d=new Date(BUILD.at);
+  if(isNaN(d)) return t('build.local');
+  return t('build.label',{when:d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})+
+    ', '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})});
+};
+
+/* What the app knew when a note was written. One line, one field — the tester
+   types nothing extra. Added after "still the same problem here the graph" on
+   a screen that can show any of four reports. */
+function noteContext(){
+  const bits=[TIER==='activated'?'Activated':'Open'];
+  if(active==='report'&&REPORTS[openIx]) bits.push('report '+fmtDate(REPORTS[openIx]));
+  if(active==='check'&&quizIx>0) bits.push('statement '+quizIx+' of '+Q.length);
+  bits.push(Math.round(window.innerWidth)+'px');
+  bits.push(onTheWeb()?(BUILD&&BUILD.at!=='local'?'build '+buildLabel().replace(/^Build /,''):'build unknown'):'local copy');
+  return bits.join(' · ');
+}
 /* fetch rejecting before any response gives a message no tester can act on
    ("Failed to execute 'fetch' on 'Window'"). Both the load and the save
    paths hit it, so both translate it here rather than one of them. */
@@ -2549,7 +2600,7 @@ async function benchSave(note){
 async function benchAdd(){
   const t=document.getElementById('bn-text');
   if(!t||!t.value.trim())return;
-  const note={id:Date.now(), who:WHO||'Unknown', text:t.value.trim(), area:screenNow(), kind:'idea',
+  const note={id:Date.now(), who:WHO||'Unknown', text:t.value.trim(), area:screenNow(), kind:'idea', context:noteContext(),
     shots:draftShots.slice(), state:'open', at:new Date().toISOString(), reply:null};
   NOTES.push(note);
   const kept=t.value, keptShots=draftShots.slice();
@@ -2709,7 +2760,10 @@ function render(){
     document.getElementById('tiersw').innerHTML=
       `<span>viewing as</span>${[['open','Open'],['activated','Activated']].map(([k,l])=>
         `<button class="${TIER===k?'is':''}" data-tier="${k}">${l}</button>`).join('')}
-       <button class="tw-notes${active==='notes'?' is':''}" data-go="notes">Notes${open?`<i>${open}</i>`:''}</button>`;
+       <button class="tw-notes${active==='notes'?' is':''}" data-go="notes">Notes${open?`<i>${open}</i>`:''}</button>
+       ${newerBuild
+         ? `<button class="tw-build newer" data-build="reload" title="${t('build.newer')}">${t('build.newer')} &middot; ${t('build.reload')}</button>`
+         : `<span class="tw-build">${buildLabel()}</span>`}`;
   }catch(err){ console.error('tier switch failed to render', err); }
 
   const m={jesus:vJesus,today:vToday,map:vMap,check:vCheck,reports:vReports,report:vReport,time:vTime,notes:vNotes};
@@ -2753,6 +2807,7 @@ document.addEventListener('click',e=>{
     if(v.startsWith('ask:')){confirmDel=Number(v.slice(4));render();return}
     benchDelete(Number(v)); return}
   if(t=hit('tool')){toolInfo=(t.dataset.tool==='close'||toolInfo===t.dataset.tool)?null:t.dataset.tool;render();return}
+  if(t=hit('build')){ location.reload(true); return}
   if(t=hit('notes')){ if(t.dataset.notes==='refresh') benchLoad(); return}
   if(t=hit('learn')){learnMore=(t.dataset.learn==='close'||learnMore===t.dataset.learn)?null:t.dataset.learn;render();return}
   if(t=hit('unshot')){draftShots.splice(+t.dataset.unshot,1);render();return}
@@ -2841,6 +2896,9 @@ document.addEventListener('keydown',e=>{
   if(e.target.id&&e.target.id.startsWith('pn')){selProgram=null;render()}
 });
 renderTabs();render();benchLoad();
+checkBuild(true);
+setInterval(()=>checkBuild(false), 5*60*1000);
+window.addEventListener('focus',()=>checkBuild(false));
 </script>
 </body>
 </html>
