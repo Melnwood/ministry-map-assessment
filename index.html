@@ -1536,6 +1536,36 @@ const STRINGS={en:{
   'phase.finished':   'How you know you have finished {phase}',
   'phase.note':       '<b>*</b> Placeholder wording, written for this prototype &mdash; not JV&rsquo;s. These parts need the real text.',
 
+  'map.lede.named':   'Five challenges across the top. What you run above, who you have below. Tap a name to move them &mdash; only once you have actually asked, and they have said so.',
+  'ask.why':          'The map is not for us. It&rsquo;s for the conversation you&rsquo;ll have about it.',
+  'ask.q':            'Would you like someone to walk through this with you? It&rsquo;s free.',
+  'ask.go':           'Yes, get in touch',
+
+  /* ---------- What the roster knows that counts cannot ---------- */
+  'ms.invited':       'came because another student invited them',
+  'ms.invited.why':   'Your check-up asks whether students invite friends without being asked. This answers it from the map instead of from memory.',
+  'ms.mo':            'mo',
+  'ms.wait':          'from first coming to being asked to give their life to Christ',
+  'ms.wait.why':      {one:'Typical wait across the {n} student who has been asked. Only the date they first came makes this knowable.',
+                       other:'Typical wait across the {n} students who have been asked. Only the date they first came makes this knowable.'},
+  'ms.neverasked':    {one:'student has never been asked', other:'students have never been asked'},
+  'ms.longest':       {one:'{who} has been coming {n} month.', other:'{who} has been coming {n} months.'},
+  'ms.allasked':      'Everyone has been asked.',
+  'ms.nofollow':      {one:'student nobody is following', other:'students nobody is following'},
+  'ms.allfollowed':   'Every student has a leader who knows them.',
+
+  /* ---------- All reports ---------- */
+  'reports.eyebrow':  {one:'{n} check-up kept', other:'{n} check-ups kept'},
+  'reports.title':    'Every time you check in,<br>you keep <em>the whole picture</em>',
+  'reports.lede':     'Nothing gets written over. Take a check-up whenever it helps — every one is kept.',
+  'reports.d.up':     'stepped up from {phase}',
+  'reports.d.down':   'back to {phase}',
+  'reports.d.same':   'same phase',
+  'reports.d.more':   {one:'+{n} student', other:'+{n} students'},
+  'reports.d.fewer':  {one:'-{n} student', other:'-{n} students'},
+  'reports.d.weakest':'weakest: {cat}',
+  'reports.d.first':  'first check-up',
+
   /* ---------- Learn more ---------- */
   'learn.more':      'Learn more',
   'learn.ch.title':  'Five Challenges of Christ',
@@ -2076,19 +2106,19 @@ function askHTML(){
   if(askedCoach) return `<div class="ask done">
     <p>${t('ask.done')}</p></div>`;
   return `<div class="ask">
-    <p class="ask-why">The map is not for us. It&rsquo;s for the conversation you&rsquo;ll have about it.</p>
+    <p class="ask-why">${t('ask.why')}</p>
     <div class="ask-row">
-      <span>Would you like someone to walk through this with you? It&rsquo;s free.</span>
-      <button class="cbtn solid" data-ask="go">Yes, get in touch</button>
+      <span>${t('ask.q')}</span>
+      <button class="cbtn solid" data-ask="go">${t('ask.go')}</button>
     </div>
   </div>`;
 }
 
 function vMapNamed(){
   return `<div class="view"><div class="wrap">
-    <div class="eyebrow">Ministry Map</div>
-    <h1>Everything you run, and<br>everyone you have, <em>side by side</em></h1>
-    <p class="lede">Five challenges across the top. What you run above, who you have below. Tap a name to move them &mdash; only once you have actually asked, and they have said so.</p>
+    <div class="eyebrow">${t('map.eyebrow')}</div>
+    <h1>${t('map.title')}</h1>
+    <p class="lede">${t('map.lede.named')}</p>
 
     ${(()=>{
       const byS=STUDENTS.filter(x=>x.came==='Invited by a student').length;
@@ -2101,17 +2131,17 @@ function vMapNamed(){
       const longest=waiting[0];
       return `<div class="mapstats">
         <div class="ms"><b>${byS}<span class="of">/${STUDENTS.length}</span></b>
-          <span>came because another student invited them</span>
-          <em>Your check-up asks whether students invite friends without being asked. This answers it from the map instead of from memory.</em></div>
-        <div class="ms ${med>9?'warn':''}"><b>${med===null?'&mdash;':med}<span class="of"> mo</span></b>
-          <span>from first coming to being asked to give their life to Christ</span>
-          <em>Typical wait across the ${asked.length} students who have been asked. Only the date they first came makes this knowable.</em></div>
+          <span>${t('ms.invited')}</span>
+          <em>${t('ms.invited.why')}</em></div>
+        <div class="ms ${med>9?'warn':''}"><b>${med===null?'&mdash;':med}<span class="of"> ${t('ms.mo')}</span></b>
+          <span>${t('ms.wait')}</span>
+          <em>${tn('ms.wait.why',asked.length)}</em></div>
         <div class="ms ${waiting.length?'warn':''}"><b>${waiting.length}</b>
-          <span>${waiting.length===1?'student has never been asked':'students have never been asked'}</span>
-          <em>${longest?`${esc(longest.name)} has been coming ${longest.mo} months.`:'Everyone has been asked.'}</em></div>
+          <span>${tn('ms.neverasked',waiting.length)}</span>
+          <em>${longest?tn('ms.longest',longest.mo,{who:esc(longest.name)}):t('ms.allasked')}</em></div>
         <div class="ms ${unknown.length?'warn':''}"><b>${unknown.length}</b>
-          <span>${unknown.length===1?'student nobody is following':'students nobody is following'}</span>
-          <em>${unknown.length?unknown.map(x=>esc(x.name)).join(', '):'Every student has a leader who knows them.'}</em></div>
+          <span>${tn('ms.nofollow',unknown.length)}</span>
+          <em>${unknown.length?unknown.map(x=>esc(x.name)).join(', '):t('ms.allfollowed')}</em></div>
       </div>`})()}
 
     ${mapGridHTML()}
@@ -2246,20 +2276,23 @@ function vReports(){
     let delta='';
     if(prev){
       const bits=[];
-      if(ph>pph) bits.push(`<b class="up">stepped up from ${pname(PHASES[pph-1])}</b>`);
-      else if(ph<pph) bits.push(`<b class="dn">back to ${pname(PHASES[ph-1])}</b>`);
-      else bits.push('same phase');
-      if(dt>0) bits.push(`+${dt} students`); else if(dt<0) bits.push(`${dt} students`);
-      const g=reportGist(r); if(g.weakest) bits.push(`weakest: ${g.weakest}`);
+      /* Independent clauses in a list, not one sentence cut into pieces —
+         each is whole and a translator can rewrite it without the others. */
+      if(ph>pph) bits.push(`<b class="up">${t('reports.d.up',{phase:pname(PHASES[pph-1])})}</b>`);
+      else if(ph<pph) bits.push(`<b class="dn">${t('reports.d.down',{phase:pname(PHASES[ph-1])})}</b>`);
+      else bits.push(t('reports.d.same'));
+      if(dt>0) bits.push(tn('reports.d.more',dt)); else if(dt<0) bits.push(tn('reports.d.fewer',-dt));
+      const g=reportGist(r); if(g.weakest) bits.push(t('reports.d.weakest',{cat:g.weakest}));
       delta=bits.join(' · ');
-    } else { const g0=reportGist(r); delta='first check-up'+(g0.weakest?` &middot; weakest: ${g0.weakest}`:''); }
+    } else { const g0=reportGist(r);
+      delta=t('reports.d.first')+(g0.weakest?' &middot; '+t('reports.d.weakest',{cat:g0.weakest}):''); }
     return {r,i,sc,ph,tot,delta};
   }).reverse();
 
   return `<div class="view"><div class="wrap">
-    <div class="eyebrow">${REPORTS.length} check-ups kept</div>
-    <h1>Every time you check in,<br>you keep <em>the whole picture</em></h1>
-    <p class="lede">Nothing gets written over. Take a check-up whenever it helps — every one is kept.</p>
+    <div class="eyebrow">${tn('reports.eyebrow',REPORTS.length)}</div>
+    <h1>${t('reports.title')}</h1>
+    <p class="lede">${t('reports.lede')}</p>
     <div style="margin-top:26px;display:flex;flex-direction:column;gap:10px">
       ${rows.map(x=>`<button class="repcard ${x.i===REPORTS.length-1?'newest':''}" data-open="${x.i}">
         <div class="rc-date"><span class="d">${fmtDate(x.r)}</span><span class="t">${x.r.t}</span></div>
