@@ -1410,6 +1410,60 @@ const STRINGS={en:{
   'prog.which':       'Which challenges this programme actually makes',
   'ask.done':         'Someone from Josiah Venture in your country will be in touch. Nothing changes here until you have spoken to them.',
 
+  /* ---------- All reports ---------- */
+  'reports.note':     'Each one keeps what was true the day you took it, so you can look back and see how far your group has come.',
+
+  /* ---------- One report ---------- */
+  'report.back':      '&larr; All reports',
+  'report.cover.students':'students on the map',
+  'report.cover.phase':'phase {n} of 5',
+  'report.cover.upfrom':'up from {prev}',
+  'report.cover.beyond':'at Follow Me &amp; Fish or beyond',
+  'report.cover.invites':'invitations your programs make',
+  'report.sec.phase': 'What phase you are in',
+  'report.tap':       'TAP A LAYER',
+  'report.cake.hint': 'Tap any layer to read what that phase is about, what is true of you in it, and its score.',
+  'report.how':       'How {phase} works',
+  'report.tool.tag':  'JV TRAINING TOOL',
+  'report.tool.title':'What {tool} stands for',
+  'report.tool.scale':'How often each part of this phase actually happens, read from your own answers.',
+  'report.statements':{one:'{n} statement', other:'{n} statements'},
+
+  /* The three things to do next. Whole sentences, because the numbers sit
+     mid-clause and no language agrees with English about where. */
+  'report.act.freq':  '<b>Students are only {verb} once a year.</b> {n} of them have not been asked yet, and {prog} is the only time it happens. That invitation does not need a programme — it needs someone willing to make it more often than once a year.',
+  'report.act.freq.w':'instrument: <span>CPR &mdash; {band}</span> &middot; map: {prog} runs {freq}',
+  'report.act.gap':   '<b>You never actually ask anyone to go.</b> {sent} student has been sent, and {ready} more have reached Follow Me &amp; Fish &mdash; but none of them has been asked to lead something of their own. That is a conversation, not a programme.',
+  'report.act.gap.w': 'instrument: <span>Entrust &mdash; {band}</span> &middot; map: {ready} at Follow Me &amp; Fish, none sent',
+  'report.act.weak':  '<b>{cat} is your weakest untouched area &mdash; {band}.</b> That is the work of {phase} &mdash; the phase you have just entered, not a failure of the one you left.',
+  'report.act.weak.w':{one:'instrument: {cat} from {n} statement, lowest of {of}',
+                       other:'instrument: {cat} from {n} statements, lowest of {of}'},
+
+  'report.every':     'Every category',
+  'report.measured':  '{n} MEASURED',
+  'report.yourphase': 'your phase',
+
+  /* ---------- A phase card ----------
+     STORY — essence, about, turn, risk, door — is deliberately NOT here.
+     It is placeholder prose written for this prototype, not JV's, and it
+     renders behind an asterisk saying so. Keeping it out of STRINGS keeps
+     it off the translation page: nobody should be asked to translate
+     wording that is going to be replaced. */
+  'phase.tf.true':    'True of you',
+  'phase.tf.part':    'Starting to be true',
+  'phase.tf.not':     'Not yet true',
+  'phase.stance.now': 'This is where you are now.',
+  'phase.stance.past':'You have come through this.',
+  'phase.stance.ahead':'Not yet &mdash; this is on the other side of {phase}.',
+  'phase.outof':      '{score} out of 10.',
+  'phase.ast':        'Placeholder wording',
+  'phase.turn':       'The turn',
+  'phase.carry':      'Strongest in {phase}, the phase before',
+  'phase.wrong':      'Where this goes wrong',
+  'phase.here':       'When you are here',
+  'phase.finished':   'How you know you have finished {phase}',
+  'phase.note':       '<b>*</b> Placeholder wording, written for this prototype &mdash; not JV&rsquo;s. These parts need the real text.',
+
   /* ---------- Learn more ---------- */
   'learn.more':      'Learn more',
   'learn.ch.title':  'Five Challenges of Christ',
@@ -2140,11 +2194,11 @@ function vReports(){
           <div class="rc-phase"><i></i>${pname(PHASES[x.ph-1])}</div>
           <div class="rc-delta">${x.delta}</div>
         </div>
-        <div class="rc-n"><b>${x.tot}</b><span>students</span></div>
-        <div class="rc-go">Open &rarr;</div>
+        <div class="rc-n"><b>${x.tot}</b><span>${t('today.students')}</span></div>
+        <div class="rc-go">${t('today.open')}</div>
       </button>`).join('')}
     </div>
-    <p class="note" style="margin-top:18px">Each one keeps what was true the day you took it, so you can look back and see how far your group has come.</p>
+    <p class="note" style="margin-top:18px">${t('reports.note')}</p>
   </div></div>`;
 }
 
@@ -2162,34 +2216,38 @@ function vReport(){
   const gapZone=ZONES.find(z=>!cov[z.n].length);
   const acts=[];
   if(weakFreq){const wz=weakFreq.z, only=cov[wz.n][0];
-    acts.push({b:`<b>Students are only ${wz.verb} once a year.</b> ${c[wz.n-1]+c[0]} of them have not been asked yet, and ${only.name} is the only time it happens. That invitation does not need a programme — it needs someone willing to make it more often than once a year.`,
-    w:`instrument: <span>CPR &mdash; ${band(cats.CPR.v).s}</span> &middot; map: ${only.name} runs ${only.freq.toLowerCase()}`});}
-  if(gapZone) acts.push({b:`<b>You never actually ask anyone to go.</b> ${c[4]} student has been sent, and ${c[3]} more have reached Follow Me &amp; Fish &mdash; but none of them has been asked to lead something of their own. That is a conversation, not a programme.`,
-    w:`instrument: <span>Entrust &mdash; ${band(cats.Entrust.v).s}</span> &middot; map: ${zoneCounts(R.r)[3]} at Follow Me &amp; Fish, none sent`});
+    /* TRANSLATION TRAP: toLowerCase on a frequency word is an English
+       habit. German capitalises nouns and Czech declines them, so a
+       translator may need the frequency to arrive unchanged — the key
+       carries the whole clause so they can rewrite around it. */
+    acts.push({b:t('report.act.freq',{verb:wz.verb, n:c[wz.n-1]+c[0], prog:only.name}),
+    w:t('report.act.freq.w',{band:band(cats.CPR.v).s, prog:only.name, freq:only.freq.toLowerCase()})});}
+  if(gapZone) acts.push({b:t('report.act.gap',{sent:c[4], ready:c[3]}),
+    w:t('report.act.gap.w',{band:band(cats.Entrust.v).s, ready:zoneCounts(R.r)[3]})});
   const used=acts.map(a=>a.w).join(' ');
   const fresh=low.find(k=>!used.includes(k[0]))||low[0];
-  acts.push({b:`<b>${fresh[0]} is your weakest untouched area &mdash; ${band(fresh[1].v).s}.</b> That is the work of ${PHASES[ph-1].name} &mdash; the phase you have just entered, not a failure of the one you left.`,
-    w:`instrument: ${fresh[0]} from ${fresh[1].n} statement${fresh[1].n>1?'s':''}, lowest of ${ranked.length}`});
+  acts.push({b:t('report.act.weak',{cat:fresh[0], band:band(fresh[1].v).s, phase:PHASES[ph-1].name}),
+    w:tn('report.act.weak.w',fresh[1].n,{cat:fresh[0], of:ranked.length})});
 
   return `<div class="view"><div class="wrap">
-    <button class="backlink" data-go="reports">&larr; All reports</button>
+    <button class="backlink" data-go="reports">${t('report.back')}</button>
 
     <div class="cover">
       <div class="cover-date">${fmtDate(R)} &middot; ${R.t}${openIx===REPORTS.length-1?' <span class="pill">LATEST</span>':''}</div>
       <div class="cover-grid">
-        <div class="cv"><b>${tot}</b><span>students on the map</span></div>
-        <div class="cv"><b class="ph">${pname(PHASES[ph-1])}</b><span>phase ${ph} of 5${prev&&ph>pph?` &middot; up from ${pname(PHASES[pph-1])}`:''}</span></div>
-        <div class="cv"><b>${c[3]+c[4]}</b><span>at Follow Me &amp; Fish or beyond</span></div>
-        <div class="cv"><b>${ZONES.filter(z=>cov[z.n].length).length}<span class="of">/5</span></b><span>invitations your programs make</span></div>
+        <div class="cv"><b>${tot}</b><span>${t('report.cover.students')}</span></div>
+        <div class="cv"><b class="ph">${pname(PHASES[ph-1])}</b><span>${t('report.cover.phase',{n:ph})}${prev&&ph>pph?' &middot; '+t('report.cover.upfrom',{prev:pname(PHASES[pph-1])}):''}</span></div>
+        <div class="cv"><b>${c[3]+c[4]}</b><span>${t('report.cover.beyond')}</span></div>
+        <div class="cv"><b>${ZONES.filter(z=>cov[z.n].length).length}<span class="of">/5</span></b><span>${t('report.cover.invites')}</span></div>
       </div>
       <div class="cover-bar">${c.map((n,i)=>n?`<div style="flex:${n};background:var(${ZONES[i].v})"></div>`:'').join('')}</div>
     </div>
 
     <div class="sec">
-      <div class="sec-hd"><h2>What phase you are in</h2><span class="n">TAP A LAYER</span></div>
+      <div class="sec-hd"><h2>${t('report.sec.phase')}</h2><span class="n">${t('report.tap')}</span></div>
       <div class="card">
         ${phaseCakeHTML(sc,ph,true)}
-        <p class="note" style="margin-top:12px">Each layer is a phase, and how long you have been in it. ${selPhase?'':'Tap any layer to read what that phase is about, what is true of you in it, and its score.'}</p>
+        <p class="note" style="margin-top:12px">${t('today.plinth.phase')}. ${selPhase?'':t('report.cake.hint')}</p>
         ${selPhase?phaseWhy(selPhase,ph,R):''}
       </div>
     </div>
@@ -2197,14 +2255,14 @@ function vReport(){
     ${(()=>{const tk=PHASES[ph-1].tool,T=TOOLS[tk];
       const parts=T.words.map(w=>[w,cats[w]]).filter(x=>x[1]);
       return `<div class="sec">
-      <div class="sec-hd"><h2>How ${pname(PHASES[ph-1])} works</h2><span class="n">JV TRAINING TOOL</span></div>
+      <div class="sec-hd"><h2>${t('report.how',{phase:pname(PHASES[ph-1])})}</h2><span class="n">${t('report.tool.tag')}</span></div>
       <div class="toolbox">
-        <div class="tb-head"><button class="tb-acr" data-tool="${tk}" title="What ${tk} stands for">${tk}</button><p>${T.spells.join(' &middot; ')}</p></div>
-        <p class="tb-scale">How often each part of this phase actually happens, read from your own answers.</p>
+        <div class="tb-head"><button class="tb-acr" data-tool="${tk}" title="${plain(t('report.tool.title',{tool:tk}))}">${tk}</button><p>${T.spells.join(' &middot; ')}</p></div>
+        <p class="tb-scale">${t('report.tool.scale')}</p>
         <div class="tb-words">
           ${parts.map(x=>{const b=band(x[1].v);return `<button class="tw ${b.k}" data-tool="${x[0]}"><div class="tw-w">${x[0]}${isTool(x[0])&&T.letters.length===1&&x[0]!==tk?` <span class="acrtag mine">${tk}</span>`:''}</div>
             ${pips(x[1].v)}<div class="tw-v">${doingBand(x[1].v)}</div>
-            <div class="tw-n">${x[1].n} statement${x[1].n>1?'s':''}</div></button>`}).join('')}
+            <div class="tw-n">${tn('report.statements',x[1].n)}</div></button>`}).join('')}
         </div>
       </div>
       ${(()=>{const w=parts.slice().sort((a,b)=>a[1].v-b[1].v)[0];
@@ -2238,7 +2296,7 @@ function vReport(){
     </div>
 
     <div class="sec">
-      <div class="sec-hd"><h2>Every category</h2><span class="n">${ranked.length} MEASURED</span></div>
+      <div class="sec-hd"><h2>${t('report.every')}</h2><span class="n">${t('report.measured',{n:ranked.length})}</span></div>
       ${(()=>{
         /* Grouped by phase, and inside a phase in the tool's own order —
            so REST reads Restructure, Entrust, Support, Train. Sorting the
@@ -2248,7 +2306,7 @@ function vReport(){
         const order=[]; PHASES.forEach(ps=>TOOLS[ps.tool].words.forEach(w=>order.push(w)));
         return order.filter(w=>cats[w]).map(w=>[w,cats[w]]);})()
         .map(k=>{const b=band(k[1].v),acr=CAT_TOOL[k[0]],mine=CAT_PHASE[k[0]]===ph;
-        return `<div class="bar ${b.k}"><div class="lb">${k[0]}${acr?`<span class="acrtag ${mine?'mine':''}">${acr}</span>`:''}${mine?'<span class="tag">your phase</span>':''}</div>${pips(k[1].v)}<div class="vl">${b.l}</div></div>`}).join('')}
+        return `<div class="bar ${b.k}"><div class="lb">${k[0]}${acr?`<span class="acrtag ${mine?'mine':''}">${acr}</span>`:''}${mine?`<span class="tag">${t('report.yourphase')}</span>`:''}</div>${pips(k[1].v)}<div class="vl">${b.l}</div></div>`}).join('')}
     </div>
   </div></div>`;
 }
@@ -2305,51 +2363,51 @@ function phaseWhy(n,cur,R){
   const p=PHASES[n-1], st=STORY[n];
   const qs=Q.filter(q=>q.phase===n).map(q=>({...q,a:ansIn(R,q)}));
   const tiers=[
-    {k:'true', hd:'True of you',        list:qs.filter(q=>q.a>=A_TRUE)},
-    {k:'part', hd:'Starting to be true',list:qs.filter(q=>q.a===A_LITTLE)},
-    {k:'not',  hd:'Not yet true',       list:qs.filter(q=>q.a===A_NONE)}
+    {k:'true', hd:t('phase.tf.true'), list:qs.filter(q=>q.a>=A_TRUE)},
+    {k:'part', hd:t('phase.tf.part'), list:qs.filter(q=>q.a===A_LITTLE)},
+    {k:'not',  hd:t('phase.tf.not'),  list:qs.filter(q=>q.a===A_NONE)}
   ];
   const prev=n>1?Q.filter(q=>q.phase===n-1).map(q=>({...q,a:ansIn(R,q)})).sort((a,b)=>b.a-a.a).slice(0,2):[];
   const sc=scoresOf(R);
 
   let stance;
-  if(n===cur) stance='This is where you are now.';
-  else if(n<cur) stance='You have come through this.';
-  else stance=`Not yet &mdash; this is on the other side of ${pname(PHASES[cur-1])}.`;
+  if(n===cur) stance=t('phase.stance.now');
+  else if(n<cur) stance=t('phase.stance.past');
+  else stance=t('phase.stance.ahead',{phase:pname(PHASES[cur-1])});
 
   const tk=p.tool, T=TOOLS[tk];
   return `<div class="why-panel">
     <div class="ph-head">
-      <div class="ph-essence">&ldquo;${st.essence}&rdquo;<sup class="ph-ast" title="Placeholder wording">*</sup></div>
-      <div class="ph-stance">${stance} ${sc[n].toFixed(1)} out of 10.</div>
+      <div class="ph-essence">&ldquo;${st.essence}&rdquo;<sup class="ph-ast" title="${plain(t('phase.ast'))}">*</sup></div>
+      <div class="ph-stance">${stance} ${t('phase.outof',{score:sc[n].toFixed(1)})}</div>
     </div>
     <div class="ph-meta">
       <span><b>${tk}</b>${T.spells.join(' &middot; ')}</span>
-      <span><b>Aimed at</b>${p.who}</span>
-      <span><b>Typically</b>${p.span}<sup class="ph-ast">*</sup></span>
+      <span><b>${t('learn.ph.who')}</b>${p.who}</span>
+      <span><b>${t('learn.ph.span')}</b>${p.span}<sup class="ph-ast">*</sup></span>
     </div>
 
     <p class="ph-about">${st.about}<sup class="ph-ast">*</sup></p>
-    ${st.turn?`<div class="ph-turn"><span>The turn<sup class="ph-ast">*</sup></span>${st.turn}</div>`:''}
+    ${st.turn?`<div class="ph-turn"><span>${t('phase.turn')}<sup class="ph-ast">*</sup></span>${st.turn}</div>`:''}
 
     <div class="tf-grid">
-      ${tiers.map(t=>`<div>
-        <div class="tf-hd ${t.k}">${t.hd}<span>${t.list.length}</span></div>
-        ${t.list.length?t.list.map(q=>`<div class="tf ${t.k}">${q.t}</div>`).join(''):'<div class="tf none">&mdash;</div>'}
+      ${tiers.map(tr=>`<div>
+        <div class="tf-hd ${tr.k}">${tr.hd}<span>${tr.list.length}</span></div>
+        ${tr.list.length?tr.list.map(q=>`<div class="tf ${tr.k}">${q.t}</div>`).join(''):'<div class="tf none">&mdash;</div>'}
       </div>`).join('')}
     </div>
 
     ${prev.length?`<div class="ph-carry">
-      <div class="eyebrow">Strongest in ${pname(PHASES[n-2])}, the phase before</div>
+      <div class="eyebrow">${t('phase.carry',{phase:pname(PHASES[n-2])})}</div>
       ${prev.map(q=>`<div class="carry-line">${q.t}</div>`).join('')}
     </div>`:''}
 
     <div class="ph-foot">
-      <div><div class="eyebrow">Where this goes wrong<sup class="ph-ast">*</sup></div><p>${st.risk}</p></div>
-      <div><div class="eyebrow">${n===5?'When you are here':`How you know you have finished ${pname(p)}`}<sup class="ph-ast">*</sup></div><p>${st.door}</p></div>
+      <div><div class="eyebrow">${t('phase.wrong')}<sup class="ph-ast">*</sup></div><p>${st.risk}</p></div>
+      <div><div class="eyebrow">${n===5?t('phase.here'):t('phase.finished',{phase:pname(p)})}<sup class="ph-ast">*</sup></div><p>${st.door}</p></div>
     </div>
 
-    <p class="ph-note"><b>*</b> Placeholder wording, written for this prototype &mdash; not JV&rsquo;s. These parts need the real text.</p>
+    <p class="ph-note">${t('phase.note')}</p>
   </div>`;
 }
 
