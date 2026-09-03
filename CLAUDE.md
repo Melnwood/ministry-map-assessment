@@ -332,6 +332,36 @@ that were broken when they landed.
   the roster wiring — stay there until they are done, not merged in pieces.
 - Merge deliberately, and preferably not while someone is mid-session.
 
+## A chart is never on one screen
+
+**Before changing anything visual, say where else it appears and ask
+whether all of them change.** Do not fix the screen that was reported and
+leave the tester to find the rest — that is how Dave ended up reporting the
+same phases cake on Today and again on a report, and the same road on Today
+and again on The year.
+
+The map, as of 2 Sep 2026. Regenerate it rather than trusting it: grep for
+the function name and see which view function the call sits inside.
+
+| Component | Appears on |
+|---|---|
+| `roadHTML` — the challenges | **Today**, **The year** (twice: then and now) |
+| `phaseCakeHTML` — the phases | **Today**, **a report** |
+| `mapGridHTML` — programmes over people | **Your map**, both tiers |
+| `mapDetailHTML` — student / programme editor | **Your map**, both tiers |
+| `blanksHTML` — the missing names | **Your map** (open tier), **The year** |
+| `phaseWhy` — the phase card | **a report** |
+| `challengeRoadSVG` | **Like Jesus** only |
+| `phaseYearsHTML` | **Like Jesus** only |
+
+Two of these are deliberately *not* shared, and that is worth defending:
+the Like Jesus diagrams are drawn, carry no data, and are illustrative.
+Everything else on that table shows a real group and must stay honest.
+
+Colour is the same problem in a smaller package. `--ink-45` carries every
+eyebrow, meta line and caption in the app, so "this text is too light on
+the check-up" was never about the check-up. One variable, every screen.
+
 ## Before every push
 
 `.checks/render-check.js` renders every view in both tiers, all five phase
