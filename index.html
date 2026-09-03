@@ -892,7 +892,21 @@ const PHASES=[
  {n:5,name:'Leadership Multiplication',short:'Leadership Mult.',span:'1.5 years',who:'Leaders',tool:'REST'}
 ];
 PHASES[4].tool='REST';
-const pname=p=>p.short||p.name;
+/* ---------- Display names for the data tables ----------
+   The tables keep their English values: those are stored on programmes and
+   students and compared in code, so translating them in place would break
+   saved data. Only the label is looked up. All of this is CONTENT — the
+   challenges, the invitation each one makes, the phases and their tools —
+   so it comes from JV's own material, not a translator's judgement. */
+const zname=z=>t('zone.'+z.n+'.name');
+const zask =z=>t('zone.'+z.n+'.ask');
+const zverb=z=>t('zone.'+z.n+'.verb');
+const pname=p=>t('phase.'+p.n+'.short');
+const pfull=p=>t('phase.'+p.n+'.name');
+const pwho =p=>t('phase.'+p.n+'.who');
+const pspan=p=>t('phase.'+p.n+'.span');
+const freqLabel=f=>t('freq.'+f);
+const cameLabel=c=>t('came.'+c.replace(/\s+/g,'_'));
 
 /* ============================================================
    QUESTION BANK — the real M-Lens instrument
@@ -977,6 +991,19 @@ const Q=[
  [5,'Multiplication','We are beginning to send out leaders to start ministries in other places or serve in other ministries and churches.'],
  [5,'Multiplication','It is hard to keep up with everything that is happening — the Spirit seems to be expanding the ministry in ways we hadn’t anticipated.']
 ].map((r,i)=>({id:i,phase:r[0],cat:r[1],t:r[2]}));
+/* The statement as it is shown. The table above stays the English record —
+   scores are keyed to it and it is what JV signed off — and the display goes
+   through STRINGS so a country reads its own. INSTRUMENT: these 35 and the
+   category names must come from JV's existing M-Lens translation. A statement
+   reworded in one language quietly stops measuring the same thing, and
+   nothing in the app would show it. */
+const qtext=q=>t('q.'+q.id);
+const catLabel=c=>t('cat.'+c);
+/* What an acronym spells is not the same list as what it scores: TAR is one
+   category, but it spells Teach, Act, Reflect — three words the instrument
+   never measures. They get their own namespace so a country can keep the
+   English acronym and gloss the words, or build its own. */
+const spellLabel=w=>t('spell.'+w);
 
 /* ============================================================
    JV TRAINING TOOLS + the categories each phase is scored on
@@ -1153,7 +1180,7 @@ function blanks(ci){
   if(biggest===ZONES.length-1) return {n:c[biggest],
     line:`${c[biggest]} of your students ${one(c[biggest],'has','have')} been sent out to lead.`};
   return {n:c[biggest],
-    line:`${c[biggest]} of your students ${one(c[biggest],'has','have')} gone no further than ${plain(ZONES[biggest].name)}.`};
+    line:`${c[biggest]} of your students ${one(c[biggest],'has','have')} gone no further than ${plain(zname(ZONES[biggest]))}.`};
 }
 const MAP_BLANK_NOTE='This is your group as a number. With names, it could tell you who has not moved since spring.';
 const blanksHTML=(b,note)=>!b?'':`<div class="blanks">
@@ -1396,6 +1423,125 @@ const STRINGS={en:{
   'tool.start':       {one:'<b>Where to start.</b> This one is not yet true of you. {acr} is the tool you already have for it.',
                        other:'<b>Where to start.</b> These {n} are not yet true of you. {acr} is the tool you already have for them.'},
   'tool.allgood':     '<b>All of these are true of you.</b> Nothing here is the thing holding this phase back.',
+
+  /* ---------- CONTENT: the five challenges ----------
+     JV's own wording. Take it from their material; do not compose it. */
+  'zone.1.name':'Come &amp; See',       'zone.1.ask':'Come and look at Jesus for yourself &mdash; nothing is being asked of you yet.', 'zone.1.verb':'invited to come and see',
+  'zone.2.name':'Repent &amp; Believe', 'zone.2.ask':'Turn from your old life and give it to Christ.',                                 'zone.2.verb':'asked to give their life to Christ',
+  'zone.3.name':'Follow Me',            'zone.3.ask':'Let Jesus lead your whole life, not just your Sunday.',                          'zone.3.verb':'asked to follow Jesus daily',
+  'zone.4.name':'Follow Me &amp; Fish', 'zone.4.ask':'Come with me and help reach the people who are still outside.',                  'zone.4.verb':'asked to help reach others',
+  'zone.5.name':'I Am Sending You',     'zone.5.ask':'Go and lead this somewhere I am not.',                                           'zone.5.verb':'asked to lead somewhere new',
+
+  /* ---------- CONTENT: the five phases ----------
+     `short` is what fits on a cake layer and may equal the name. The spans
+     are NOT in the M-Lens documents — they carry an asterisk in the app.
+     Do not translate them as though they were sourced. */
+  'phase.1.name':'Preparation',               'phase.1.short':'Preparation',       'phase.1.who':'Everyone',  'phase.1.span':'30 years',
+  'phase.2.name':'Foundation',                'phase.2.short':'Foundation',        'phase.2.who':'Disciples', 'phase.2.span':'1.5 years',
+  'phase.3.name':'Ministry Training',         'phase.3.short':'Ministry Training', 'phase.3.who':'Workers',   'phase.3.span':'6\u20139 months',
+  'phase.4.name':'Expansion',                 'phase.4.short':'Expansion',         'phase.4.who':'Workers',   'phase.4.span':'6\u20139 months',
+  'phase.5.name':'Leadership Multiplication', 'phase.5.short':'Leadership Mult.',  'phase.5.who':'Leaders',   'phase.5.span':'1.5 years',
+
+  /* ---------- How often a programme runs, and how a student arrived ----------
+     The English stays the stored value; only these labels are shown. */
+  'freq.Weekly':'Weekly', 'freq.Bi-weekly':'Bi-weekly', 'freq.Monthly':'Monthly', 'freq.Yearly':'Yearly',
+  'came.Invited_by_a_student':'Invited by a student',
+  'came.Invited_by_a_leader':'Invited by a leader',
+  'came.Came_with_family':'Came with family',
+  'came.Through_school_or_club':'Through school or club',
+  'came.Found_us_themselves':'Found us themselves',
+
+  /* ---------- INSTRUMENT: the 35 M-Lens statements ----------
+     Verbatim from JV's diagnostic. These must be replaced with JV's own
+     translation of the same instrument, never newly composed: the score
+     only means the same thing in Warsaw as in Prague if the statement
+     does. The translation page shows these locked for that reason. */
+  /* phase 1 */
+  'q.0': 'I understand that my mission is to make disciples. I prioritize disciple-making in my schedule and time.',
+  'q.1': 'I am motivated to do ministry by love for God and love for people.',
+  'q.2': 'I know I have been called by God into his mission, and want to serve out of obedience to him, not just because I was asked to take a role by someone else.',
+  'q.3': 'As I look back over the last year I can see I am steadily growing in wisdom and favor with God and people.',
+  'q.4': 'I feel empowered to serve others because of relationship with Jesus, with the Spirit and with the Father.',
+  'q.5': 'I am a disciple of Jesus and want to see others come to know him and grow in their relationship with him.',
+  'q.6': 'I am willing to take the burden and privilege of serving as a shepherd of part of God’s flock, under the great shepherd.',
+  /* phase 2 */
+  'q.7': 'I spend time with students in a variety of settings outside of youth group meetings. I know what is going on in their world and am engaged in it.',
+  'q.8': 'Our youth group deeply loves and cares for each other. New people feel welcome, and group members intentionally reach out to each other. There is a minimum of gossip, relational competition, or cliques.',
+  'q.9': 'Our youth group has a feeling of expectation. The leaders have vision for the future and communicate it often to the students. We see potential in them and speak it to them.',
+  'q.10': 'The students know who Jesus is, what he has done for them, and who they are because of him. Their view of Jesus isn’t heavily distorted by current culture or church legalism.',
+  'q.11': 'The youth leader(s) pray often for their group, and students see them model prayer in front of them. They set aside time to cover our ministry in prayer.',
+  'q.12': 'Our youth group regularly opens God’s Word and studies it together. We don’t just talk about our opinions on spiritual and relational topics, but instead, open God’s Word and let it speak.',
+  'q.13': 'Our youth group is a healthy environment where people steadily grow in their relationships with God and with others.',
+  /* phase 3 */
+  'q.14': 'Students in our group are asking how they can serve and beginning to take ownership for the health of our group.',
+  'q.15': 'A smaller team within our youth group is being regularly and purposefully equipped to do the work of ministry.',
+  'q.16': 'This ministry team knows how to do personal evangelism, and are practicing how to do it with their friends.',
+  'q.17': 'There is an intentional strategy for how to train the ministry team, including good teaching, carefully crafted experiences, and intentional reflection.',
+  'q.18': 'Some of the ministry team members are discipling individuals or leading small groups. They are helping shepherd young people in an ongoing way toward spiritual maturity.',
+  'q.19': 'The ministry team members are given specific responsibilities in the youth group to purposefully develop their character and skills.',
+  'q.20': 'I am spending more time with a few so that I can reach and shepherd more young people through them.',
+  /* phase 4 */
+  'q.21': 'Our youth group has frequent and regular events focused on group evangelism, where the ministry team is mobilized to share the gospel.',
+  'q.22': 'Every month our group is in contact with more non-Christian young people.',
+  'q.23': 'Unbelievers are regularly coming to Christ and becoming a part of our ministry.',
+  'q.24': 'News about the impact of our ministry and lives that are being changed is spreading on its own.',
+  'q.25': 'Our team is being stretched to reach into new areas and try new ways of reaching the lost.',
+  'q.26': 'Our team has learned how to handle persecution, failure and opposition without stopping or giving up.',
+  'q.27': 'Our ministry is experiencing steady growth, both internally and externally.',
+  /* phase 5 */
+  'q.28': 'Our leaders have identified and invited a select few to be trained and equipped for current and future leadership, based on their fruitfulness as ministry team members.',
+  'q.29': 'The main leader has entrusted parts of the ministry to emerging leaders.',
+  'q.30': 'The ministry has been restructured for multiplication with new systems and subgroups to increase shepherding effectiveness.',
+  'q.31': 'The leader is supporting and training these new leaders through ongoing equipping and care.',
+  'q.32': 'The leadership team is learning to pay the personal price of leadership multiplication, as they follow Jesus into personal sacrifice that brings life to others.',
+  'q.33': 'We are beginning to send out leaders to start ministries in other places or serve in other ministries and churches.',
+  'q.34': 'It is hard to keep up with everything that is happening — the Spirit seems to be expanding the ministry in ways we hadn’t anticipated.',
+
+  /* INSTRUMENT: the categories each statement is scored under. */
+  'cat.All':             'All',
+  'cat.Bible':           'Bible',
+  'cat.CPR':             'CPR',
+  'cat.Call':            'Call',
+  'cat.Character':       'Character',
+  'cat.Empowerment':     'Empowerment',
+  'cat.Entrust':         'Entrust',
+  'cat.Evangelize':      'Evangelize',
+  'cat.Expansion':       'Expansion',
+  'cat.Jesus':           'Jesus',
+  'cat.Love':            'Love',
+  'cat.Multiplication':  'Multiplication',
+  'cat.Prayer':          'Prayer',
+  'cat.Relationships':   'Relationships',
+  'cat.Restructure':     'Restructure',
+  'cat.Serve':           'Serve',
+  'cat.Shepherd':        'Shepherd',
+  'cat.Support':         'Support',
+  'cat.TAR':             'TAR',
+  'cat.Team':            'Team',
+  'cat.Train':           'Train',
+  'cat.Vision':          'Vision',
+
+  /* What each acronym spells. CCE and SIX spell their own categories;
+     TAR, CPR and REST spell words the instrument never scores. */
+  'spell.Act':           'Act',
+  'spell.Bible':         'Bible',
+  'spell.Call':          'Call',
+  'spell.Character':     'Character',
+  'spell.Cultivate':     'Cultivate',
+  'spell.Empowerment':   'Empowerment',
+  'spell.Entrust':       'Entrust',
+  'spell.Jesus':         'Jesus',
+  'spell.Love':          'Love',
+  'spell.Plant':         'Plant',
+  'spell.Prayer':        'Prayer',
+  'spell.Reap':          'Reap',
+  'spell.Reflect':       'Reflect',
+  'spell.Relationships': 'Relationships',
+  'spell.Restructure':   'Restructure',
+  'spell.Support':       'Support',
+  'spell.Teach':         'Teach',
+  'spell.Train':         'Train',
+  'spell.Vision':        'Vision',
 
   /* ---------- Notes ---------- */
   'notes.workbench': 'Workbench',
@@ -1807,7 +1953,7 @@ function challengeRoadSVG(){
     </g>
     ${xs.map((x,i)=>`<circle cx="${x}" cy="150" r="14" fill="var(${ZONES[i].v})"/>
       <text x="${x}" y="156" class="jr-n" text-anchor="middle">${i+1}</text>
-      ${split(plain(ZONES[i].name)).map((ln,j)=>
+      ${split(plain(zname(ZONES[i]))).map((ln,j)=>
         `<text x="${x}" y="${186+j*15}" class="jr-name" text-anchor="middle">${amp(ln)}</text>`).join('')}`).join('')}
   </svg>`;
 }
@@ -1869,7 +2015,7 @@ function vToday(){
              for Ministry Training and Expansion the tool is one category
              among several, so name the phase, not the acronym */
           return tn('today.delta',g.actions,{phase:pname(PHASES[g.phase-1]),
-                    weakest:g.weakest, band:g.band})})()}</div>
+                    weakest:catLabel(g.weakest), band:g.band})})()}</div>
       </div>
       <div class="rc-n"><b>${tot}</b><span>${t('today.students')}</span></div>
       <div class="rc-go">${t('today.open')}</div>
@@ -1922,7 +2068,7 @@ function phaseCakeHTML(sc,ph,tappable){
     const cls=`phtier ${st} ${v?'':'empty'}${tappable&&selPhase===p.n?' sel':''}`;
     const inner=`<span class="phn">${pname(p)}</span><b>${spans[p.n]?spanLabel(spans[p.n]):(p.n<ph?'&mdash;':'')}</b>`;
     return tappable
-      ? `<button class="${cls}" style="width:${w}%" data-phase="${p.n}" aria-label="${p.name}">${inner}</button>`
+      ? `<button class="${cls}" style="width:${w}%" data-phase="${p.n}" aria-label="${plain(pfull(p))}">${inner}</button>`
       : `<div class="${cls}" style="width:${w}%">${inner}</div>`;
   }).join('')}</div>`;
 }
@@ -2039,12 +2185,12 @@ function intakeHTML(){
     <div class="fld"><span>${t('intake.zone')}</span>
       <div class="zpick">${ZONES.map(z=>`<label class="zp" style="--zc:var(${z.v})">
         <input type="radio" name="in-zone-r" value="${z.n}" ${z.n===intake?'checked':''} data-zone="${z.n}">
-        <b>${z.name}</b><em>${z.ask}</em></label>`).join('')}</div>
+        <b>${zname(z)}</b><em>${zask(z)}</em></label>`).join('')}</div>
       <input type="hidden" id="in-zone" value="${intake}">
     </div>
 
     <div class="fgrid">
-      <label class="fld"><span>${t('intake.how')}</span><select id="in-came" data-came>${CAME.map(x=>`<option>${x}</option>`).join('')}</select></label>
+      <label class="fld"><span>${t('intake.how')}</span><select id="in-came" data-came>${CAME.map(x=>`<option value="${esc(x)}">${cameLabel(x)}</option>`).join('')}</select></label>
       <label class="fld" id="bywrap" style="display:${CAME[0]==='Invited by a student'?'':'none'}"><span>${t('intake.by')}</span>
         <select id="in-by"><option value="">&mdash;</option>${STUDENTS.map(x=>`<option>${x.name}</option>`).join('')}</select></label>
       <label class="fld"><span>${t('intake.known')}</span>
@@ -2080,14 +2226,14 @@ function mapGridHTML(){
   let h='<div class="mgwrap"><div class="mgrid">';
 
   h+=`<div class="mg-gut mg-title">${t('map.programs')}</div>`;
-  h+=ZONES.map(z=>`<div class="mg-ch" style="--zc:var(${z.v})"><i>${z.n}</i>${z.name}</div>`).join('');
+  h+=ZONES.map(z=>`<div class="mg-ch" style="--zc:var(${z.v})"><i>${z.n}</i>${zname(z)}</div>`).join('');
 
   h+=`<div class="mg-gut mg-count"><b>${PROGRAMS.length}</b><span>${t('map.running')}</span></div>`;
   h+=ZONES.map(z=>{const n=cov[z.n].length;
     return `<div class="mg-num${n?'':' zero'}" style="--zc:var(${z.v})">${n}</div>`}).join('');
 
   FREQS.forEach(fq=>{
-    h+=`<div class="mg-gut mg-freq">${fq}</div>`;
+    h+=`<div class="mg-gut mg-freq">${freqLabel(fq)}</div>`;
     h+=ZONES.map(z=>{const items=inCell(z.n,fq);
       return `<div class="mg-cell" style="--zc:var(${z.v})">${items.length
         ? items.map(x=>`<button class="pchip${selProgram===x.pi?' is':''}" data-prog="${x.pi}" style="--zc:var(${z.v})">${esc(x.p.name)}</button>`).join('')
@@ -2099,7 +2245,7 @@ function mapGridHTML(){
   h+='<div class="mg-rule"></div>';
 
   h+=`<div class="mg-gut mg-title">${t('map.people')}</div>`;
-  h+=ZONES.map(z=>`<div class="mg-ch" style="--zc:var(${z.v})"><i>${z.n}</i>${z.name}</div>`).join('');
+  h+=ZONES.map(z=>`<div class="mg-ch" style="--zc:var(${z.v})"><i>${z.n}</i>${zname(z)}</div>`).join('');
 
   h+=`<div class="mg-gut mg-count"><b id="cnt-tot">${tot}</b><span>${t('today.students')}</span></div>`;
   h+=ZONES.map((z,i)=>named
@@ -2107,7 +2253,7 @@ function mapGridHTML(){
       : `<div class="mg-num edit" style="--zc:var(${z.v})">
            <button class="stp" data-cnt="${i}:-1" aria-label="${plain(t('map.aria.fewer'))}">&minus;</button>
            <input class="cnv" id="cnv${i}" data-cntv="${i}" type="text" inputmode="numeric"
-                  value="${c[i]}" aria-label="${plain(t('map.aria.count',{ch:plain(z.name)}))}">
+                  value="${c[i]}" aria-label="${plain(t('map.aria.count',{ch:plain(zname(z))}))}">
            <button class="stp" data-cnt="${i}:1" aria-label="${plain(t('map.aria.more'))}">+</button>
          </div>`).join('');
 
@@ -2141,7 +2287,7 @@ function mapDetailHTML(){
       <div class="mdet-hd"><b>${esc(x.name)}</b>
         <span>${t('mdet.since',{date:fmtShort(x.since)})} &middot; ${tn('span.months',monthsBetween(x.since,new Date().toISOString().slice(0,10)))}${x.knownBy?' &middot; '+t('mdet.knownby',{who:esc(x.knownBy)}):' &middot; <b class="warn">'+t('mdet.nobody')+'</b>'}</span>
         <button class="mdet-x" data-sel="${x.id}" aria-label="${plain(t('learn.close'))}">&times;</button></div>
-      <div class="chip-move">${ZONES.map(t=>`<button class="mvb ${t.n===x.hist[NOW]?'is':''}" style="--zc:var(${t.v})" data-move="${x.id}:${t.n}" title="${plain(t.name)}">${t.n}</button>`).join('')}</div>
+      <div class="chip-move">${ZONES.map(t=>`<button class="mvb ${t.n===x.hist[NOW]?'is':''}" style="--zc:var(${t.v})" data-move="${x.id}:${t.n}" title="${plain(zname(t))}">${t.n}</button>`).join('')}</div>
       <div class="chip-act"><span>${t('mdet.move')}</span><button data-drop="${x.id}">${t('common.remove')}</button></div>
     </div>`;
   }
@@ -2152,8 +2298,8 @@ function mapDetailHTML(){
     const p=PROGRAMS[selProgram], pi=selProgram;
     return `<div class="mdet">
       <input class="pnin" id="pn${pi}" value="${esc(p.name)}">
-      <div class="pfreq">${FREQS.map(fq=>`<button class="fq ${fq===p.freq?'is':''}" data-freq="${pi}:${fq}">${fq}</button>`).join('')}</div>
-      <div class="pinv">${ZONES.map(z=>`<button class="inv ${p.ch.includes(z.n)?'on':''}" style="--zc:var(${z.v})" data-inv="${pi}:${z.n}">${z.name}</button>`).join('')}</div>
+      <div class="pfreq">${FREQS.map(fq=>`<button class="fq ${fq===p.freq?'is':''}" data-freq="${pi}:${fq}">${freqLabel(fq)}</button>`).join('')}</div>
+      <div class="pinv">${ZONES.map(z=>`<button class="inv ${p.ch.includes(z.n)?'on':''}" style="--zc:var(${z.v})" data-inv="${pi}:${z.n}">${zname(z)}</button>`).join('')}</div>
       <div class="chip-act"><span>${t('prog.which')}</span><button class="prim" data-pdone="${pi}">${t('common.done')}</button><button data-pdrop="${pi}">${t('common.remove')}</button></div>
     </div>`;
   }
@@ -2264,14 +2410,14 @@ function learnMoreHTML(){
     <div class="lm-list">${ch
       ? ZONES.map(z=>`<div class="lm" style="--zc:var(${z.v})">
           <div class="lm-n">${z.n}</div>
-          <div><div class="lm-name">${z.name}</div><div class="lm-say">${z.ask}</div></div>
+          <div><div class="lm-name">${zname(z)}</div><div class="lm-say">${zask(z)}</div></div>
         </div>`).join('')
       : PHASES.map(p=>{const T=TOOLS[p.tool];
           return `<div class="lm" style="--zc:var(--phase)">
             <div class="lm-n">${p.n}</div>
-            <div><div class="lm-name">${p.name}</div>
-              <div class="lm-say"><b>${p.tool}</b> &middot; ${T.spells.join(' &middot; ')}</div>
-              <div class="lm-meta">${t('learn.ph.who')} ${p.who} &middot; ${t('learn.ph.span')} ${p.span}<sup class="ph-ast">*</sup></div>
+            <div><div class="lm-name">${pfull(p)}</div>
+              <div class="lm-say"><b>${p.tool}</b> &middot; ${T.spells.map(spellLabel).join(' &middot; ')}</div>
+              <div class="lm-meta">${t('learn.ph.who')} ${pwho(p)} &middot; ${t('learn.ph.span')} ${pspan(p)}<sup class="ph-ast">*</sup></div>
             </div></div>`}).join('')}</div>
     ${ch?'':`<p class="ph-note"><b>*</b> ${t('jesus.spans.note').replace(/^<b>\*<\/b>\s*/,'')}</p>`}
   </div></div>`;
@@ -2289,18 +2435,18 @@ function toolInfoHTML(){
   return `<div class="tipwrap" data-tool="close"><div class="tip" role="dialog" aria-label="${isAcr?acr:toolInfo}">
     <button class="tip-x" data-tool="close" aria-label="${plain(t('learn.close'))}">&times;</button>
     <div class="eyebrow">${t('tool.eyebrow',{phase:pname(ph)})}</div>
-    <div class="tip-hd">${isAcr?acr:toolInfo}</div>
+    <div class="tip-hd">${isAcr?acr:catLabel(toolInfo)}</div>
     ${isAcr
-      ? `<div class="tip-spells">${T.spells.map(w=>`<span>${w}</span>`).join('')}</div>
+      ? `<div class="tip-spells">${T.spells.map(w=>`<span>${spellLabel(w)}</span>`).join('')}</div>
 `
       : `<p class="tip-line quiet">${t('tool.measured',{phase:pname(ph),
-             others:T.words.filter(w=>w!==toolInfo).join(', ')})}</p>`}
+             others:T.words.filter(w=>w!==toolInfo).map(catLabel).join(', ')})}</p>`}
     <div class="eyebrow tip-sec">${isAcr
       ? t('tool.sec.phase',{n:qs.length})
       : tn('tool.sec.cat',qs.length)}</div>
     <ul class="tip-qs">${qs.map(q=>{const a=ansIn(R,q);
-      return `<li class="${a>=A_TRUE?'yes':a===A_NONE?'no':'part'}"><i></i><span>${q.t}</span>
-        <em>${isAcr?`${q.cat} &middot; `:''}${scaleLabel(a)}</em></li>`}).join('')}</ul>
+      return `<li class="${a>=A_TRUE?'yes':a===A_NONE?'no':'part'}"><i></i><span>${qtext(q)}</span>
+        <em>${isAcr?`${catLabel(q.cat)} &middot; `:''}${scaleLabel(a)}</em></li>`}).join('')}</ul>
     ${notYet.length
       ? `<p class="tip-do">${tn('tool.start',notYet.length,{acr})}</p>`
       : `<p class="tip-do">${t('tool.allgood')}</p>`}
@@ -2328,10 +2474,10 @@ function vCheck(){
         <div class="known-row"><div class="known-k">${t('check.k.students')}</div><div class="known-v">${tot}</div></div>
         <div class="known-row stacked"><div class="known-k">${t('check.k.people')}</div>
           <div class="known-v"><div class="chal-stack">${ZONES.map((z,i)=>
-            `<div class="chal-row"><span class="chal-dot" style="background:var(${z.v})"></span><span class="chal-n">${z.name}</span><b>${c[i]}</b></div>`).join('')}</div></div></div>
+            `<div class="chal-row"><span class="chal-dot" style="background:var(${z.v})"></span><span class="chal-n">${zname(z)}</span><b>${c[i]}</b></div>`).join('')}</div></div></div>
         <div class="known-row"><div class="known-k">${t('check.k.programs')}</div><div class="known-v">${t('check.v.programs',{n:PROGRAMS.length,made:madeBy})}</div></div>
         <div class="known-row"><div class="known-k">${t('check.k.notcovered')}</div><div class="known-v">${neverMade.length
-          ? tn('check.v.notcovered',neverMade.length,{list:neverMade.map(z=>z.name).join(' · ')})
+          ? tn('check.v.notcovered',neverMade.length,{list:neverMade.map(zname).join(' · ')})
           : t('check.v.allcovered')}</div></div>
       </div>
       <p class="note" style="margin-top:18px">${t('check.wrong')}</p>
@@ -2348,8 +2494,8 @@ function vCheck(){
   const q=Q[i], ph=PHASES[q.phase-1];
   return `<div class="view"><div class="wrap"><div class="q-shell">
     <div class="q-prog"><i style="width:${(i/Q.length)*100}%"></i></div>
-    <div class="q-meta"><span>${pname(ph)} · ${q.cat}</span><span>${i+1} / ${Q.length}</span></div>
-    <div class="q-text">${q.t}</div>
+    <div class="q-meta"><span>${pname(ph)} · ${catLabel(q.cat)}</span><span>${i+1} / ${Q.length}</span></div>
+    <div class="q-text">${qtext(q)}</div>
     <div class="q-opts">
       ${SCALE.map(o=>`<button class="opt" data-ans="${o.v}"><span class="k">${o.k}</span>${t(o.key)}</button>`).join('')}
     </div>
@@ -2374,10 +2520,10 @@ function vReports(){
       else if(ph<pph) bits.push(`<b class="dn">${t('reports.d.down',{phase:pname(PHASES[ph-1])})}</b>`);
       else bits.push(t('reports.d.same'));
       if(dt>0) bits.push(tn('reports.d.more',dt)); else if(dt<0) bits.push(tn('reports.d.fewer',-dt));
-      const g=reportGist(r); if(g.weakest) bits.push(t('reports.d.weakest',{cat:g.weakest}));
+      const g=reportGist(r); if(g.weakest) bits.push(t('reports.d.weakest',{cat:catLabel(g.weakest)}));
       delta=bits.join(' · ');
     } else { const g0=reportGist(r);
-      delta=t('reports.d.first')+(g0.weakest?' &middot; '+t('reports.d.weakest',{cat:g0.weakest}):''); }
+      delta=t('reports.d.first')+(g0.weakest?' &middot; '+t('reports.d.weakest',{cat:catLabel(g0.weakest)}):''); }
     return {r,i,sc,ph,tot,delta};
   }).reverse();
 
@@ -2418,14 +2564,14 @@ function vReport(){
        habit. German capitalises nouns and Czech declines them, so a
        translator may need the frequency to arrive unchanged — the key
        carries the whole clause so they can rewrite around it. */
-    acts.push({b:t('report.act.freq',{verb:wz.verb, n:c[wz.n-1]+c[0], prog:only.name}),
+    acts.push({b:t('report.act.freq',{verb:zverb(wz), n:c[wz.n-1]+c[0], prog:only.name}),
     w:t('report.act.freq.w',{band:band(cats.CPR.v).s, prog:only.name, freq:only.freq.toLowerCase()})});}
   if(gapZone) acts.push({b:t('report.act.gap',{sent:c[4], ready:c[3]}),
     w:t('report.act.gap.w',{band:band(cats.Entrust.v).s, ready:zoneCounts(R.r)[3]})});
   const used=acts.map(a=>a.w).join(' ');
   const fresh=low.find(k=>!used.includes(k[0]))||low[0];
-  acts.push({b:t('report.act.weak',{cat:fresh[0], band:band(fresh[1].v).s, phase:PHASES[ph-1].name}),
-    w:tn('report.act.weak.w',fresh[1].n,{cat:fresh[0], of:ranked.length})});
+  acts.push({b:t('report.act.weak',{cat:catLabel(fresh[0]), band:band(fresh[1].v).s, phase:pfull(PHASES[ph-1])}),
+    w:tn('report.act.weak.w',fresh[1].n,{cat:catLabel(fresh[0]), of:ranked.length})});
 
   return `<div class="view"><div class="wrap">
     <button class="backlink" data-go="reports">${t('report.back')}</button>
@@ -2455,19 +2601,19 @@ function vReport(){
       return `<div class="sec">
       <div class="sec-hd"><h2>${t('report.how',{phase:pname(PHASES[ph-1])})}</h2><span class="n">${t('report.tool.tag')}</span></div>
       <div class="toolbox">
-        <div class="tb-head"><button class="tb-acr" data-tool="${tk}" title="${plain(t('report.tool.title',{tool:tk}))}">${tk}</button><p>${T.spells.join(' &middot; ')}</p></div>
+        <div class="tb-head"><button class="tb-acr" data-tool="${tk}" title="${plain(t('report.tool.title',{tool:tk}))}">${tk}</button><p>${T.spells.map(spellLabel).join(' &middot; ')}</p></div>
         <p class="tb-scale">${t('report.tool.scale')}</p>
         <div class="tb-words">
-          ${parts.map(x=>{const b=band(x[1].v);return `<button class="tw ${b.k}" data-tool="${x[0]}"><div class="tw-w">${x[0]}${isTool(x[0])&&T.letters.length===1&&x[0]!==tk?` <span class="acrtag mine">${tk}</span>`:''}</div>
+          ${parts.map(x=>{const b=band(x[1].v);return `<button class="tw ${b.k}" data-tool="${x[0]}"><div class="tw-w">${catLabel(x[0])}${isTool(x[0])&&T.letters.length===1&&x[0]!==tk?` <span class="acrtag mine">${tk}</span>`:''}</div>
             ${pips(x[1].v)}<div class="tw-v">${doingBand(x[1].v)}</div>
             <div class="tw-n">${tn('report.statements',x[1].n)}</div></button>`}).join('')}
         </div>
       </div>
       ${(()=>{const w=parts.slice().sort((a,b)=>a[1].v-b[1].v)[0];
         if(!w) return '';
-        return `<p class="note" style="margin-top:12px">${t('report.weakest',{part:w[0]})} ${
+        return `<p class="note" style="margin-top:12px">${t('report.weakest',{part:catLabel(w[0])})} ${
           w[0]===tk
-            ? t('report.weakest.istool',{tool:tk, spells:T.spells.join(', ').toLowerCase()})
+            ? t('report.weakest.istool',{tool:tk, spells:T.spells.map(spellLabel).join(', ').toLowerCase()})
           : isTool(w[0])
             ? t('report.weakest.partof',{tool:tk})
             : t('report.weakest.beside',{tool:tk})}</p>`})()}
@@ -2487,8 +2633,8 @@ function vReport(){
       <div class="sec-hd"><h2>${t('report.invites')}</h2><span class="n">${t('report.mapdata')}</span></div>
       <div class="zonebar">
         ${ZONES.map((z,i)=>`<div class="zcol" style="--zc:var(${z.v})">
-          <div class="zhd"><div class="zname">${z.name}</div><div class="zcount">${c[i]}</div></div>
-          <div class="zbody">${cov[z.n].length?cov[z.n].map(p=>`<div class="chip"><span>${p.name}</span><span class="mv ${p.freq==='Yearly'?'back':''}">${p.freq}</span></div>`).join(''):`<div class="chip" style="background:none;box-shadow:inset 0 0 0 1.5px var(--ink-15);color:var(--ink-45);font-style:italic">${t('report.notcovered')}</div>`}</div>
+          <div class="zhd"><div class="zname">${zname(z)}</div><div class="zcount">${c[i]}</div></div>
+          <div class="zbody">${cov[z.n].length?cov[z.n].map(p=>`<div class="chip"><span>${p.name}</span><span class="mv ${p.freq==='Yearly'?'back':''}">${freqLabel(p.freq)}</span></div>`).join(''):`<div class="chip" style="background:none;box-shadow:inset 0 0 0 1.5px var(--ink-15);color:var(--ink-45);font-style:italic">${t('report.notcovered')}</div>`}</div>
         </div>`).join('')}
       </div>
     </div>
@@ -2504,7 +2650,7 @@ function vReport(){
         const order=[]; PHASES.forEach(ps=>TOOLS[ps.tool].words.forEach(w=>order.push(w)));
         return order.filter(w=>cats[w]).map(w=>[w,cats[w]]);})()
         .map(k=>{const b=band(k[1].v),acr=CAT_TOOL[k[0]],mine=CAT_PHASE[k[0]]===ph;
-        return `<div class="bar ${b.k}"><div class="lb">${k[0]}${acr?`<span class="acrtag ${mine?'mine':''}">${acr}</span>`:''}${mine?`<span class="tag">${t('report.yourphase')}</span>`:''}</div>${pips(k[1].v)}<div class="vl">${b.l}</div></div>`}).join('')}
+        return `<div class="bar ${b.k}"><div class="lb">${catLabel(k[0])}${acr?`<span class="acrtag ${mine?'mine':''}">${acr}</span>`:''}${mine?`<span class="tag">${t('report.yourphase')}</span>`:''}</div>${pips(k[1].v)}<div class="vl">${b.l}</div></div>`}).join('')}
     </div>
   </div></div>`;
 }
@@ -2580,9 +2726,9 @@ function phaseWhy(n,cur,R){
       <div class="ph-stance">${stance} ${t('phase.outof',{score:sc[n].toFixed(1)})}</div>
     </div>
     <div class="ph-meta">
-      <span><b>${tk}</b>${T.spells.join(' &middot; ')}</span>
-      <span><b>${t('learn.ph.who')}</b>${p.who}</span>
-      <span><b>${t('learn.ph.span')}</b>${p.span}<sup class="ph-ast">*</sup></span>
+      <span><b>${tk}</b>${T.spells.map(spellLabel).join(' &middot; ')}</span>
+      <span><b>${t('learn.ph.who')}</b>${pwho(p)}</span>
+      <span><b>${t('learn.ph.span')}</b>${pspan(p)}<sup class="ph-ast">*</sup></span>
     </div>
 
     <p class="ph-about">${st.about}<sup class="ph-ast">*</sup></p>
@@ -2591,13 +2737,13 @@ function phaseWhy(n,cur,R){
     <div class="tf-grid">
       ${tiers.map(tr=>`<div>
         <div class="tf-hd ${tr.k}">${tr.hd}<span>${tr.list.length}</span></div>
-        ${tr.list.length?tr.list.map(q=>`<div class="tf ${tr.k}">${q.t}</div>`).join(''):'<div class="tf none">&mdash;</div>'}
+        ${tr.list.length?tr.list.map(q=>`<div class="tf ${tr.k}">${qtext(q)}</div>`).join(''):'<div class="tf none">&mdash;</div>'}
       </div>`).join('')}
     </div>
 
     ${prev.length?`<div class="ph-carry">
       <div class="eyebrow">${t('phase.carry',{phase:pname(PHASES[n-2])})}</div>
-      ${prev.map(q=>`<div class="carry-line">${q.t}</div>`).join('')}
+      ${prev.map(q=>`<div class="carry-line">${qtext(q)}</div>`).join('')}
     </div>`:''}
 
     <div class="ph-foot">
@@ -2632,6 +2778,9 @@ function coachPayload(){
     phase:P.name, aimedAt:P.who,
     tool:{acronym:P.tool, isLetterOfTool:T.letters,
           parts:T.words.map(w=>cats[w]?`${w}: ${band(cats[w].v).l.toLowerCase()} (from ${cats[w].n} statement${cats[w].n>1?'s':''})`:w)},
+    /* English on purpose: the coach prompt quotes the instrument as JV
+       wrote it, so the model reasons against one fixed wording whatever
+       language the leader is reading in. */
     trueOfUs:Q.filter(q=>q.phase===ph&&ansIn(R,q)>=A_TRUE).map(q=>q.t),
     notYetTrue:Q.filter(q=>q.phase===ph&&ansIn(R,q)===A_NONE).map(q=>q.t),
     furthestInvitationSaidYesTo:ZONES.map((z,i)=>({invitation:plain(z.name),means:plain(z.ask),students:c[i]})),
@@ -2788,7 +2937,7 @@ function vTime(){
             ${roadHTML(L.r,{mx})}</div>
         </div>`})()}
       <p class="note" style="margin-top:14px">${t('time.shape.note')}${furthest?' '+t('time.shape.moved',{who:furthest.name,
-          from:plain(ZONES[furthest.hist[F.r]-1].name), to:plain(ZONES[furthest.hist[L.r]-1].name)})
+          from:plain(zname(ZONES[furthest.hist[F.r]-1])), to:plain(zname(ZONES[furthest.hist[L.r]-1]))})
         :named?' '+t('time.shape.stillnone'):''}</p>
     </div>
 
@@ -2807,11 +2956,11 @@ function vTime(){
       <div class="tf-grid" style="grid-template-columns:1fr 1fr">
         <div>
           <div class="tf-hd true">${t('time.nowtrue')}<span>${became.length}</span></div>
-          ${became.map(q=>`<div class="tf true">${q.t}<span class="qp">${pname(PHASES[q.phase-1])} &middot; ${q.cat}</span></div>`).join('')}
+          ${became.map(q=>`<div class="tf true">${qtext(q)}<span class="qp">${pname(PHASES[q.phase-1])} &middot; ${catLabel(q.cat)}</span></div>`).join('')}
         </div>
         <div>
           <div class="tf-hd not">${t('time.unmoved')}<span>${frozen.length}</span></div>
-          ${frozen.slice(0,6).map(q=>`<div class="tf not">${q.t}<span class="qp">${pname(PHASES[q.phase-1])} &middot; ${q.cat}</span></div>`).join('')}
+          ${frozen.slice(0,6).map(q=>`<div class="tf not">${qtext(q)}<span class="qp">${pname(PHASES[q.phase-1])} &middot; ${catLabel(q.cat)}</span></div>`).join('')}
           ${frozen.length>6?`<p class="note" style="margin-top:10px">${tn('time.andmore',frozen.length-6,{phase:pname(PHASES[4])})}</p>`:''}
         </div>
       </div>
@@ -2821,7 +2970,7 @@ function vTime(){
     <div class="sec">
       <div class="sec-hd"><h2>${t('time.stuck')}</h2><span class="n">${named?t('time.stuck.n',{n:stuck.length,of:started.length}):t('time.stuck.unknown')}</span></div>
       ${named
-        ? `<div class="stuckrow">${stuck.map(x=>`<span class="sc" style="--zc:var(${ZONES[x.hist[L.r]-1].v})">${x.name}<em>${ZONES[x.hist[L.r]-1].name}</em></span>`).join('')}</div>
+        ? `<div class="stuckrow">${stuck.map(x=>`<span class="sc" style="--zc:var(${ZONES[x.hist[L.r]-1].v})">${x.name}<em>${zname(ZONES[x.hist[L.r]-1])}</em></span>`).join('')}</div>
            <p class="note" style="margin-top:12px">${tn('time.stuck.note',months)}</p>`
         : blanksHTML(blanks(L.r),tn('time.stuck.blank',months))}
     </div>
