@@ -1622,6 +1622,42 @@ const STRINGS={en:{
   'time.every':       'Every check-up',
   'time.taptoopen':   'TAP TO OPEN',
 
+  'report.weakest':   'Weakest part: <b>{part}</b>.',
+  'report.weakest.istool':'{tool} is the tool for this phase &mdash; {spells}. You already have it; this is the part of the phase you are furthest from, so it is the tool to go back to rather than something new to learn.',
+  'report.weakest.partof':'That is one part of {tool}, the tool for this phase. The tool is the answer, not the diagnosis.',
+  'report.weakest.beside':'{tool} is the tool for this phase. This part is measured beside it, and it is the one you are furthest from.',
+  'report.donext':    'Do this next',
+  'report.bothsources':'FROM BOTH SOURCES',
+  'report.questions': 'Questions worth sitting with',
+  'report.coachtag':  'COACH',
+  'report.invites':   'Where each invitation gets made',
+  'report.mapdata':   'MAP DATA &mdash; NOT RE-ENTERED',
+  'report.notcovered':'not covered',
+
+  /* ---------- Workbench: the pencil, the tier switch, the fallback ---------- */
+  'bot.write':        'Write a note',
+  'bot.title':        'Notes',
+  'bot.localcopy':    'local copy &mdash; will not save',
+  'bot.whoask':       'Who is logging notes?',
+  'bot.whochange':    'Change who is logging',
+  'bot.save':         'Save',
+  'bot.start':        'Start',
+  'bot.whohint':      'Kept on this device so you only say it once. It goes on every note so we know who found what.',
+  'bot.loggingas':    'Logging as <b>{who}</b>',
+  'bot.change':       'change',
+  'bot.textph':       'What felt wrong? A new idea? Something confusing?',
+  'bot.shot':         'Screenshot',
+  'bot.log':          'Log it',
+  'bot.notsaved':     'Not saved &mdash; {why}. Your note is still in the box, so nothing is lost. Try again in a moment.',
+  'bot.saved':        {one:'Saved. {n} note so far.', other:'Saved. {n} notes so far.'},
+  'bot.shotsfailed':  {one:'{n} screenshot could not be attached.', other:'{n} screenshots could not be attached.'},
+  'bot.pastehint':    '&#8984;V pastes a screenshot straight in.',
+  'tier.viewingas':   'viewing as',
+  'tier.open':        'Open',
+  'tier.activated':   'Activated',
+  'err.screen':       'This screen did not load. Nothing you have entered is lost &mdash; try another tab.',
+  'err.tellus':       'Please tell us with the pencil, bottom right. It helps to say what you were doing.',
+
   /* ---------- Learn more ---------- */
   'learn.more':      'Learn more',
   'learn.ch.title':  'Five Challenges of Christ',
@@ -2429,30 +2465,30 @@ function vReport(){
       </div>
       ${(()=>{const w=parts.slice().sort((a,b)=>a[1].v-b[1].v)[0];
         if(!w) return '';
-        return `<p class="note" style="margin-top:12px">Weakest part: <b>${w[0]}</b>. ${
+        return `<p class="note" style="margin-top:12px">${t('report.weakest',{part:w[0]})} ${
           w[0]===tk
-            ? `${tk} is the tool for this phase &mdash; ${T.spells.join(', ').toLowerCase()}. You already have it; this is the part of the phase you are furthest from, so it is the tool to go back to rather than something new to learn.`
+            ? t('report.weakest.istool',{tool:tk, spells:T.spells.join(', ').toLowerCase()})
           : isTool(w[0])
-            ? `That is one part of ${tk}, the tool for this phase. The tool is the answer, not the diagnosis.`
-            : `${tk} is the tool for this phase. This part is measured beside it, and it is the one you are furthest from.`}</p>`})()}
+            ? t('report.weakest.partof',{tool:tk})
+            : t('report.weakest.beside',{tool:tk})}</p>`})()}
     </div>`})()}
 
     <div class="sec">
-      <div class="sec-hd"><h2>Do this next</h2><span class="n">FROM BOTH SOURCES</span></div>
+      <div class="sec-hd"><h2>${t('report.donext')}</h2><span class="n">${t('report.bothsources')}</span></div>
       ${acts.map((a,ix)=>`<div class="act"><div class="num">0${ix+1}</div><div class="bd">${a.b}<div class="why">${a.w}</div></div></div>`).join('')}
     </div>
 
     <div class="sec">
-      <div class="sec-hd"><h2>Questions worth sitting with</h2><span class="n">COACH</span></div>
+      <div class="sec-hd"><h2>${t('report.questions')}</h2><span class="n">${t('report.coachtag')}</span></div>
       ${coachHTML()}
     </div>
 
     <div class="sec">
-      <div class="sec-hd"><h2>Where each invitation gets made</h2><span class="n">MAP DATA &mdash; NOT RE-ENTERED</span></div>
+      <div class="sec-hd"><h2>${t('report.invites')}</h2><span class="n">${t('report.mapdata')}</span></div>
       <div class="zonebar">
         ${ZONES.map((z,i)=>`<div class="zcol" style="--zc:var(${z.v})">
           <div class="zhd"><div class="zname">${z.name}</div><div class="zcount">${c[i]}</div></div>
-          <div class="zbody">${cov[z.n].length?cov[z.n].map(p=>`<div class="chip"><span>${p.name}</span><span class="mv ${p.freq==='Yearly'?'back':''}">${p.freq}</span></div>`).join(''):'<div class="chip" style="background:none;box-shadow:inset 0 0 0 1.5px var(--ink-15);color:var(--ink-45);font-style:italic">not covered</div>'}</div>
+          <div class="zbody">${cov[z.n].length?cov[z.n].map(p=>`<div class="chip"><span>${p.name}</span><span class="mv ${p.freq==='Yearly'?'back':''}">${p.freq}</span></div>`).join(''):`<div class="chip" style="background:none;box-shadow:inset 0 0 0 1.5px var(--ink-15);color:var(--ink-45);font-style:italic">${t('report.notcovered')}</div>`}</div>
         </div>`).join('')}
       </div>
     </div>
@@ -3037,37 +3073,37 @@ let botOpen=false;
 
 function botHTML(){
   const n=NOTES.length;
-  if(!botOpen) return `<button class="fab" data-bot="open" aria-label="Write a note">
+  if(!botOpen) return `<button class="fab" data-bot="open" aria-label="${plain(t('bot.write'))}">
       <span class="fabi">&#9998;</span></button>`;
 
   return `<div class="botwrap"><div class="bot">
     <div class="bot-hd">
-      <b>Notes</b>${onTheWeb()?'':'<span class="bot-local">local copy &mdash; will not save</span>'}
-      <button class="bot-x" data-bot="close" aria-label="Close">&times;</button>
+      <b>${t('bot.title')}</b>${onTheWeb()?'':`<span class="bot-local">${t('bot.localcopy')}</span>`}
+      <button class="bot-x" data-bot="close" aria-label="${plain(t('learn.close'))}">&times;</button>
     </div>
     <div class="bot-body">
       ${(!WHO||askingWho)?`<div class="whogate">
-        <label class="fld"><span>${WHO?'Change who is logging':'Who is logging notes?'}</span>
-          <input id="bn-who" placeholder="First name" value="${WHO||''}" autofocus></label>
-        <button class="btn bot-go" data-who="set">${WHO?'Save':'Start'}</button>
-        <p class="bot-hint">Kept on this device so you only say it once. It goes on every note so we know who found what.</p>
+        <label class="fld"><span>${WHO?t('bot.whochange'):t('bot.whoask')}</span>
+          <input id="bn-who" placeholder="${plain(t('intake.first'))}" value="${WHO||''}" autofocus></label>
+        <button class="btn bot-go" data-who="set">${WHO?t('bot.save'):t('bot.start')}</button>
+        <p class="bot-hint">${t('bot.whohint')}</p>
       </div>`:`
-      <div class="wholine">Logging as <b>${WHO}</b><button data-who="ask">change</button></div>
-      <textarea id="bn-text" placeholder="What felt wrong? A new idea? Something confusing?" rows="4"></textarea>`}
+      <div class="wholine">${t('bot.loggingas',{who:WHO})}<button data-who="ask">${t('bot.change')}</button></div>
+      <textarea id="bn-text" placeholder="${plain(t('bot.textph'))}" rows="4"></textarea>`}
       ${(!WHO||askingWho)?'':`
       ${draftShots.length?`<div class="shots">${draftShots.map((sh,i)=>
         `<div class="shot"><img src="${sh.data}" alt=""><button data-unshot="${i}">&times;</button></div>`).join('')}</div>`:''}
       <div class="bnrow">
-        <label class="shotbtn">Screenshot<input type="file" accept="image/*" multiple id="bn-file"></label>
-        <button class="btn bot-go" data-bench="add">Log it</button>
+        <label class="shotbtn">${t('bot.shot')}<input type="file" accept="image/*" multiple id="bn-file"></label>
+        <button class="btn bot-go" data-bench="add">${t('bot.log')}</button>
       </div>`}
       ${(!WHO||askingWho)?'':saveErr
-        ? `<p class="bot-hint warn">Not saved &mdash; ${saveErr}. Your note is still in the box, so nothing is lost. Try again in a moment.</p>`
+        ? `<p class="bot-hint warn">${t('bot.notsaved',{why:saveErr})}</p>`
 
         : justSaved
-          ? `<p class="bot-hint ok">Saved. ${n} note${n===1?'':'s'} so far.${
-              lastShotsFailed?` ${lastShotsFailed} screenshot${lastShotsFailed===1?'':'s'} could not be attached.`:''}</p>`
-          : `<p class="bot-hint">&#8984;V pastes a screenshot straight in.</p>`}
+          ? `<p class="bot-hint ok">${tn('bot.saved',n)}${
+              lastShotsFailed?' '+tn('bot.shotsfailed',lastShotsFailed):''}</p>`
+          : `<p class="bot-hint">${t('bot.pastehint')}</p>`}
 
       ${(!WHO||askingWho)||!n?'':(()=>{
         const open=NOTES.filter(x=>x.state!=='done').length;
@@ -3111,9 +3147,9 @@ function render(){
        are workbench controls and neither belongs to the product. */
     const open=NOTES.filter(x=>x.state!=='done').length;
     document.getElementById('tiersw').innerHTML=
-      `<span>viewing as</span>${[['open','Open'],['activated','Activated']].map(([k,l])=>
-        `<button class="${TIER===k?'is':''}" data-tier="${k}">${l}</button>`).join('')}
-       <button class="tw-notes${active==='notes'?' is':''}" data-go="notes">Notes${open?`<i>${open}</i>`:''}</button>
+      `<span>${t('tier.viewingas')}</span>${[['open','tier.open'],['activated','tier.activated']].map(([k,l])=>
+        `<button class="${TIER===k?'is':''}" data-tier="${k}">${t(l)}</button>`).join('')}
+       <button class="tw-notes${active==='notes'?' is':''}" data-go="notes">${t('bot.title')}${open?`<i>${open}</i>`:''}</button>
        ${newerBuild
          ? `<button class="tw-build newer" data-build="reload" title="${t('build.newer')}">${t('build.newer')} &middot; ${t('build.reload')}</button>`
          : `<span class="tw-build">${buildLabel()}</span>`}`;
@@ -3126,9 +3162,7 @@ function render(){
     console.error('view "'+active+'" failed to render', err);
     document.getElementById('app').innerHTML=
       `<div class="view"><div class="wrap"><div class="cerr" style="margin-top:40px">
-        This screen did not load. Nothing you have entered is lost &mdash; try another tab.
-        <br><br>Please tell us with the pencil, bottom right. It helps to say what you
-        were doing.<br><br><code style="font-size:12px;opacity:.8">${active}: ${String(err&&err.message||err)}</code>
+        ${t('err.screen')}<br><br>${t('err.tellus')}<br><br><code style="font-size:12px;opacity:.8">${active}: ${String(err&&err.message||err)}</code>
       </div></div></div>`;
   }
 
