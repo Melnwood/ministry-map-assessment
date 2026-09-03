@@ -271,35 +271,12 @@ One sentence, if it is ever needed outside this repo: *the check-up tells
 you what is true of your ministry; coaching is where it becomes about
 people, and that is where the names live.*
 
-## Language
+## Fonts, before any Cyrillic language
 
-**Started 31 Aug 2026.** JV works across sixteen countries and this app is
-English-only. Every user-facing string is being moved into `STRINGS` behind
-a key, read through `t()` and `tn()`. Extraction first, translation later —
-getting the strings out of the code is the one-time structural job, and it
-gets more expensive with every screen added.
-
-**Four rules, and they are not style preferences:**
-
-1. **No user-facing string inline.** It goes in `STRINGS` with a key.
-2. **One whole sentence per key**, with `{placeholders}`. Never build a
-   sentence by joining fragments — word order differs by language and a
-   translator cannot move words across a concatenation.
-3. **Plurals go through `tn()`**, never `n===1?'':'s'`. English has two
-   forms; Czech, Slovak and Polish have three; Hungarian uses none after a
-   numeral ("5 diák", not "5 diákok"). `Intl.PluralRules` already knows
-   every one of these; the code just has to ask it.
-4. **A missing key falls back to English and warns**, so a half-finished
-   language renders rather than showing blanks.
-
-Done so far: the Like Jesus page, 24 keys. Everything else is still inline.
-
-**Two things to settle before translation starts, not after.** The 35
-statements are the instrument — they need JV's own translation, not a
-machine's, and JV may already have M-Lens in these languages. And the fonts:
-Fraunces and Archivo need checking for Cyrillic, or Bulgarian, Ukrainian and
-Serbian will silently fall back to a system font and look like a different
-product.
+Fraunces and Archivo need checking for Cyrillic coverage, or Bulgarian,
+Ukrainian and Serbian will silently fall back to a system font and look like
+a different product. Unresolved, and it does not surface until somebody adds
+one of those languages to `LANGS`.
 
 ## Writing a Fix on a note
 
