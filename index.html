@@ -919,10 +919,16 @@ const pname=p=>p.short||p.name;
    to edit. Nothing has to be migrated if the grading is ever retuned. */
 const A_NONE=0, A_LITTLE=1, A_MOSTLY=2, A_ALWAYS=3;
 const A_TRUE=A_MOSTLY;              /* at or above this, a statement counts as true of you */
-const SCALE=[{k:'A',t:'Not yet true of us', v:A_NONE,   early:0, late:0},
-             {k:'B',t:'Starting to be true',v:A_LITTLE, early:4, late:4},
-             {k:'C',t:'Mostly true',        v:A_MOSTLY, early:8, late:6},
-             {k:'D',t:'Consistently true',  v:A_ALWAYS, early:10,late:10}];
+/* `key`, not the label. These four are part of the instrument, not UI
+   chrome: if the distance between "Mostly" and "Consistently" moves in one
+   language, that country's scores stop being comparable with everyone
+   else's, and nothing would show it. They live under scale.* so the
+   translation page can lock them to JV's own M-Lens wording. */
+const SCALE=[{k:'A',key:'scale.none',   v:A_NONE,   early:0, late:0},
+             {k:'B',key:'scale.little', v:A_LITTLE, early:4, late:4},
+             {k:'C',key:'scale.mostly', v:A_MOSTLY, early:8, late:6},
+             {k:'D',key:'scale.always', v:A_ALWAYS, early:10,late:10}];
+const scaleLabel=i=>t(SCALE[i].key);
 const HARDER_FROM=3;                /* this phase onward is graded on `late` */
 const worth=(a,phase)=>SCALE[a][phase>=HARDER_FROM?'late':'early'];
 const Q=[
@@ -1357,6 +1363,39 @@ const STRINGS={en:{
   'nav.reports':      'Reports',
   'nav.time':         'The year',
   'blanks.more':      {one:'and {n} more', other:'and {n} more'},
+
+  /* ---------- The answer scale — INSTRUMENT, not chrome ----------
+     Take these from JV's existing M-Lens translation. Do not compose new
+     wording: the gap between these four is what the score measures. */
+  'scale.none':       'Not yet true of us',
+  'scale.little':     'Starting to be true',
+  'scale.mostly':     'Mostly true',
+  'scale.always':     'Consistently true',
+
+  /* ---------- Check-up, step 1 ---------- */
+  'check.eyebrow':    'Ministry check-up · step 1 of 2',
+  'check.title':      'You have already done <em>half of this</em>',
+  'check.lede':       'This part is about your students and what you run, and it all comes off your map — so there is nothing to count. Have a look and make sure it matches what you would say out loud.',
+  'check.frommap':    'All of this comes off your map',
+  'check.k.students': 'Students in your group',
+  'check.k.people':   'People',
+  'check.k.programs': 'Programs',
+  'check.v.programs': '{n} running, covering {made} of the 5 challenges',
+  'check.k.notcovered':'Not covered',
+  'check.v.notcovered':{one:'{list} <span class="known-why">&mdash; none of the programs you offer specifically develop people in this challenge</span>',
+                        other:'{list} <span class="known-why">&mdash; none of the programs you offer specifically develop people in these challenges</span>'},
+  'check.v.allcovered':'Nothing &mdash; every challenge has something that asks it',
+  'check.wrong':      'If something is wrong here, change it on your map and it changes here too.',
+  'check.answernote': 'Answer for your group as it actually is right now, not how you hope it will be.',
+
+  /* ---------- An acronym or a category, opened ---------- */
+  'tool.eyebrow':     '{phase} &middot; JV training tool',
+  'tool.measured':    'Measured in {phase}, alongside {others}.',
+  'tool.sec.phase':   'The {n} statements of this phase',
+  'tool.sec.cat':     {one:'{n} statement measures this', other:'{n} statements measure this'},
+  'tool.start':       {one:'<b>Where to start.</b> This one is not yet true of you. {acr} is the tool you already have for it.',
+                       other:'<b>Where to start.</b> These {n} are not yet true of you. {acr} is the tool you already have for them.'},
+  'tool.allgood':     '<b>All of these are true of you.</b> Nothing here is the thing holding this phase back.',
 
   /* ---------- Notes ---------- */
   'notes.workbench': 'Workbench',
@@ -2126,22 +2165,23 @@ function toolInfoHTML(){
   const qs=Q.filter(q=>isAcr?q.phase===T.phase&&T.words.includes(q.cat):q.cat===toolInfo);
   const notYet=qs.filter(q=>ansIn(R,q)<A_TRUE);
   return `<div class="tipwrap" data-tool="close"><div class="tip" role="dialog" aria-label="${isAcr?acr:toolInfo}">
-    <button class="tip-x" data-tool="close" aria-label="Close">&times;</button>
-    <div class="eyebrow">${pname(ph)} &middot; JV training tool</div>
+    <button class="tip-x" data-tool="close" aria-label="${plain(t('learn.close'))}">&times;</button>
+    <div class="eyebrow">${t('tool.eyebrow',{phase:pname(ph)})}</div>
     <div class="tip-hd">${isAcr?acr:toolInfo}</div>
     ${isAcr
       ? `<div class="tip-spells">${T.spells.map(w=>`<span>${w}</span>`).join('')}</div>
 `
-      : `<p class="tip-line quiet">Measured in ${pname(ph)}, alongside ${T.words.filter(w=>w!==toolInfo).join(', ')}.</p>`}
+      : `<p class="tip-line quiet">${t('tool.measured',{phase:pname(ph),
+             others:T.words.filter(w=>w!==toolInfo).join(', ')})}</p>`}
     <div class="eyebrow tip-sec">${isAcr
-      ? `The ${qs.length} statements of this phase`
-      : `${qs.length} statement${qs.length===1?'':'s'} measure${qs.length===1?'s':''} this`}</div>
+      ? t('tool.sec.phase',{n:qs.length})
+      : tn('tool.sec.cat',qs.length)}</div>
     <ul class="tip-qs">${qs.map(q=>{const a=ansIn(R,q);
       return `<li class="${a>=A_TRUE?'yes':a===A_NONE?'no':'part'}"><i></i><span>${q.t}</span>
-        <em>${isAcr?`${q.cat} &middot; `:''}${SCALE[a].t}</em></li>`}).join('')}</ul>
+        <em>${isAcr?`${q.cat} &middot; `:''}${scaleLabel(a)}</em></li>`}).join('')}</ul>
     ${notYet.length
-      ? `<p class="tip-do"><b>Where to start.</b> ${notYet.length===1?'This one is':`These ${notYet.length} are`} not yet true of you. ${acr} is the tool you already have for ${notYet.length===1?'it':'them'}.</p>`
-      : `<p class="tip-do"><b>All of these are true of you.</b> Nothing here is the thing holding this phase back.</p>`}
+      ? `<p class="tip-do">${tn('tool.start',notYet.length,{acr})}</p>`
+      : `<p class="tip-do">${t('tool.allgood')}</p>`}
   </div></div>`;
 }
 
@@ -2158,21 +2198,21 @@ function vCheck(){
 
   if(quizIx===0){
     return `<div class="view"><div class="wrap"><div class="q-shell">
-      <div class="eyebrow">Ministry check-up · step 1 of 2</div>
-      <h1>You have already done <em>half of this</em></h1>
-      <p class="lede">This part is about your students and what you run, and it all comes off your map — so there is nothing to count. Have a look and make sure it matches what you would say out loud.</p>
-      <div class="eyebrow" style="margin-top:26px;margin-bottom:8px">All of this comes off your map</div>
+      <div class="eyebrow">${t('check.eyebrow')}</div>
+      <h1>${t('check.title')}</h1>
+      <p class="lede">${t('check.lede')}</p>
+      <div class="eyebrow" style="margin-top:26px;margin-bottom:8px">${t('check.frommap')}</div>
       <div class="known">
-        <div class="known-row"><div class="known-k">Students in your group</div><div class="known-v">${tot}</div></div>
-        <div class="known-row stacked"><div class="known-k">People</div>
+        <div class="known-row"><div class="known-k">${t('check.k.students')}</div><div class="known-v">${tot}</div></div>
+        <div class="known-row stacked"><div class="known-k">${t('check.k.people')}</div>
           <div class="known-v"><div class="chal-stack">${ZONES.map((z,i)=>
             `<div class="chal-row"><span class="chal-dot" style="background:var(${z.v})"></span><span class="chal-n">${z.name}</span><b>${c[i]}</b></div>`).join('')}</div></div></div>
-        <div class="known-row"><div class="known-k">Programs</div><div class="known-v">${PROGRAMS.length} running, covering ${madeBy} of the 5 challenges</div></div>
-        <div class="known-row"><div class="known-k">Not covered</div><div class="known-v">${neverMade.length
-          ? `${neverMade.map(z=>z.name).join(' · ')} <span class="known-why">&mdash; none of the programs you offer specifically develop people in ${neverMade.length===1?'this challenge':'these challenges'}</span>`
-          : 'Nothing &mdash; every challenge has something that asks it'}</div></div>
+        <div class="known-row"><div class="known-k">${t('check.k.programs')}</div><div class="known-v">${t('check.v.programs',{n:PROGRAMS.length,made:madeBy})}</div></div>
+        <div class="known-row"><div class="known-k">${t('check.k.notcovered')}</div><div class="known-v">${neverMade.length
+          ? tn('check.v.notcovered',neverMade.length,{list:neverMade.map(z=>z.name).join(' · ')})
+          : t('check.v.allcovered')}</div></div>
       </div>
-      <p class="note" style="margin-top:18px">If something is wrong here, change it on your map and it changes here too.</p>
+      <p class="note" style="margin-top:18px">${t('check.wrong')}</p>
       <p class="check-next">${tn('check.next',Q.length)}</p>
       <div style="margin-top:24px;display:flex;gap:10px">
         <button class="btn" data-q="1">${t('check.go')}</button>
@@ -2189,9 +2229,9 @@ function vCheck(){
     <div class="q-meta"><span>${pname(ph)} · ${q.cat}</span><span>${i+1} / ${Q.length}</span></div>
     <div class="q-text">${q.t}</div>
     <div class="q-opts">
-      ${SCALE.map(o=>`<button class="opt" data-ans="${o.v}"><span class="k">${o.k}</span>${o.t}</button>`).join('')}
+      ${SCALE.map(o=>`<button class="opt" data-ans="${o.v}"><span class="k">${o.k}</span>${t(o.key)}</button>`).join('')}
     </div>
-    <p class="note" style="margin-top:22px">Answer for your group as it actually is right now, not how you hope it will be.</p>
+    <p class="note" style="margin-top:22px">${t('check.answernote')}</p>
   </div></div></div>`;
 }
 
