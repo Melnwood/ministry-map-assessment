@@ -493,10 +493,13 @@ button.tw:hover{background:var(--ink-08)}
   background:var(--z5);color:#fff;padding:2px 7px;border-radius:99px}
 .check-next{margin-top:14px;padding-top:13px;border-top:1px solid var(--ink-08);
   font-size:13.5px;line-height:1.55;color:var(--ink-70)}
-.jfig-more{margin-top:14px;padding-top:12px;border-top:1px solid var(--ink-08)}
-.jmore{font:inherit;font-size:12.5px;font-weight:600;color:var(--ink-45);background:none;border:0;
-  cursor:pointer;padding:2px 0;border-bottom:1.5px solid var(--ink-15)}
-.jmore:hover{color:var(--ink);border-bottom-color:var(--ink)}
+.jsec-more{margin:13px 0 32px}
+.jmore{display:inline-flex;align-items:center;gap:9px;font:inherit;font-size:14px;font-weight:600;
+  color:var(--ink);background:var(--surface);border:1px solid var(--ink-15);border-radius:99px;
+  padding:10px 19px 10px 16px;cursor:pointer;transition:border-color .13s,background .13s}
+.jmore:hover{border-color:var(--ink);background:var(--ink-04)}
+.jmore svg{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.4;
+  stroke-linecap:round}
 .lm-list{display:flex;flex-direction:column;gap:2px;margin-top:16px}
 .lm{display:grid;grid-template-columns:30px 1fr;gap:12px;padding:11px 10px;border-radius:9px;align-items:start}
 .lm:hover{background:var(--ink-08)}
@@ -2256,8 +2259,8 @@ function vJesus(){
     <div class="jfig">
       <div class="jfig-hd">${t('jesus.fig1')}</div>
       ${challengeRoadSVG()}
-      <div class="jfig-more"><button class="jmore" data-learn="challenges">${t('learn.more')}</button></div>
     </div>
+    ${learnBtn('challenges')}
 
     <p class="jp">${t('jesus.second')}</p>
 
@@ -2265,8 +2268,8 @@ function vJesus(){
       <div class="jfig-hd">${t('jesus.fig2')}</div>
       ${phaseYearsHTML()}
       <p class="jstack-note">${t('jesus.spans.note')}</p>
-      <div class="jfig-more"><button class="jmore" data-learn="phases">${t('learn.more')}</button></div>
     </div>
+    ${learnBtn('phases')}
 
     <p class="jp">${t('jesus.use')}</p>
 
@@ -2281,6 +2284,18 @@ function vJesus(){
     </div>
   </div></div>`;
 }
+
+/* Dave, 4 Sep: "I see the learn more button now but I missed it several
+   times... It needs to be much more prominent - and perhaps below the graph
+   so that it is clear that it relates to the entire section and not just to
+   the graph." It was a 12.5px text link at 45% ink, sitting INSIDE the
+   figure card under a hairline — which read as a caption on the diagram.
+   Now a real button, outside the card, under the whole section. */
+const learnBtn=kind=>`<div class="jsec-more">
+  <button class="jmore" data-learn="${kind}">
+    <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.4"/>
+      <path d="M10 13.4V9.2M10 6.6v.1"/></svg>
+    ${t('learn.more')}</button></div>`;
 
 /* The phases as a cake: widest at the base, narrowing by an even step to
    the top, right-aligned so the ends line up. The taper is deliberately
