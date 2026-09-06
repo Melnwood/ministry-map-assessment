@@ -504,6 +504,11 @@ start.
 change them, and a large mechanical diff is exactly where a quiet rewording
 would hide.
 
+**Some of what it captures is computed from today's date**, so a baseline
+taken last week drifts on its own. A student's "11 months" becomes "12
+months" and the diff flags a screen nobody touched. Check the actual diff
+before believing it — and re-take the baseline when you start.
+
 That check only proves English still renders the same. `.checks/pseudo.js`
 proves the app can actually change language: it swaps every key for a marked
 echo, renders every screen in both tiers, and reports any plain English left.
