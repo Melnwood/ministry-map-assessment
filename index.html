@@ -23,6 +23,12 @@
   --ink:#16202E; --ink-70:rgba(22,32,46,.70); --ink-45:rgba(22,32,46,.64); --ink-15:rgba(22,32,46,.15); --ink-08:rgba(22,32,46,.08);
   --ground:#E8EAE6; --surface:#FBFBFA; --line:#D3D7D1;
   --z1:#4C6B8A; --z2:#5E8A88; --z3:#8A9455; --z4:#C58A3B; --z5:#B04A38;
+  /* The same five, darkened until they clear 4.5:1 as TEXT on both the page
+     and a card. Dave's "the light grey is too light" note ended with "this
+     may be true in other places" — it was, and worse: the olive was 2.69:1
+     and the amber 2.45:1 against the 2.70:1 grey he could not read. The
+     fills above are unchanged, because a bar is not a word. */
+  --z1-t:#4C6B8A; --z2-t:#4C706E; --z3-t:#666D3F; --z4-t:#8B6129; --z5-t:#AF4938;
   --mark:#16202E; --phase:#4A3BAE; --phase-08:rgba(74,59,174,.085);
   /* Added for the Translate page, and for the note thumbnails, which had
      been asking for --paper since 3 Sep with nothing behind it — an
@@ -87,8 +93,8 @@ h2{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.01
 .zask{font-size:11px;line-height:1.35;color:var(--ink-45);margin-top:7px;font-style:italic}
 .zbody{padding:4px 8px 10px;display:flex;flex-direction:column;gap:3px}
 .chip{font-size:12px;padding:4px 8px;border-radius:6px;background:var(--ink-08);display:flex;justify-content:space-between;gap:6px;align-items:center}
-.chip .mv{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--z3)}
-.chip .mv.back{color:var(--z5)}
+.chip .mv{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--z3-t)}
+.chip .mv.back{color:var(--z5-t)}
 
 /* ---------- known-data confirm ---------- */
 .known{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);overflow:hidden}
@@ -130,8 +136,8 @@ h2{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.01
 .ph-turn span{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--phase);margin-bottom:6px;font-weight:600}
 .tf-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:26px}
 .tf-hd{font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;padding-bottom:9px;margin-bottom:4px;border-bottom:1.5px solid var(--line);display:flex;justify-content:space-between;font-weight:600}
-.tf-hd.true{color:var(--z3);border-color:var(--z3)}
-.tf-hd.part{color:var(--z4);border-color:var(--z4)}
+.tf-hd.true{color:var(--z3-t);border-color:var(--z3)}
+.tf-hd.part{color:var(--z4-t);border-color:var(--z4)}
 .tf-hd.not{color:var(--phase);border-color:var(--phase)}
 .tf-hd span{color:var(--ink-45);font-weight:400}
 .tf{font-size:14.5px;line-height:1.45;padding:10px 0 10px 22px;position:relative;border-bottom:1px solid var(--ink-08)}
@@ -177,7 +183,7 @@ h2{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.01
 .bar{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--ink-08)}
 .bar .lb{font-size:14px;font-weight:500;min-width:150px}
 .bar .vl{font-size:13.5px;font-weight:600;min-width:118px;color:var(--ink-45)}
-.bar.true .vl{color:var(--z3)} .bar.part .vl{color:var(--z4)} .bar.not .vl{color:var(--phase)}
+.bar.true .vl{color:var(--z3-t)} .bar.part .vl{color:var(--z4-t)} .bar.not .vl{color:var(--phase)}
 .bar .lb{flex:1}
 .act{display:flex;gap:15px;padding:17px 0;border-bottom:1px solid var(--line)}
 .act:last-child{border-bottom:none}
@@ -185,7 +191,7 @@ h2{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.01
 .act .bd{font-size:15.5px;line-height:1.5}
 .act .bd b{font-weight:700}
 .act .why{font-family:var(--mono);font-size:11px;color:var(--ink-45);margin-top:7px;letter-spacing:.03em}
-.act .why span{color:var(--z2)}
+.act .why span{color:var(--z2-t)}
 
 /* ---------- two roads ---------- */
 .roads{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px 18px 14px;overflow-x:auto}
@@ -234,7 +240,7 @@ h2{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.01
 .ph-meta b{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--phase);margin-right:9px}
 .toolbox{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--z4);border-radius:0 var(--r) var(--r) 0;padding:20px 22px}
 .tb-head{display:flex;gap:20px;align-items:baseline;flex-wrap:wrap}
-.tb-acr{font-family:var(--mono);font-size:30px;font-weight:600;letter-spacing:.1em;color:var(--z4);flex-shrink:0}
+.tb-acr{font-family:var(--mono);font-size:30px;font-weight:600;letter-spacing:.1em;color:var(--z4-t);flex-shrink:0}
 .tb-head p{font-size:15px;line-height:1.5;color:var(--ink-70);flex:1;min-width:200px}
 .pips{display:inline-flex;gap:3px;flex-shrink:0}
 .pips i{width:15px;height:8px;border-radius:2px;background:var(--ink-08)}
@@ -245,7 +251,7 @@ h2{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.01
 .tw:last-child{border-bottom:none}
 .tw-w{min-width:112px;font-family:var(--display);font-size:16px;font-weight:700;letter-spacing:-.01em}
 .tw-v{font-size:14px;font-weight:600;min-width:210px}
-.tw.true .tw-v{color:var(--z3)} .tw.part .tw-v{color:var(--z4)} .tw.not .tw-v{color:var(--phase)}
+.tw.true .tw-v{color:var(--z3-t)} .tw.part .tw-v{color:var(--z4-t)} .tw.not .tw-v{color:var(--phase)}
 .tw-n{font-family:var(--mono);font-size:10.5px;color:var(--ink-45);margin-left:auto}
 @media (max-width:700px){.tw{flex-wrap:wrap;gap:8px 12px}.tw-v{min-width:0;flex:1}.tw-n{width:100%;margin-left:0}}
 @media (max-width:560px){.tb-acr{font-size:24px}.tw-w{min-width:88px;font-size:14px}}
@@ -338,7 +344,7 @@ button.phtier{cursor:pointer}
   border:1.5px solid var(--ink-15);border-right:0;border-radius:4px 0 0 4px}
 .jstack-note{font-size:11.5px;line-height:1.5;color:var(--ink-45);margin-top:14px;
              padding-top:11px;border-top:1px dashed var(--ink-15)}
-.jstack-note b{color:var(--z5)}
+.jstack-note b{color:var(--z5-t)}
 @media(max-width:560px){.jstack{grid-template-columns:1fr 78px;gap:5px 9px}.jsbar i{font-size:11.5px;padding:8px 11px}}
 .jclimb{height:150px;margin-top:4px}
 .jfig-foot{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:8px}
@@ -435,7 +441,7 @@ button.phtier{cursor:pointer}
 .mdet-hd{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px}
 .mdet-hd>b{font-family:var(--display);font-size:17px;font-weight:800}
 .mdet-hd>span{font-size:12px;color:var(--ink-45);flex:1;min-width:0}
-.mdet-hd .warn{color:var(--z5)}
+.mdet-hd .warn{color:var(--z5-t)}
 .mdet-x{margin-left:auto;background:none;border:0;font-size:20px;line-height:1;color:var(--ink-45);cursor:pointer;padding:0 2px}
 .mdet-x:hover{color:var(--ink)}
 
@@ -451,10 +457,10 @@ button.phtier{cursor:pointer}
 .tn-lab{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-45);
         display:flex;gap:10px;align-items:baseline;margin-bottom:8px}
 .tn-lab span{letter-spacing:.03em}
-.ph-ast{color:var(--z5);font-weight:700;font-size:.7em;margin-left:2px;cursor:help}
+.ph-ast{color:var(--z5-t);font-weight:700;font-size:.7em;margin-left:2px;cursor:help}
 .ph-note{margin-top:16px;padding-top:12px;border-top:1px dashed var(--ink-15);font-size:11.5px;
          line-height:1.5;color:var(--ink-45)}
-.ph-note b{color:var(--z5)}
+.ph-note b{color:var(--z5-t)}
 /* the acronym panel */
 .tipwrap{position:fixed;inset:0;z-index:80;background:rgba(22,32,46,.42);display:flex;align-items:center;
          justify-content:center;padding:22px;animation:fade .15s both}
@@ -487,7 +493,7 @@ button.phtier{cursor:pointer}
 button.tw{font:inherit;text-align:left;border:0;width:100%;cursor:pointer}
 button.tw:hover{background:var(--ink-08)}
 .tb-acr{font:inherit;background:none;border:0;cursor:pointer;font-family:var(--mono);font-size:19px;
-        font-weight:600;letter-spacing:.09em;color:var(--z4);padding:0;border-bottom:1.5px dotted var(--z4)}
+        font-weight:600;letter-spacing:.09em;color:var(--z4-t);padding:0;border-bottom:1.5px dotted var(--z4)}
 .tb-acr:hover{color:var(--ink)}
 .bot-local{font-family:var(--mono);font-size:9px;letter-spacing:.07em;text-transform:uppercase;
   background:var(--z5);color:#fff;padding:2px 7px;border-radius:99px}
@@ -604,7 +610,7 @@ button.tw-build{background:none;border:0;cursor:pointer;padding:0}
 .tr-src{margin-top:5px;font-size:14px;line-height:1.55;white-space:pre-wrap;word-break:break-word}
 .tr-encat{font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;
   color:var(--ink-45);margin-right:4px}
-.tr-ph{background:var(--z3-bg);color:var(--z3);border-radius:3px;padding:0 3px;
+.tr-ph{background:var(--z3-bg);color:var(--z3-t);border-radius:3px;padding:0 3px;
   font-family:var(--mono);font-size:12px}
 .tr-drift,.tr-miss{margin-top:6px;font-size:12px;line-height:1.45;color:var(--warn)}
 .tr-in textarea{width:100%;font:inherit;font-size:14px;line-height:1.55;padding:9px 11px;
@@ -620,7 +626,7 @@ button.tw-build{background:none;border:0;cursor:pointer;padding:0}
 .nt-ba figure{margin:0;min-width:0}
 .nt-ba figcaption{font-family:var(--mono);font-size:9px;letter-spacing:.09em;text-transform:uppercase;
   color:var(--ink-45);margin-bottom:5px}
-.nt-ba .after figcaption{color:var(--z3);font-weight:600}
+.nt-ba .after figcaption{color:var(--z3-t);font-weight:600}
 /* A screenshot is a thumbnail here. Tall grabs — a whole scrolled page —
    were rendering metres deep and burying the rest of the list. Capped, whole
    image still visible, click to open it out. */
@@ -636,7 +642,7 @@ button.tw-build{background:none;border:0;cursor:pointer;padding:0}
 .nt-fix{margin-top:11px;padding:9px 11px;background:var(--ink-08);border-radius:8px;
   font-size:13px;line-height:1.5;color:var(--ink-70)}
 .nt-fix span{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.09em;
-  text-transform:uppercase;color:var(--z3);margin-bottom:4px;font-weight:600}
+  text-transform:uppercase;color:var(--z3-t);margin-bottom:4px;font-weight:600}
 .nt-empty{margin-top:26px;padding:30px;text-align:center;border:1px dashed var(--ink-15);
   border-radius:12px;color:var(--ink-45);font-size:14px}
 .nt{grid-template-columns:26px 1fr auto}
@@ -703,7 +709,7 @@ button.tw-build{background:none;border:0;cursor:pointer;padding:0}
 .rc-phase{font-family:var(--display);font-size:19px;font-weight:700;letter-spacing:-.015em;display:flex;align-items:center;gap:8px}
 .rc-phase i{width:9px;height:9px;border-radius:99px;background:var(--phase);flex-shrink:0}
 .rc-delta{font-family:var(--mono);font-size:11px;color:var(--ink-45);margin-top:5px;letter-spacing:.03em}
-.rc-delta b.up{color:var(--z3)} .rc-delta b.dn{color:var(--z5)}
+.rc-delta b.up{color:var(--z3-t)} .rc-delta b.dn{color:var(--z5-t)}
 .rc-n{text-align:right}
 .rc-n b{display:block;font-family:var(--display);font-size:27px;font-weight:800;line-height:1}
 .rc-n span{font-family:var(--mono);font-size:10px;color:var(--ink-45);text-transform:uppercase;letter-spacing:.08em}
@@ -724,12 +730,12 @@ button.tw-build{background:none;border:0;cursor:pointer;padding:0}
 .tool{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--z4);border-radius:0 11px 11px 0;padding:16px 18px}
 .tool-hd{display:flex;justify-content:space-between;align-items:baseline}
 .tool-hd .acr{font-family:var(--mono);font-size:19px;font-weight:600;letter-spacing:.09em}
-.tool-hd .sc{font-family:var(--mono);font-size:12px;color:var(--z4)}
+.tool-hd .sc{font-family:var(--mono);font-size:12px;color:var(--z4-t)}
 .tool-full{font-family:var(--display);font-size:14.5px;font-weight:600;margin-top:5px;min-height:1.3em}
-.tool-full .needs{color:var(--z5);font-family:var(--body);font-size:12px;font-weight:400}
+.tool-full .needs{color:var(--z5-t);font-family:var(--body);font-size:12px;font-weight:400}
 .tool p{font-size:13.5px;line-height:1.5;color:var(--ink-70);margin-top:10px}
 .bar .lb .acrtag{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--ink-45);margin-left:9px;vertical-align:1px}
-.bar .lb .acrtag.mine{color:var(--z4);font-weight:600}
+.bar .lb .acrtag.mine{color:var(--z4-t);font-weight:600}
 .bar .lb .tag{font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--phase);border:1px solid var(--phase);border-radius:99px;padding:1px 7px;margin-left:8px;vertical-align:1.5px}
 @media (max-width:900px){.cover-grid{grid-template-columns:1fr 1fr}.tools{grid-template-columns:1fr}}
 @media (max-width:860px){
@@ -753,9 +759,9 @@ button.tw-build{background:none;border:0;cursor:pointer;padding:0}
 
 .mapstats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:24px 0 18px}
 .ms{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px}
-.ms b{font-family:var(--display);font-size:32px;font-weight:800;letter-spacing:-.028em;line-height:1;color:var(--z3)}
+.ms b{font-family:var(--display);font-size:32px;font-weight:800;letter-spacing:-.028em;line-height:1;color:var(--z3-t)}
 .ms b .of{font-size:.45em;font-weight:600;color:var(--ink-45)}
-.ms.warn b{color:var(--z5)}
+.ms.warn b{color:var(--z5-t)}
 .ms>span{display:block;font-size:14px;font-weight:600;margin-top:9px}
 .ms em{display:block;font-family:var(--mono);font-size:10.5px;font-style:normal;line-height:1.5;color:var(--ink-45);margin-top:8px}
 @media (max-width:900px){.mapstats{grid-template-columns:1fr 1fr}}
@@ -784,8 +790,8 @@ button.tw-build{background:none;border:0;cursor:pointer;padding:0}
 .shot img{display:block;max-width:104px;max-height:74px;object-fit:cover}
 .shot button{position:absolute;top:3px;right:3px;width:19px;height:19px;border-radius:99px;background:rgba(22,32,46,.8);color:#fff;font-size:13px;line-height:1}
 .bot-hint{font-family:var(--mono);font-size:10px;line-height:1.5;color:var(--ink-45);margin-top:10px}
-.bot-hint.warn{color:var(--z5)}
-.bot-hint.ok{color:var(--z3)}
+.bot-hint.warn{color:var(--z5-t)}
+.bot-hint.ok{color:var(--z3-t)}
 .wholine{font-family:var(--mono);font-size:10px;letter-spacing:.05em;color:var(--ink-45);margin-bottom:9px;display:flex;gap:8px;align-items:baseline}
 .wholine b{font-family:var(--body);font-size:12.5px;letter-spacing:0;color:var(--ink);font-weight:700}
 .wholine button{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--phase);margin-left:auto}
@@ -831,14 +837,14 @@ button.chip:hover{background:var(--ink-15)}
 .chip.open{display:block;background:var(--surface);box-shadow:0 0 0 2px var(--zc);padding:11px;border-radius:9px;margin:3px 0}
 .chip-nm{font-size:14px;font-weight:700}
 .chip-since{font-family:var(--mono);font-size:9.5px;line-height:1.5;color:var(--ink-45);margin:5px 0 9px}
-.chip-since b{color:var(--z5)}
+.chip-since b{color:var(--z5-t)}
 .chip-move{display:flex;gap:3px}
 .mvb{flex:1;height:32px;border-radius:6px;background:color-mix(in srgb,var(--zc) 20%,transparent);font-family:var(--mono);font-size:12px;font-weight:600;color:var(--zc);transition:all .12s}
 .mvb:hover{background:var(--zc);color:#fff}
 .mvb.is{background:var(--zc);color:#fff}
 .chip-act{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px;padding-top:9px;border-top:1px solid var(--ink-08)}
 .chip-act span{font-family:var(--mono);font-size:9.5px;line-height:1.4;color:var(--ink-45);flex:1;min-width:90px}
-.chip-act button{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--z5);border:1px solid var(--ink-15);border-radius:99px;padding:4px 10px}
+.chip-act button{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--z5-t);border:1px solid var(--ink-15);border-radius:99px;padding:4px 10px}
 .chip-act button:hover{border-color:var(--z5)}
 .chip-act button.prim{color:var(--surface);background:var(--ink);border-color:var(--ink)}
 .nsin,.pnin{width:100%;border:1.5px solid var(--ink-15);border-radius:7px;padding:8px 11px;font:inherit;font-size:14px;background:var(--ground)}
@@ -850,10 +856,10 @@ button.prow:hover{border-color:var(--ink)}
 .prow.open{display:block;border-color:var(--ink);box-shadow:0 3px 14px rgba(22,32,46,.07)}
 .pname{font-family:var(--display);font-size:16.5px;font-weight:700;letter-spacing:-.012em}
 .pfr{font-family:var(--mono);font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-45);border:1px solid var(--ink-15);border-radius:99px;padding:2px 9px}
-.pfr.rare{color:var(--z5);border-color:var(--z5)}
+.pfr.rare{color:var(--z5-t);border-color:var(--z5)}
 .ptags{display:flex;gap:4px;align-items:center;margin-left:auto}
 .ptags i{width:22px;height:8px;border-radius:2px;display:block}
-.ptags em{font-family:var(--mono);font-size:10px;font-style:normal;color:var(--z5)}
+.ptags em{font-family:var(--mono);font-size:10px;font-style:normal;color:var(--z5-t)}
 .pfreq{display:flex;gap:5px;margin-top:11px;flex-wrap:wrap}
 .fq{font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;border:1px solid var(--ink-15);border-radius:99px;padding:5px 12px;color:var(--ink-45)}
 .fq.is{background:var(--ink);color:var(--surface);border-color:var(--ink)}
@@ -1209,10 +1215,19 @@ const REPORTS=[
  {d:'2025-10-12',t:'19:40',r:0,a:{1:[3,2,3,2,2,2,2],2:[2,2,2,1,2,1,1],3:[1,1,1,1,1,1,0],4:[0,0,1,0,1,0,0],5:[0,0,0,0,0,0,0]}},
  {d:'2026-03-08',t:'20:05',r:1,a:{1:[3,3,3,2,3,2,2],2:[3,2,3,2,2,2,2],3:[2,1,2,1,2,1,1],4:[1,0,1,0,1,1,0],5:[0,0,0,0,0,0,0]}},
  {d:'2026-08-02',t:'09:14',r:2,a:{1:[3,3,3,2,3,2,2],2:[3,2,3,2,3,2,2],3:[2,2,2,2,2,2,1],4:[2,2,1,0,1,0,0],5:[0,0,0,0,0,0,0]}},
- /* Phase 1 gains one answer here so it no longer ties with phase 2. The two
-    were identical, which drew Preparation and Foundation the same width and
-    read as a bug. Fabricated either way — but a coincidence in fake data
-    should not look like a broken chart. */
+ /* ⚠ Phase 1 gains one answer here that the original fixture did not have.
+    It was added 31 Aug so Preparation would not tie with Foundation and draw
+    the same cake width — a reason that no longer exists, because the cake
+    became a uniform stair step on 2 Sep and its width encodes nothing.
+
+    So this is a fabricated answer that survives only because it was once
+    convenient for a picture, which is the exact practice this file warns
+    about under "Numbers". It is not inert: it reads as Character
+    "Consistently true" rather than "Mostly true" and puts Preparation at
+    9.4 instead of 9.1, on 26 screens.
+
+    Left in place pending Mel's call — reverting it is one edit, restoring
+    1:[3,3,3,2,3,2,2] here. Flagged 7 Sep 2026. */
  {d:'2026-08-05',t:'21:30',r:2,a:{1:[3,3,3,3,3,2,2],2:[3,3,3,2,3,2,2],3:[2,2,2,2,2,2,1],4:[2,2,2,0,1,0,0],5:[0,0,0,0,0,0,0]}}
 ];
 const qIx=q=>Q.filter(x=>x.phase===q.phase).indexOf(q);
