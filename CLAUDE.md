@@ -366,6 +366,18 @@ Colour is the same problem in a smaller package. `--ink-45` carries every
 eyebrow, meta line and caption in the app, so "this text is too light on
 the check-up" was never about the check-up. One variable, every screen.
 
+**And the same note had a second half nobody finished.** Dave's grey note
+ended "this may be true in other places". It was, and worse: the five
+challenge colours were being used as text as well as fills, and the olive
+(2.69:1) and amber (2.45:1) were *lower* than the 2.70:1 grey he could not
+read — 28 places across reports, the toolbox, the phase card, the map and
+the pencil. Fixed 7 Sep 2026 by adding `--z1-t … --z5-t`, the same five
+darkened until they clear 4.5:1 on both the page and a card.
+
+**The rule, so this cannot come back: a fill is `--zN`, a word is `--zN-t`.**
+Never `color:var(--z3)`. Bars, dots and chips keep the bright fills, because
+a bar is not a word.
+
 ## Showing a fix beside the complaint
 
 When a note has a screenshot and the fix is visual, capture the fixed state and
