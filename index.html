@@ -640,6 +640,11 @@ button.tw-build{background:none;border:0;cursor:pointer;padding:0}
   color:var(--ink-45);margin-top:4px}
 @media(max-width:640px){.nt-ba{grid-template-columns:1fr}}
 .nt-shotnote{font-size:11.5px;color:var(--ink-45);margin-top:8px;font-style:italic}
+.nt-sec.talk{padding:16px 18px;border:1px solid var(--z5);border-radius:12px;background:var(--warn-bg)}
+.nt-sec.talk .nt{background:var(--surface)}
+.nt-seclede{margin:6px 0 12px;font-size:13px;line-height:1.5;color:var(--ink-70);max-width:70ch}
+.nt-fix.talk{background:none;border:1px solid var(--z5);border-radius:8px}
+.nt-fix.talk span{color:var(--z5-t)}
 .nt-fix{margin-top:11px;padding:9px 11px;background:var(--ink-08);border-radius:8px;
   font-size:13px;line-height:1.5;color:var(--ink-70)}
 .nt-fix span{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.09em;
@@ -1352,8 +1357,15 @@ function reportGist(R){
    stays the only record. Open ones first, because a list sorted purely by
    date buries what is still outstanding under what is already done. */
 function vNotes(){
-  const open=NOTES.filter(x=>x.state!=='done').sort((a,b)=>new Date(b.at)-new Date(a.at));
-  const done=NOTES.filter(x=>x.state==='done').sort((a,b)=>new Date(b.at)-new Date(a.at));
+  /* A note with a Decision is not work, it is a question for Mel and Dave —
+     almost always data protection. Dave's lean is that more information is
+     better, so these will keep arriving; they need somewhere to accumulate
+     rather than being argued one at a time and forgotten. They sit at the
+     top, out of the ordinary open list, and stay open until settled. */
+  const byDate=(a,b)=>new Date(b.at)-new Date(a.at);
+  const talk=NOTES.filter(x=>x.decision&&x.state!=='done').sort(byDate);
+  const open=NOTES.filter(x=>!x.decision&&x.state!=='done').sort(byDate);
+  const done=NOTES.filter(x=>x.state==='done').sort(byDate);
   const row=x=>{
     const isDone=x.state==='done';
     return `<div class="nt ${isDone?'done':''}">
@@ -1386,6 +1398,7 @@ function vNotes(){
                  <div class="zoom">${t('notes.zoom')}</div></figure>`:''}
           </div>`;})()}
         ${x.context?`<div class="nt-ctx">${esc(x.context)}</div>`:''}
+        ${x.decision?`<div class="nt-fix talk"><span>${t('notes.decision')}</span>${esc(x.decision).replace(/\n/g,'<br>')}</div>`:''}
         ${x.fix?`<div class="nt-fix"><span>${t('notes.fix')}</span>${esc(x.fix).replace(/\n/g,'<br>')}</div>`:''}
       </div>
       <div class="nt-act">${confirmDel===x.id
@@ -1400,7 +1413,7 @@ function vNotes(){
       <button class="nt-refresh" data-notes="refresh" ${loadingNotes?'disabled':''}>${
         loadingNotes?t('notes.loading'):t('notes.refresh')}</button>
     </div>
-    <h1>${NOTES.length ? t('notes.headline',{open:tn('notes.open',open.length),
+    <h1>${NOTES.length ? t('notes.headline',{open:tn('notes.open',open.length+talk.length),
                                               done:tn('notes.donecount',done.length)})
                        : t('notes.none')}</h1>
     <p class="lede">${t('notes.lede')}</p>
@@ -1410,6 +1423,8 @@ function vNotes(){
           ? t('notes.failed')
           : t('notes.empty')}
       </div>` : `
+      ${talk.length?`<div class="nt-sec talk"><div class="eyebrow">${t('notes.sec.talk')}</div>
+         <p class="nt-seclede">${t('notes.talk.lede')}</p>${talk.map(row).join('')}</div>`:''}
       ${open.length?`<div class="nt-sec"><div class="eyebrow">${t('notes.sec.open')}</div>${open.map(row).join('')}</div>`:''}
       ${done.length?`<div class="nt-sec"><div class="eyebrow">${t('notes.sec.done')}</div>${done.map(row).join('')}</div>`:''}`}
   </div></div>`;
@@ -1944,6 +1959,9 @@ const STRINGS={en:{
   'notes.none':      'Nothing logged yet',
   'notes.lede':      'Everything logged from the pencil, from everyone. Tick one when it is dealt with. This reads the same records as the base &mdash; there is no second copy.',
   'notes.empty':     'When someone writes a note with the pencil, bottom right, it appears here.',
+  'notes.sec.talk':  'To discuss',
+  'notes.talk.lede': 'Not work &mdash; questions for Mel and Dave. Each of these would hold something about a named young person, so it is a decision about data protection before it is a feature.',
+  'notes.decision':  'Why this is a decision',
   'notes.sec.open':  'Open',
   'notes.sec.done':  'Done',
   'notes.tick':      'Mark as done',
@@ -3587,7 +3605,7 @@ async function benchAdd(){
   const t=document.getElementById('bn-text');
   if(!t||!t.value.trim())return;
   const note={id:Date.now(), who:WHO||'Unknown', text:t.value.trim(), area:screenNow(), kind:'idea', context:noteContext(),
-    shots:draftShots.slice(), state:'open', at:new Date().toISOString(), reply:null};
+    shots:draftShots.slice(), state:'open', at:new Date().toISOString()};
   NOTES.push(note);
   const kept=t.value, keptShots=draftShots.slice();
   draftShots=[]; t.value=''; justSaved=false; render();

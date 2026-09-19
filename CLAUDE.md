@@ -345,6 +345,19 @@ reach Mel as a decision, not get built because they were easy.
 Say plainly: what it would hold, about whom, whether it is Article 9, and
 what would have to be true before it could be built. Then wait.
 
+**Then write it into the note's `Decision` field and leave the note open.**
+That puts it in its own section at the top of the Notes page, headed *To
+discuss*, out of the ordinary open list and in front of both of them. Dave's
+lean is that more information is better, so these will keep arriving — they
+need somewhere to accumulate rather than being argued one at a time and
+forgotten. The note stays open until Mel and Dave settle it; it is not done
+because it was explained.
+
+Write four things: what it would hold and about whom, why it is a decision,
+**the counts-only version** where there is one, and what it would take to do
+it by name. The counts version matters most — it is usually what was
+actually wanted, and it is what lets the answer be yes.
+
 **Why the bar is this low.** This app holds whether an identifiable child
 has professed faith. That is Article 9 special category data about a minor —
 the most protected combination in the regulation. A feature that looks like
