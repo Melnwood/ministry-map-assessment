@@ -46,6 +46,21 @@
   }catch(e){ out.threw.push('translate/open: '+e.message); }
   trLang=null; trOpen={};
 
+  // a note with a Decision is a question for Mel and Dave, not work: it goes
+  // in its own section above the open list and keeps its reasoning visible
+  const FIXTURE=NOTES.slice();          /* the next check needs it back */
+  try{ TIER='open'; active='notes';
+    NOTES=[{id:9,rec:'r9',who:'Dave',area:'The year',state:'open',at:'2026-09-19T12:00:00Z',
+            text:'a request that touches personal data',decision:'WHY IT IS A DECISION  Article 9.',shots:[]},
+           {id:8,rec:'r8',who:'Dave',area:'Your map',state:'open',at:'2026-09-19T11:00:00Z',
+            text:'an ordinary open note',shots:[]}];
+    const h=vNotes();
+    if(!/nt-sec talk/.test(h))      out.empty.push('notes/discussion section');
+    if(!/nt-fix talk/.test(h))      out.empty.push('notes/decision block');
+    if(h.indexOf('To discuss') > h.indexOf('>Open<')) out.empty.push('notes/discussion is not first');
+  }catch(e){ out.threw.push('notes/discussion: '+e.message); }
+  NOTES=FIXTURE;
+
   // a fixed note shows the tester's shot beside the after-shot from /after/
   try{ TIER='open'; active='notes'; render();
        var ba=document.querySelector('.nt-ba');
