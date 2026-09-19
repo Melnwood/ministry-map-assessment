@@ -458,6 +458,7 @@ button.phtier{cursor:pointer}
         display:flex;gap:10px;align-items:baseline;margin-bottom:8px}
 .tn-lab span{letter-spacing:.03em}
 .ph-ast{color:var(--z5-t);font-weight:700;font-size:.7em;margin-left:2px;cursor:help}
+.carry-note{margin:9px 0 0;font-size:12.5px;line-height:1.5;color:var(--ink-70)}
 .ph-note{margin-top:16px;padding-top:12px;border-top:1px dashed var(--ink-15);font-size:11.5px;
          line-height:1.5;color:var(--ink-45)}
 .ph-note b{color:var(--z5-t)}
@@ -2069,6 +2070,8 @@ const STRINGS={en:{
   'phase.wrong':      'Where this goes wrong',
   'phase.here':       'When you are here',
   'phase.finished':   'How you know you have finished {phase}',
+  'phase.carry.keep': 'Even as you focus new attention on equipping, your strong foundation needs to be maintained.',
+  'phase.canmoveback':'Sometimes, because of students or leaders leaving, or specific challenges you face, you may move back a phase.',
   'phase.note':       '<b>*</b> Placeholder wording, written for this prototype &mdash; not JV&rsquo;s. These parts need the real text.',
 
   'map.lede.named':   'Five challenges across the top. What you run above, who you have below. Tap a name to move them &mdash; only once you have actually asked, and they have said so.',
@@ -2201,7 +2204,6 @@ const STRINGS={en:{
   'learn.ph.lede':   'Five seasons a ministry grows through, each with a JV training tool you already have. Your phase is the first one scoring below 7 out of 10: everything before it is cleared, everything after is not yet your turn.',
   'learn.ph.tool':   'Tool',
   'learn.ph.who':    'Aimed at',
-  'learn.ph.span':   'Typically',
   'learn.close':     'Close',
   'jesus.go.map':    'See the map first'
 }};
@@ -2844,9 +2846,9 @@ function learnMoreHTML(){
             <div class="lm-n">${p.n}</div>
             <div><div class="lm-name">${pfull(p)}</div>
               <div class="lm-say"><b>${p.tool}</b> &middot; ${T.spells.map(spellLabel).join(' &middot; ')}</div>
-              <div class="lm-meta">${t('learn.ph.who')} ${pwho(p)} &middot; ${t('learn.ph.span')} ${pspan(p)}<sup class="ph-ast">*</sup></div>
+              <div class="lm-meta">${t('learn.ph.who')} ${pwho(p)}</div>
             </div></div>`}).join('')}</div>
-    ${ch?'':`<p class="ph-note"><b>*</b> ${t('jesus.spans.note').replace(/^<b>\*<\/b>\s*/,'')}</p>`}
+
   </div></div>`;
 }
 
@@ -3018,7 +3020,7 @@ function vReport(){
       <div class="sec-hd"><h2>${t('report.sec.phase')}</h2><span class="n">${t('report.tap')}</span></div>
       <div class="card">
         ${phaseCakeHTML(sc,ph,true)}
-        <p class="note" style="margin-top:12px">${t('today.plinth.phase')}. ${selPhase?'':t('report.cake.hint')}</p>
+        <p class="note" style="margin-top:12px">${t('today.plinth.phase')}. ${t('phase.canmoveback')} ${selPhase?'':t('report.cake.hint')}</p>
         ${selPhase?phaseWhy(selPhase,ph,R):''}
       </div>
     </div>
@@ -3096,27 +3098,32 @@ function vReport(){
    says so. Replace it with JV's own material and delete this notice; do not
    extend it. */
 const STORY={
- 1:{essence:'Before the ministry, the minister.',
-    about:'Thirty years of preparation for three years of ministry &mdash; that is the proportion Jesus kept, and it is the one this phase refuses to let you skip. Preparation is where God settles your character, your calling, and who has authorised you, so that everything built later has something to stand on.',
+ 1:{jv:['essence','about'],
+    essence:'Before you do, you must become.',
+    about:'Thirty years of preparation for three and a half years of ministry &mdash; that is the proportion Jesus kept, and it shows you this phase is not one to skip. Preparation is where God confirms your identity, forms your character, clarifies your calling, and empowers you by his Spirit to lead and serve. Everything built later is made possible by the preparation God builds into you.',
     turn:null,
     risk:'Skipping it. A ministry can run on gifting alone &mdash; for about two years.',
     door:'You know your call, someone knows the real you, and your church has blessed you. Then you can start building.'},
- 2:{essence:'A few students, genuinely known.',
-    about:'Foundation is where a group becomes a place rather than an event. Six things go in the ground here &mdash; prayer, relationship, God&rsquo;s Word, vision, love, and Christ himself &mdash; and none of them can be added later without digging up what you already built.',
-    turn:'You stopped working only on yourself and started working on the room.',
+ 2:{jv:['essence','about','turn'],
+    essence:'A healthy core of students, forming an environment where people grow.',
+    about:'Foundation is where a group becomes a community rather than an event. Six essentials make this possible &mdash; prayer, relationship, God&rsquo;s Word, vision, love, and Christ himself. Without this foundational health, nothing else will grow.',
+    turn:'You stop working only on yourself and do the hard work of creating a healthy community.',
     risk:'Mistaking a full room for a healthy one.',
     door:'Students would say an adult here knows them, and they have heard the gospel clearly. Then you have something worth handing to someone.'},
- 3:{essence:'Teach it, let them do it, then talk about what happened.',
-    about:'Ministry Training is the narrowing. You stop spending yourself evenly across the crowd and start pouring into a handful who can carry what you carry. It is the shortest phase on the board and the one that decides everything after it &mdash; and it only works as a loop, not a course.',
-    turn:'You stopped being the one who does the ministry and became the one who trains it.',
+ 3:{jv:['essence','about','turn'],
+    essence:'Equip them, give them responsibilities, then talk about what happened.',
+    about:'Ministry Training involves pulling some close so you have the resources from which to expand. You stop spending yourself evenly across the crowd and start investing deeply into a few who will serve with you. This change in leadership is counter-intuitive, because in the short run it is always slower to equip others than to do it yourself. But if you never start investing in the few, you will never reach the many.',
+    turn:'You stop being the one who does all the ministry and become the one who equips others to do it.',
     risk:'Teaching and acting but never reflecting &mdash; activity without anyone growing.',
     door:'A student could lead without you in the room, and another leader is growing beside you.'},
- 4:{essence:'The turn outward.',
+ 4:{jv:['turn'],
+    essence:'The turn outward.',
     about:'For three phases the work pointed inward &mdash; your own walk, then your group&rsquo;s health, then a few workers you trained. Expansion is where that trained core stops being the point and becomes the means. The question changes from &ldquo;are our students growing?&rdquo; to &ldquo;who is not here yet?&rdquo;',
-    turn:'You stopped asking whether your students are growing and started asking who is still outside.',
+    turn:'You stop just asking whether your students are growing and start asking who is outside.',
     risk:'Reaping where nothing was cultivated, or cultivating forever and never reaping. Both feel like work.',
     door:'Your students bring friends without being asked, you are present where students already are, and you know what happens to a new believer in their first month.'},
- 5:{essence:'Give it away.',
+ 5:{jv:[],
+    essence:'Give it away.',
     about:'Leadership Multiplication is the bravest phase because it costs you the thing you built. You re-structure so the ministry no longer runs through you, entrust it to leaders you raised, stay close enough to support them, and keep training the generation behind them.',
     turn:'You stopped growing your ministry and started growing other people&rsquo;s.',
     risk:'Entrusting without supporting &mdash; which is not releasing people, it is abandoning them.',
@@ -3132,6 +3139,14 @@ const STORY={
    asterisk and a footnote saying so, so nobody reads it as JV's teaching. */
 function phaseWhy(n,cur,R){
   const p=PHASES[n-1], st=STORY[n];
+  /* The asterisk is per field now, not per card. Dave supplied JV's real
+     wording for most of phases 1-3 on 19 Sep, so those lines are sourced and
+     must not carry a disclaimer; the rest is still prose written here and
+     must. `jv` on each STORY entry lists what came from JV. */
+  const jv  = st.jv||[];
+  const ast = f => jv.includes(f) ? '' : '<sup class="ph-ast">*</sup>';
+  const anyPlaceholder = ['essence','about','turn','risk','door']
+        .some(f => st[f] && !jv.includes(f));
   const qs=Q.filter(q=>q.phase===n).map(q=>({...q,a:ansIn(R,q)}));
   const tiers=[
     {k:'true', hd:t('phase.tf.true'), list:qs.filter(q=>q.a>=A_TRUE)},
@@ -3149,17 +3164,21 @@ function phaseWhy(n,cur,R){
   const tk=p.tool, T=TOOLS[tk];
   return `<div class="why-panel">
     <div class="ph-head">
-      <div class="ph-essence">&ldquo;${st.essence}&rdquo;<sup class="ph-ast" title="${plain(t('phase.ast'))}">*</sup></div>
+      <div class="ph-essence">&ldquo;${st.essence}&rdquo;${jv.includes('essence')?'':`<sup class="ph-ast" title="${plain(t('phase.ast'))}">*</sup>`}</div>
       <div class="ph-stance">${stance} ${t('phase.outof',{score:sc[n].toFixed(1)})}</div>
     </div>
     <div class="ph-meta">
       <span><b>${tk}</b>${T.spells.map(spellLabel).join(' &middot; ')}</span>
       <span><b>${t('learn.ph.who')}</b>${pwho(p)}</span>
-      <span><b>${t('learn.ph.span')}</b>${pspan(p)}<sup class="ph-ast">*</sup></span>
+      <!-- Dave, 19 Sep: "I would take out the length of time - it sounds
+           prescriptive here and it could be confusing", and separately "I
+           don't think we should have these time tags". Both screenshots are
+           this tag. A typical duration told a leader how long their phase
+           ought to take, from a figure JV never gave us. -->
     </div>
 
-    <p class="ph-about">${st.about}<sup class="ph-ast">*</sup></p>
-    ${st.turn?`<div class="ph-turn"><span>${t('phase.turn')}<sup class="ph-ast">*</sup></span>${st.turn}</div>`:''}
+    <p class="ph-about">${st.about}${ast('about')}</p>
+    ${st.turn?`<div class="ph-turn"><span>${t('phase.turn')}${ast('turn')}</span>${st.turn}</div>`:''}
 
     <div class="tf-grid">
       ${tiers.map(tr=>`<div>
@@ -3171,14 +3190,15 @@ function phaseWhy(n,cur,R){
     ${prev.length?`<div class="ph-carry">
       <div class="eyebrow">${t('phase.carry',{phase:pname(PHASES[n-2])})}</div>
       ${prev.map(q=>`<div class="carry-line">${qtext(q)}</div>`).join('')}
+      <p class="carry-note">${t('phase.carry.keep')}</p>
     </div>`:''}
 
     <div class="ph-foot">
-      <div><div class="eyebrow">${t('phase.wrong')}<sup class="ph-ast">*</sup></div><p>${st.risk}</p></div>
-      <div><div class="eyebrow">${n===5?t('phase.here'):t('phase.finished',{phase:pname(p)})}<sup class="ph-ast">*</sup></div><p>${st.door}</p></div>
+      <div><div class="eyebrow">${t('phase.wrong')}${ast('risk')}</div><p>${st.risk}</p></div>
+      <div><div class="eyebrow">${n===5?t('phase.here'):t('phase.finished',{phase:pname(p)})}${ast('door')}</div><p>${st.door}</p></div>
     </div>
 
-    <p class="ph-note">${t('phase.note')}</p>
+    ${anyPlaceholder?`<p class="ph-note">${t('phase.note')}</p>`:''}
   </div>`;
 }
 
