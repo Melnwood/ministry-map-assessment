@@ -12,7 +12,10 @@
          {id:2,rec:'r2',who:'Mel',text:'Done',area:'Your map',state:'done',at:'2026-08-30T09:00:00Z',shots:[]},
          {id:3,rec:'r3',who:'Dave',text:'With a shot',area:'Reports',state:'done',at:'2026-08-29T09:00:00Z',
           fix:'Fixed it.',shots:[{data:PX}]}];
-  ['open','activated'].forEach(function(tier){ TIER=tier;
+  /* 'new' is a leader who signed up ten seconds ago: no roster, no
+     programmes, no check-ups. Three screens used to throw in that state and
+     nobody had looked, because the demo group always had a year of data. */
+  ['new','open','activated'].forEach(function(tier){ setTier(tier);
     Object.keys(views).forEach(function(v){
       active=v; selPhase=null; toolInfo=null; selStudent=null; selProgram=null;
       addingProgram=false; addingTo=null; intake=null; quizIx=0; confirmDel=null;
@@ -21,6 +24,18 @@
            if(document.querySelector('.cerr')) out.threw.push(tier+'/'+v+' rendered the error panel');
       }catch(e){ out.threw.push(tier+'/'+v+': '+e.message); }
     });
+    /* the rest needs a report to hang off, which a new leader has not got */
+    if(tier==='new'){
+      active='today';
+      try{ render(); if(!document.querySelector('.steps')) out.empty.push('new/start panel'); }
+      catch(e){ out.threw.push('new/start panel: '+e.message); }
+      active='check';
+      try{ render(); if(!/who is in your group/i.test(document.getElementById('app').innerText))
+             out.empty.push('new/check-up first run'); }
+      catch(e){ out.threw.push('new/check-up first run: '+e.message); }
+      return;
+    }
+
     // panels that only exist after a click
     active='report';
     for(var n=1;n<=5;n++){ try{ selPhase=n; render(); if(!document.querySelector('.why-panel')) out.empty.push(tier+'/phase-card-'+n); }catch(e){ out.threw.push(tier+'/phase-card-'+n+': '+e.message); } }
@@ -67,6 +82,9 @@
        if(!ba) out.empty.push('notes/before-after grid');
        else if(ba.querySelectorAll('figure').length<2) out.empty.push('notes/after-shot figure');
   }catch(e){ out.threw.push('notes/before-after: '+e.message); }
+
+  setTier('open');                      /* put the demo data back */
+  if(STUDENTS.length===0) out.threw.push('setTier did not restore the demo data');
 
   // the bot, in each of its states
   [['closed',function(){botOpen=false}],

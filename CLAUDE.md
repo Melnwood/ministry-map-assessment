@@ -153,6 +153,32 @@ Before any figure ships, state what would falsify it. Two live examples:
 
 ---
 
+## Three positions on the switch — new, open, activated
+
+**Added 19 Sep 2026.** `new` is a leader who signed up ten seconds ago: no
+roster, no programmes, no check-ups. It is the third position on the same
+switch rather than a separate control, because a new leader is open-tier by
+definition — activation is a person from JV making contact.
+
+Dave asked for it three times, on three screens, over three weeks:
+
+> "Is there a way of seeing the path through this the first time around?"
+> "Would they see the map if it was their first time through?"
+> "This view assumes I have already filled things out."
+
+He was right to keep asking. **Every screen had been built against a group
+with a year of data, and nobody had ever opened the app with nothing in
+it.** Today, a report and The year all threw. The check-up opened by telling
+a leader they had already done half of it.
+
+The demo data is stashed on switching, not destroyed, so switching back
+restores it without a reload — and the pre-push check asserts that, because
+a switch that quietly loses the fixture would be worse than no switch.
+
+**Anything new has to survive this state.** The render check now walks all
+three positions. If a screen needs a report to exist, guard it and route
+somewhere — `startHTML()` is the shared two-step panel for exactly that.
+
 ## Two tiers — open and activated
 
 **Decided 26 Aug 2026 by Mel.** A leader can sign up themselves and start.
