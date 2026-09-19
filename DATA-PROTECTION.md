@@ -21,6 +21,39 @@ the most protected combination the regulation has.
 
 Everything below follows from that.
 
+## Two ways data can leave that are not the database
+
+Both were introduced by the build process itself, not by the product, which
+is why neither appeared in the original assessment.
+
+**1. After-shots are committed to a public repository.** Since 3 Sep 2026 a
+fixed note can carry a picture of the fix at `after/<record id>.jpg`, shown
+beside the tester's own screenshot. `Melnwood/ministry-map-assessment` is
+**public**. Git history is the one place where erasure is not practically
+possible — a deleted file stays in every clone and every fork.
+
+Today every committed shot is of the fabricated demo roster, so nothing real
+has left. The hazard is the practice, not the current files.
+
+> **Rule: an after-shot may only ever be captured from the demo data.**
+> Never from a real leader's group, never from a live session, never from a
+> tester's screenshot. Capture it headlessly from the local build with
+> `.checks/shot.sh`, which renders the fixture and nothing else.
+
+If a real roster ever needs to appear in one, the repository must be private
+first, and even then a screenshot is a copy outside the retention rules —
+it will not be deleted when the student is.
+
+**2. A tester's screenshot goes to the Workbench base.** The pencil uploads
+whatever was on screen. That base is separate from ministry data and has no
+retention policy, because it was only ever meant to hold build notes. A
+leader using the pencil on their own group would put real names there.
+
+> **Rule: the pencil is for people testing the app, not for leaders using
+> it.** Before the sandbox is left switched on for a real group, the
+> Workbench base needs the same retention treatment as the roster, or the
+> pencil needs to be off for the activated tier.
+
 ## Controller vs processor
 
 Each national organisation is the **controller** for its own students.
@@ -46,6 +79,33 @@ For Article 9 data the realistic bases are:
 
 Whichever is chosen, parental authorisation is required for the youngest
 band in most member states (the GDPR floor is 13; Czechia sets 15).
+
+## Asked for, and not yet built — both are Article 9
+
+Dave asked for these on 19 Sep 2026. Neither is a storage question; both add
+protected data about children, and both are held pending a decision.
+
+**Professions of faith and baptisms.** Exactly the same category as the
+"said yes to giving their life to Christ" field above: religious belief
+about an identifiable minor. As a **count per group** it is ministry data
+and carries no personal data at all. Attached to a **named student** it is a
+second Article 9 field, and baptism is a matter of record in a way a private
+profession is not — more identifying, and harder to argue is transient.
+
+> The open tier can have the counts. A named student's baptism date belongs
+> only in the activated tier, under the same basis, retention and export
+> rules as the rest — and it should be asked for as a count first.
+
+**A free-text "My top takeaways" box on a report.** The note field on a
+student is already flagged below as *"the field most likely to end up
+holding something that should never have been typed."* This adds a second
+free-text field, on the artefact that gets exported to JV International, and
+a leader writing takeaways will name students and describe their situations.
+
+> If it is built: label it in the UI as not for names, cap its length, keep
+> it out of every export, and give it the same retention as the report. A
+> takeaways box that travels to JV is a pastoral note about a child leaving
+> the country it was written in.
 
 ## Fields — what is actually needed
 

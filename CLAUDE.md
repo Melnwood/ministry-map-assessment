@@ -323,6 +323,42 @@ obvious. If it is not done, say that and say what it is waiting on.
     Not done. Needs a destination: JV training pages, a PDF, or an
     explainer written inside the app.
 
+## Tell Mel when a note steps into GDPR
+
+**Standing instruction, 19 Sep 2026.** Some of what a tester asks for is a
+data-protection decision wearing the clothes of a feature request. Those must
+reach Mel as a decision, not get built because they were easy.
+
+**Stop and say so, before building, when a note would:**
+
+- record anything about a **named** student that is not already recorded —
+  especially belief, baptism, health, family, or anything pastoral
+- add a **free-text box** anywhere a person could type a child's name
+- move named data to a screen, an export or a report that did not have it
+- widen who can see a name — a new tier, a share link, a print, a PDF
+- put a name into something that leaves the app: an AI prompt, an email, a
+  download, a screenshot committed to the repo
+- keep something longer, or make it harder to delete
+- ask for a date of birth, a photo, an address, a phone number, or a full
+  surname
+
+Say plainly: what it would hold, about whom, whether it is Article 9, and
+what would have to be true before it could be built. Then wait.
+
+**Why the bar is this low.** This app holds whether an identifiable child
+has professed faith. That is Article 9 special category data about a minor —
+the most protected combination in the regulation. A feature that looks like
+a text box is a text box that will contain a fourteen-year-old's name and
+their spiritual state. `DATA-PROTECTION.md` has the full assessment.
+
+**Counts are not personal data.** "Nine students at Repent & Believe" says
+nothing about a person, which is the whole basis of the open tier. When a
+request can be answered with a count instead of a name, offer that first —
+it is usually what was actually wanted.
+
+**Two already flagged and waiting:** professions of faith and baptisms, and
+the free-text takeaways box. Both from 19 Sep, both in `DATA-PROTECTION.md`.
+
 ## While someone is testing
 
 **Netlify deploys `main`, so every push to `main` changes what a tester is
@@ -407,6 +443,12 @@ visibly empty rather than stretching across the card.
 
 Only for visual fixes. A wording change is explained by the Fix line; a
 screenshot of it adds nothing.
+
+**Only ever from the demo data.** This repository is public and git history
+cannot really be erased, so an after-shot of a real leader's group would put
+children's names somewhere they can never be removed from. `shot.sh` renders
+the local fixture, which is fabricated — keep it that way, and never commit
+a shot taken from a live session or lifted from a tester.
 
 ## Language
 
