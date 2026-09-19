@@ -2201,7 +2201,6 @@ const STRINGS={en:{
   'learn.ph.lede':   'Five seasons a ministry grows through, each with a JV training tool you already have. Your phase is the first one scoring below 7 out of 10: everything before it is cleared, everything after is not yet your turn.',
   'learn.ph.tool':   'Tool',
   'learn.ph.who':    'Aimed at',
-  'learn.ph.span':   'Typically',
   'learn.close':     'Close',
   'jesus.go.map':    'See the map first'
 }};
@@ -2844,9 +2843,9 @@ function learnMoreHTML(){
             <div class="lm-n">${p.n}</div>
             <div><div class="lm-name">${pfull(p)}</div>
               <div class="lm-say"><b>${p.tool}</b> &middot; ${T.spells.map(spellLabel).join(' &middot; ')}</div>
-              <div class="lm-meta">${t('learn.ph.who')} ${pwho(p)} &middot; ${t('learn.ph.span')} ${pspan(p)}<sup class="ph-ast">*</sup></div>
+              <div class="lm-meta">${t('learn.ph.who')} ${pwho(p)}</div>
             </div></div>`}).join('')}</div>
-    ${ch?'':`<p class="ph-note"><b>*</b> ${t('jesus.spans.note').replace(/^<b>\*<\/b>\s*/,'')}</p>`}
+
   </div></div>`;
 }
 
@@ -3155,7 +3154,11 @@ function phaseWhy(n,cur,R){
     <div class="ph-meta">
       <span><b>${tk}</b>${T.spells.map(spellLabel).join(' &middot; ')}</span>
       <span><b>${t('learn.ph.who')}</b>${pwho(p)}</span>
-      <span><b>${t('learn.ph.span')}</b>${pspan(p)}<sup class="ph-ast">*</sup></span>
+      <!-- Dave, 19 Sep: "I would take out the length of time - it sounds
+           prescriptive here and it could be confusing", and separately "I
+           don't think we should have these time tags". Both screenshots are
+           this tag. A typical duration told a leader how long their phase
+           ought to take, from a figure JV never gave us. -->
     </div>
 
     <p class="ph-about">${st.about}<sup class="ph-ast">*</sup></p>
