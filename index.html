@@ -500,6 +500,18 @@ button.tw:hover{background:var(--ink-08)}
   background:var(--z5);color:#fff;padding:2px 7px;border-radius:99px}
 .check-next{margin-top:14px;padding-top:13px;border-top:1px solid var(--ink-08);
   font-size:13.5px;line-height:1.55;color:var(--ink-70)}
+.steps{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:26px}
+.st{display:grid;grid-template-columns:34px 1fr;gap:14px;align-items:start;
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px}
+.st-n{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;
+  font-family:var(--mono);font-size:13px;font-weight:600;
+  background:var(--ink);color:var(--surface)}
+.st.done .st-n{background:var(--z3-bg);color:var(--z3-t)}
+.st.done{border-style:dashed;background:none}
+.st-h{font-weight:600;font-size:15.5px;letter-spacing:-.005em}
+.st p{margin:5px 0 13px;font-size:13.5px;line-height:1.55;color:var(--ink-70)}
+.st .btn{font-size:13px;padding:8px 15px}
+@media(max-width:720px){.steps{grid-template-columns:1fr}}
 .jsec-more{margin:13px 0 32px}
 .jmore{display:inline-flex;align-items:center;gap:9px;font:inherit;font-size:14px;font-weight:600;
   color:var(--ink);background:var(--surface);border:1px solid var(--ink-15);border-radius:99px;
@@ -2039,6 +2051,29 @@ const STRINGS={en:{
   /* ---------- All reports ---------- */
   'reports.note':     'Each one keeps what was true the day you took it, so you can look back and see how far your group has come.',
 
+  /* ---------- Before the first check-up ---------- */
+  'tier.new':         'New',
+  'start.eyebrow':    'Getting started',
+  'start.title':      'This fills in once you have<br>done <em>your first check-up</em>.',
+  'start.lede':       'Two things, in this order. Neither takes long, and the second one is most of the value.',
+  'start.s1':         'Put your group on the map',
+  'start.s1.body':    'How many students have reached each of the five challenges. Numbers only &mdash; no names, and nothing you have to look up.',
+  'start.s1.go':      'Go to your map',
+  'start.s2':         'Answer 35 statements',
+  'start.s2.body':    'About your ministry, one at a time. There are no right answers, and nothing here is skipped.',
+  'start.s2.go':      'Start the check-up',
+  'start.note':       'After that this page shows where your students are and what phase your ministry is in, and it keeps every check-up so you can look back.',
+  'reports.none.title':'Nothing kept yet',
+  'reports.none.lede':'Every check-up you take is saved here with its date, and nothing is ever written over. The first one is the one that makes the rest worth comparing.',
+  'time.one.title':   'One check-up so far',
+  'time.one.lede':    'This page compares two, so there is nothing to draw yet. Yours is from {date} &mdash; take another whenever it helps, and this fills in.',
+  'time.one.see':     'See that report',
+  'check.first.title':'First, who is in your group?',
+  'check.first.lede': 'This part of the check-up reads off your map, and your map is still empty. Add how many students have reached each challenge &mdash; numbers only, no names &mdash; and come back. It takes a minute and it means you never type it twice.',
+  'check.first.go':   'Add my numbers',
+  'check.first.skip': 'Skip and answer the statements',
+  'check.first.note': 'You can do the statements without it, but the report will be thinner: half of what it says comes from your map.',
+
   /* ---------- One report ---------- */
   'report.back':      '&larr; All reports',
   'report.cover.students':'students on the map',
@@ -2405,8 +2440,32 @@ function challengeRoadSVG(){
   </svg>`;
 }
 
+/* What a leader sees before their first check-up. One panel, two steps, in
+   the order they have to happen: counts on the map, then the statements.
+   Used by Today, a report and The year, so the route is the same wherever
+   they land first. */
+function startHTML(){
+  const c=zoneCounts(NOW), tot=c.reduce((a,b)=>a+b,0);
+  const step=(n,done,head,body,go,label)=>`<div class="st${done?' done':''}">
+    <div class="st-n">${done?'&#10003;':n}</div>
+    <div><div class="st-h">${head}</div><p>${body}</p>
+    ${done?'':`<button class="btn${n===1?'':' ghost'}" data-go="${go}">${label}</button>`}</div>
+  </div>`;
+  return `<div class="view"><div class="wrap">
+    <div class="eyebrow">${t('start.eyebrow')}</div>
+    <h1>${t('start.title')}</h1>
+    <p class="lede">${t('start.lede')}</p>
+    <div class="steps">
+      ${step(1, tot>0, t('start.s1'), t('start.s1.body'), 'map',   t('start.s1.go'))}
+      ${step(2, false,  t('start.s2'), t('start.s2.body'), 'check', t('start.s2.go'))}
+    </div>
+    <p class="note" style="margin-top:20px">${t('start.note')}</p>
+  </div></div>`;
+}
+
 /* ---------- TODAY ---------- */
 function vToday(){
+  if(!REPORTS.length) return startHTML();
   const L=REPORTS[REPORTS.length-1];
   const ph=currentPhase(scoresOf(L));
   /* look back for the last check-up that sat in a different phase */
@@ -2575,6 +2634,34 @@ const NOW=2;                       /* the current roster snapshot */
    ============================================================ */
 let TIER='open';
 const hasNames=()=>TIER==='activated';
+
+/* ---------- viewing as a leader who signed up ten seconds ago ----------
+   Dave asked for this three times, on three screens: "is there a way of
+   seeing the path through this the first time around?" Every screen was
+   built against a group that already has a roster, a year of counts and
+   four check-ups, so nobody had ever looked at the app with nothing in it.
+   Three screens threw outright when we did.
+
+   A new leader is open-tier by definition — activation is a person from JV
+   making contact — so this is a third position on the same switch rather
+   than a second control. The demo data is stashed, not destroyed, so
+   switching back restores it without a reload. */
+const isNew=()=>TIER==='new';
+const STASH={};
+function setTier(next){
+  if(next==='new' && !STASH.on){
+    STASH.on=true;
+    STASH.s=STUDENTS.splice(0); STASH.p=PROGRAMS.splice(0); STASH.r=REPORTS.splice(0);
+    STASH.c=COUNTS.map(r=>r.slice()); COUNTS.forEach(r=>r.fill(0));
+  }else if(next!=='new' && STASH.on){
+    STUDENTS.push(...STASH.s); PROGRAMS.push(...STASH.p); REPORTS.push(...STASH.r);
+    STASH.c.forEach((r,i)=>{ COUNTS[i].length=0; COUNTS[i].push(...r); });
+    STASH.on=false;
+  }
+  TIER=next;
+  openIx=Math.max(0, REPORTS.length-1);
+  selStudent=null; selProgram=null; selPhase=null; quizIx=0; answers={};
+}
 
 /* What an open-tier leader types in: how many students at each
    invitation, at each check-up. In the activated tier the same numbers
@@ -2911,6 +2998,24 @@ function vCheck(){
   const madeBy=ZONES.filter(z=>covC[z.n].length).length;
   const neverMade=ZONES.filter(z=>!covC[z.n].length);
 
+  /* Dave, 19 Sep: "I had this part in questions the first time around... I
+     don't know that it will be obvious the first time through. This view
+     assumes I have already filled things out." He is right — with an empty
+     map this screen opened by telling a leader they had already done half
+     of it, which was simply untrue. */
+  if(quizIx===0 && !tot && !PROGRAMS.length){
+    return `<div class="view"><div class="wrap"><div class="q-shell">
+      <div class="eyebrow">${t('check.eyebrow')}</div>
+      <h1>${t('check.first.title')}</h1>
+      <p class="lede">${t('check.first.lede')}</p>
+      <div style="margin-top:24px;display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn" data-go="map">${t('check.first.go')}</button>
+        <button class="btn ghost" data-q="1">${t('check.first.skip')}</button>
+      </div>
+      <p class="note" style="margin-top:18px">${t('check.first.note')}</p>
+    </div></div></div>`;
+  }
+
   if(quizIx===0){
     return `<div class="view"><div class="wrap"><div class="q-shell">
       <div class="eyebrow">${t('check.eyebrow')}</div>
@@ -2974,6 +3079,13 @@ function vReports(){
     return {r,i,sc,ph,tot,delta};
   }).reverse();
 
+  if(!REPORTS.length) return `<div class="view"><div class="wrap">
+    <div class="eyebrow">${t('start.eyebrow')}</div>
+    <h1>${t('reports.none.title')}</h1>
+    <p class="lede">${t('reports.none.lede')}</p>
+    <div style="margin-top:22px"><button class="btn" data-go="check">${t('start.s2.go')}</button></div>
+  </div></div>`;
+
   return `<div class="view"><div class="wrap">
     <div class="eyebrow">${tn('reports.eyebrow',REPORTS.length)}</div>
     <h1>${t('reports.title')}</h1>
@@ -2995,6 +3107,7 @@ function vReports(){
 
 /* ---------- REPORT ---------- */
 function vReport(){
+  if(!REPORTS.length) return startHTML();
   const R=rep(), sc=scoresOf(R), ph=currentPhase(sc), cats=catScores(R);
   const c=zoneCounts(R.r), tot=c.reduce((a,b)=>a+b,0);
   const cov=coverage();
@@ -3338,6 +3451,18 @@ function coachHTML(){
 }
 
 function vTime(){
+  if(!REPORTS.length) return startHTML();
+  /* The year is a comparison. One check-up is a point, not a line — saying
+     "0 students gained" would be a measurement nobody made. */
+  if(REPORTS.length<2) return `<div class="view"><div class="wrap">
+    <div class="eyebrow">${t('start.eyebrow')}</div>
+    <h1>${t('time.one.title')}</h1>
+    <p class="lede">${t('time.one.lede',{date:fmtDate(REPORTS[0])})}</p>
+    <div style="margin-top:22px;display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn" data-go="report">${t('time.one.see')}</button>
+      <button class="btn ghost" data-go="check">${t('today.newcheck')}</button>
+    </div>
+  </div></div>`;
   const F=REPORTS[0], L=REPORTS[REPORTS.length-1];
   const fPh=currentPhase(scoresOf(F)), lPh=currentPhase(scoresOf(L));
   const t0=totalAt(F.r), t1=totalAt(L.r);
@@ -3767,7 +3892,7 @@ function render(){
        are workbench controls and neither belongs to the product. */
     const open=NOTES.filter(x=>x.state!=='done').length;
     document.getElementById('tiersw').innerHTML=
-      `<span>${t('tier.viewingas')}</span>${[['open','tier.open'],['activated','tier.activated']].map(([k,l])=>
+      `<span>${t('tier.viewingas')}</span>${[['new','tier.new'],['open','tier.open'],['activated','tier.activated']].map(([k,l])=>
         `<button class="${TIER===k?'is':''}" data-tier="${k}">${t(l)}</button>`).join('')}
        <button class="tw-notes${active==='notes'?' is':''}" data-go="notes">${t('bot.title')}${open?`<i>${open}</i>`:''}</button>
        <button class="tw-notes${active==='translate'?' is':''}" data-go="translate">${t('tr.eyebrow')}</button>
@@ -3807,7 +3932,7 @@ document.addEventListener('click',e=>{
   const cn=e.target.closest('[data-cnt]'); if(cn){const [ix,dv]=cn.dataset.cnt.split(':').map(Number);
     COUNTS[NOW][ix]=Math.max(0,COUNTS[NOW][ix]+dv); render(); return}
   const ak=e.target.closest('[data-ask]'); if(ak){askedCoach=true; render(); return}
-  const tg=e.target.closest('[data-tier]'); if(tg){TIER=tg.dataset.tier; selStudent=null; render(); return}
+  const tg=e.target.closest('[data-tier]'); if(tg){setTier(tg.dataset.tier); render(); return}
   const q=e.target.closest('[data-q]'); if(q){quizIx=+q.dataset.q;render();return}
   const hit=k=>e.target.closest('[data-'+k+']');
   /* `el`, not `t` — a handler that calls the translate function cannot
@@ -3930,7 +4055,7 @@ document.addEventListener('keydown',e=>{
   let q; try{ q=new URLSearchParams(location.search); }catch(e){ return; }
   if(![...q.keys()].length) return;
   const set=(k,fn)=>{ const v=q.get(k); if(v!==null) fn(v); };
-  set('tier',   v=>{ if(v==='open'||v==='activated') TIER=v; });
+  set('tier',   v=>{ if(v==='new'||v==='open'||v==='activated') setTier(v); });
   set('screen', v=>{ if(['jesus','today','map','check','reports','report','time','notes','translate']
                           .includes(v)) active=v; });
   set('report', v=>{ const i=+v; if(REPORTS[i]) { openIx=i; active='report'; } });
