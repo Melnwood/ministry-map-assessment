@@ -426,10 +426,19 @@ button.phtier{cursor:pointer}
   text-transform:uppercase;color:var(--ink-45);align-self:center;padding:10px 0}
 .bf-up .bf-none{margin-top:auto}      /* sit against the spine, like a block would */
 
-/* the spine itself */
-.bf-spine{display:flex;align-items:center;gap:7px;padding:11px 12px;
-  background:var(--zc);color:#fff;font-size:12.5px;font-weight:600;line-height:1.2}
-.bf-spine i{font-family:var(--mono);font-size:10px;font-style:normal;opacity:.75}
+/* The spine: a rail with a dot per challenge and the name beneath, the same
+   shape as the road on Today. The rail runs edge to edge in each cell so the
+   five join into one line; the dot carries a ring in the column tint so the
+   line does not run through it. */
+.bf-spine{position:relative;padding:17px 10px 13px;text-align:center;
+  background:color-mix(in srgb,var(--zc) 7%,transparent)}
+.bf-rail{position:absolute;left:0;right:0;top:22px;height:1.5px;background:var(--ink-15)}
+.bf-dot{position:relative;display:block;width:12px;height:12px;border-radius:50%;
+  background:var(--zc);margin:0 auto 10px;
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--zc) 7%,var(--surface))}
+.bf-nm{display:block;font-size:12.5px;font-weight:600;line-height:1.25}
+.bf-nm i{font-family:var(--mono);font-size:9.5px;font-style:normal;color:var(--ink-45);
+  margin-right:4px}
 
 /* down: the bar hangs from the spine */
 /* The bar hangs from the spine and the count sits on a common line at the
@@ -452,9 +461,11 @@ button.phtier{cursor:pointer}
    so a check-up looks like the thing it is a snapshot of. */
 .ybf{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
 .ybf-col{display:flex;flex-direction:column}
-.ybf-spine{display:flex;align-items:center;gap:6px;padding:9px 11px;border-radius:7px;
-  background:var(--zc);color:#fff;font-size:12px;font-weight:600;line-height:1.2}
-.ybf-spine i{font-family:var(--mono);font-size:9.5px;font-style:normal;opacity:.75}
+.ybf-spine{position:relative;padding:15px 4px 11px;text-align:center}
+.ybf-spine .bf-rail{top:20px}
+.ybf-spine .bf-dot{width:11px;height:11px;margin-bottom:9px;
+  box-shadow:0 0 0 4px var(--surface)}
+.ybf-spine .bf-nm{font-size:11.5px}
 .ybf-up{display:flex;flex-direction:column-reverse;justify-content:flex-start;gap:3px;
   padding-bottom:6px}
 .ybf-p{display:flex;align-items:baseline;gap:6px;border-radius:6px;padding:5px 8px;
@@ -1115,7 +1126,7 @@ const plain=t=>t.replace(/&amp;/g,'&');
    The M-Lens source calls phase 3 "Equipping" and phase 5
    "Multiplication"; Mel's names are used, as corrected by him. ---- */
 const PHASES=[
- {n:1,name:'Preparation',            span:'30 years',    who:'Everyone', tool:'CCE'},
+ {n:1,name:'Preparation',            span:'30 years',    who:'Everyone', tool:'ICCE'},
  {n:2,name:'Foundation',             span:'1.5 years',   who:'Disciples',tool:'SIX'},
  {n:3,name:'Ministry Training',      span:'6\u20139 months', who:'Workers',  tool:'TAR'},
  /* Ministry Training and Expansion share one span: Mel, 26 Aug 2026 —
@@ -1179,6 +1190,13 @@ const HARDER_FROM=3;                /* this phase onward is graded on `late` */
 const worth=(a,phase)=>SCALE[a][phase>=HARDER_FROM?'late':'early'];
 const Q=[
  /* ---- 1 · Preparation · C.C.E ---- */
+ /* Identity — one statement from each of the three areas of JV's own
+    identity assessment (Be Like Jesus #1, pp.36-37): Ordained, Formed,
+    Affirmed. Chosen from it, not composed; the other ten are in that
+    assessment and any of them can swap in. */
+ [1,'Identity',   'I lead from who I actually am rather than performing a role I think others expect.'],
+ [1,'Identity',   'I can see specific ways God has used hard parts of my story to prepare me.'],
+ [1,'Identity',   'When I fail or am criticized, my sense of who I am does not fall apart.'],
  [1,'Call',       'I understand that my mission is to make disciples. I prioritize disciple-making in my schedule and time.'],
  [1,'Empowerment','I am motivated to do ministry by love for God and love for people.'],
  [1,'Call',       'I know I have been called by God into his mission, and want to serve out of obedience to him, not just because I was asked to take a role by someone else.'],
@@ -1249,9 +1267,12 @@ const spellLabel=w=>t('spell.'+w);
    breakdown of it. A low score is still a pointer, not a diagnosis.
    ============================================================ */
 const TOOLS={
- CCE: {phase:1, words:['Call','Character','Empowerment'],
-       letters:['Call','Character','Empowerment'],
-       spells:['Call','Character','Empowerment'],},
+ /* ICCE, not CCE. Dave, 19 Sep: "We have changed this in the latest
+    version and added Identity, which is a really important addition."
+    Source: Be Like Jesus #1 — Identity, pp. 31-37. */
+ ICCE:{phase:1, words:['Identity','Call','Character','Empowerment'],
+       letters:['Identity','Call','Character','Empowerment'],
+       spells:['Identity','Call','Character','Empowerment'],},
  SIX: {phase:2, words:['Relationships','Love','Vision','Jesus','Prayer','Bible'],
        letters:['Relationships','Love','Vision','Jesus','Prayer','Bible'],
        spells:['Relationships','Love','Vision','Jesus','Prayer','Bible'],},
@@ -1338,12 +1359,12 @@ const PROGRAMS=[
    ============================================================ */
 /* `a` holds what the leader answered, 0-3 — not what it scored. */
 const REPORTS=[
- {d:'2025-10-12',t:'19:40',r:0,a:{1:[3,2,3,2,2,2,2],2:[2,2,2,1,2,1,1],3:[1,1,1,1,1,1,0],4:[0,0,1,0,1,0,0],5:[0,0,0,0,0,0,0]},
+ {d:'2025-10-12',t:'19:40',r:0,a:{1:[3,2,3,2,2,2,2,2,2,2],2:[2,2,2,1,2,1,1],3:[1,1,1,1,1,1,0],4:[0,0,1,0,1,0,0],5:[0,0,0,0,0,0,0]},
   p:[{name:'Youth club',freq:'Weekly',ch:[1]}]},
- {d:'2026-03-08',t:'20:05',r:1,a:{1:[3,3,3,2,3,2,2],2:[3,2,3,2,2,2,2],3:[2,1,2,1,2,1,1],4:[1,0,1,0,1,1,0],5:[0,0,0,0,0,0,0]},
+ {d:'2026-03-08',t:'20:05',r:1,a:{1:[3,3,3,2,3,2,2,2,3,2],2:[3,2,3,2,2,2,2],3:[2,1,2,1,2,1,1],4:[1,0,1,0,1,1,0],5:[0,0,0,0,0,0,0]},
   p:[{name:'Youth club',freq:'Weekly',ch:[1]},
      {name:'Summer camp',freq:'Yearly',ch:[2,3]}]},
- {d:'2026-08-02',t:'09:14',r:2,a:{1:[3,3,3,2,3,2,2],2:[3,2,3,2,3,2,2],3:[2,2,2,2,2,2,1],4:[2,2,1,0,1,0,0],5:[0,0,0,0,0,0,0]},
+ {d:'2026-08-02',t:'09:14',r:2,a:{1:[3,3,3,2,3,2,2,3,3,2],2:[3,2,3,2,3,2,2],3:[2,2,2,2,2,2,1],4:[2,2,1,0,1,0,0],5:[0,0,0,0,0,0,0]},
   p:[{name:'Youth club',freq:'Weekly',ch:[1]},
      {name:'Summer camp',freq:'Yearly',ch:[2,3]},
      {name:'Small groups',freq:'Weekly',ch:[3]}]},
@@ -1360,7 +1381,7 @@ const REPORTS=[
 
     Left in place pending Mel's call — reverting it is one edit, restoring
     1:[3,3,3,2,3,2,2] here. Flagged 7 Sep 2026. */
- {d:'2026-08-05',t:'21:30',r:2,a:{1:[3,3,3,3,3,2,2],2:[3,3,3,2,3,2,2],3:[2,2,2,2,2,2,1],4:[2,2,2,0,1,0,0],5:[0,0,0,0,0,0,0]},
+ {d:'2026-08-05',t:'21:30',r:2,a:{1:[3,3,3,3,3,2,2,3,3,2],2:[3,3,3,2,3,2,2],3:[2,2,2,2,2,2,1],4:[2,2,2,0,1,0,0],5:[0,0,0,0,0,0,0]},
   p:PROGRAMS.map(x=>({name:x.name,freq:x.freq,ch:x.ch.slice()}))}
 ];
 const qIx=q=>Q.filter(x=>x.phase===q.phase).indexOf(q);
@@ -1945,45 +1966,48 @@ const STRINGS={en:{
      only means the same thing in Warsaw as in Prague if the statement
      does. The translation page shows these locked for that reason. */
   /* phase 1 */
-  'q.0': 'I understand that my mission is to make disciples. I prioritize disciple-making in my schedule and time.',
-  'q.1': 'I am motivated to do ministry by love for God and love for people.',
-  'q.2': 'I know I have been called by God into his mission, and want to serve out of obedience to him, not just because I was asked to take a role by someone else.',
-  'q.3': 'As I look back over the last year I can see I am steadily growing in wisdom and favor with God and people.',
-  'q.4': 'I feel empowered to serve others because of relationship with Jesus, with the Spirit and with the Father.',
-  'q.5': 'I am a disciple of Jesus and want to see others come to know him and grow in their relationship with him.',
-  'q.6': 'I am willing to take the burden and privilege of serving as a shepherd of part of God’s flock, under the great shepherd.',
+  'q.0': 'I lead from who I actually am rather than performing a role I think others expect.',
+  'q.1': 'I can see specific ways God has used hard parts of my story to prepare me.',
+  'q.2': 'When I fail or am criticized, my sense of who I am does not fall apart.',
+  'q.3': 'I understand that my mission is to make disciples. I prioritize disciple-making in my schedule and time.',
+  'q.4': 'I am motivated to do ministry by love for God and love for people.',
+  'q.5': 'I know I have been called by God into his mission, and want to serve out of obedience to him, not just because I was asked to take a role by someone else.',
+  'q.6': 'As I look back over the last year I can see I am steadily growing in wisdom and favor with God and people.',
+  'q.7': 'I feel empowered to serve others because of relationship with Jesus, with the Spirit and with the Father.',
+  'q.8': 'I am a disciple of Jesus and want to see others come to know him and grow in their relationship with him.',
+  'q.9': 'I am willing to take the burden and privilege of serving as a shepherd of part of God’s flock, under the great shepherd.',
   /* phase 2 */
-  'q.7': 'I spend time with students in a variety of settings outside of youth group meetings. I know what is going on in their world and am engaged in it.',
-  'q.8': 'Our youth group deeply loves and cares for each other. New people feel welcome, and group members intentionally reach out to each other. There is a minimum of gossip, relational competition, or cliques.',
-  'q.9': 'Our youth group has a feeling of expectation. The leaders have vision for the future and communicate it often to the students. We see potential in them and speak it to them.',
-  'q.10': 'The students know who Jesus is, what he has done for them, and who they are because of him. Their view of Jesus isn’t heavily distorted by current culture or church legalism.',
-  'q.11': 'The youth leader(s) pray often for their group, and students see them model prayer in front of them. They set aside time to cover our ministry in prayer.',
-  'q.12': 'Our youth group regularly opens God’s Word and studies it together. We don’t just talk about our opinions on spiritual and relational topics, but instead, open God’s Word and let it speak.',
-  'q.13': 'Our youth group is a healthy environment where people steadily grow in their relationships with God and with others.',
+  'q.10': 'I spend time with students in a variety of settings outside of youth group meetings. I know what is going on in their world and am engaged in it.',
+  'q.11': 'Our youth group deeply loves and cares for each other. New people feel welcome, and group members intentionally reach out to each other. There is a minimum of gossip, relational competition, or cliques.',
+  'q.12': 'Our youth group has a feeling of expectation. The leaders have vision for the future and communicate it often to the students. We see potential in them and speak it to them.',
+  'q.13': 'The students know who Jesus is, what he has done for them, and who they are because of him. Their view of Jesus isn’t heavily distorted by current culture or church legalism.',
+  'q.14': 'The youth leader(s) pray often for their group, and students see them model prayer in front of them. They set aside time to cover our ministry in prayer.',
+  'q.15': 'Our youth group regularly opens God’s Word and studies it together. We don’t just talk about our opinions on spiritual and relational topics, but instead, open God’s Word and let it speak.',
+  'q.16': 'Our youth group is a healthy environment where people steadily grow in their relationships with God and with others.',
   /* phase 3 */
-  'q.14': 'Students in our group are asking how they can serve and beginning to take ownership for the health of our group.',
-  'q.15': 'A smaller team within our youth group is being regularly and purposefully equipped to do the work of ministry.',
-  'q.16': 'This ministry team knows how to do personal evangelism, and are practicing how to do it with their friends.',
-  'q.17': 'There is an intentional strategy for how to train the ministry team, including good teaching, carefully crafted experiences, and intentional reflection.',
-  'q.18': 'Some of the ministry team members are discipling individuals or leading small groups. They are helping shepherd young people in an ongoing way toward spiritual maturity.',
-  'q.19': 'The ministry team members are given specific responsibilities in the youth group to purposefully develop their character and skills.',
-  'q.20': 'I am spending more time with a few so that I can reach and shepherd more young people through them.',
+  'q.17': 'Students in our group are asking how they can serve and beginning to take ownership for the health of our group.',
+  'q.18': 'A smaller team within our youth group is being regularly and purposefully equipped to do the work of ministry.',
+  'q.19': 'This ministry team knows how to do personal evangelism, and are practicing how to do it with their friends.',
+  'q.20': 'There is an intentional strategy for how to train the ministry team, including good teaching, carefully crafted experiences, and intentional reflection.',
+  'q.21': 'Some of the ministry team members are discipling individuals or leading small groups. They are helping shepherd young people in an ongoing way toward spiritual maturity.',
+  'q.22': 'The ministry team members are given specific responsibilities in the youth group to purposefully develop their character and skills.',
+  'q.23': 'I am spending more time with a few so that I can reach and shepherd more young people through them.',
   /* phase 4 */
-  'q.21': 'Our youth group has frequent and regular events focused on group evangelism, where the ministry team is mobilized to share the gospel.',
-  'q.22': 'Every month our group is in contact with more non-Christian young people.',
-  'q.23': 'Unbelievers are regularly coming to Christ and becoming a part of our ministry.',
-  'q.24': 'News about the impact of our ministry and lives that are being changed is spreading on its own.',
-  'q.25': 'Our team is being stretched to reach into new areas and try new ways of reaching the lost.',
-  'q.26': 'Our team has learned how to handle persecution, failure and opposition without stopping or giving up.',
-  'q.27': 'Our ministry is experiencing steady growth, both internally and externally.',
+  'q.24': 'Our youth group has frequent and regular events focused on group evangelism, where the ministry team is mobilized to share the gospel.',
+  'q.25': 'Every month our group is in contact with more non-Christian young people.',
+  'q.26': 'Unbelievers are regularly coming to Christ and becoming a part of our ministry.',
+  'q.27': 'News about the impact of our ministry and lives that are being changed is spreading on its own.',
+  'q.28': 'Our team is being stretched to reach into new areas and try new ways of reaching the lost.',
+  'q.29': 'Our team has learned how to handle persecution, failure and opposition without stopping or giving up.',
+  'q.30': 'Our ministry is experiencing steady growth, both internally and externally.',
   /* phase 5 */
-  'q.28': 'Our leaders have identified and invited a select few to be trained and equipped for current and future leadership, based on their fruitfulness as ministry team members.',
-  'q.29': 'The main leader has entrusted parts of the ministry to emerging leaders.',
-  'q.30': 'The ministry has been restructured for multiplication with new systems and subgroups to increase shepherding effectiveness.',
-  'q.31': 'The leader is supporting and training these new leaders through ongoing equipping and care.',
-  'q.32': 'The leadership team is learning to pay the personal price of leadership multiplication, as they follow Jesus into personal sacrifice that brings life to others.',
-  'q.33': 'We are beginning to send out leaders to start ministries in other places or serve in other ministries and churches.',
-  'q.34': 'It is hard to keep up with everything that is happening — the Spirit seems to be expanding the ministry in ways we hadn’t anticipated.',
+  'q.31': 'Our leaders have identified and invited a select few to be trained and equipped for current and future leadership, based on their fruitfulness as ministry team members.',
+  'q.32': 'The main leader has entrusted parts of the ministry to emerging leaders.',
+  'q.33': 'The ministry has been restructured for multiplication with new systems and subgroups to increase shepherding effectiveness.',
+  'q.34': 'The leader is supporting and training these new leaders through ongoing equipping and care.',
+  'q.35': 'The leadership team is learning to pay the personal price of leadership multiplication, as they follow Jesus into personal sacrifice that brings life to others.',
+  'q.36': 'We are beginning to send out leaders to start ministries in other places or serve in other ministries and churches.',
+  'q.37': 'It is hard to keep up with everything that is happening — the Spirit seems to be expanding the ministry in ways we hadn’t anticipated.',
 
   /* INSTRUMENT: the categories each statement is scored under. */
   'cat.All':             'All',
@@ -1992,6 +2016,7 @@ const STRINGS={en:{
   'cat.Call':            'Call',
   'cat.Character':       'Character',
   'cat.Empowerment':     'Empowerment',
+  'cat.Identity':        'Identity',
   'cat.Entrust':         'Entrust',
   'cat.Evangelize':      'Evangelize',
   'cat.Expansion':       'Expansion',
@@ -2017,6 +2042,7 @@ const STRINGS={en:{
   'spell.Character':     'Character',
   'spell.Cultivate':     'Cultivate',
   'spell.Empowerment':   'Empowerment',
+  'spell.Identity':      'Identity',
   'spell.Entrust':       'Entrust',
   'spell.Jesus':         'Jesus',
   'spell.Love':          'Love',
@@ -2734,7 +2760,9 @@ function spineBarsHTML(r, mx, upmx){
         !known ? '' :
         ps.length ? ps.map(x=>`<span class="ybf-p"><b>${esc(x.name)}</b><i>${freqLabel(x.freq)}</i></span>`).join('')
                   : `<span class="ybf-none">${t('map.nothinghere')}</span>`}</div>
-      <div class="ybf-spine"><i>${z.n}</i>${zname(z)}</div>
+      <div class="ybf-spine">
+        <span class="bf-rail"></span><span class="bf-dot"></span>
+        <span class="bf-nm"><i>${z.n}</i>${zname(z)}</span></div>
       <div class="ybf-slot">${c[i]?`<b style="height:${16+86*(c[i]/mx)}px"></b>`:''}</div>
       <div class="ybf-n${c[i]?'':' zero'}">${c[i]}</div>
     </div>`;}).join('')}</div>${
@@ -2937,7 +2965,11 @@ function mapGridHTML(){
 
   /* --- the spine --- */
   h+=`<div class="bf-gut spine"></div>`;
-  h+=ZONES.map(z=>`<div class="bf-spine" style="--zc:var(${z.v})"><i>${z.n}</i>${zname(z)}</div>`).join('');
+  /* Mel, 20 Sep: the spine reads as the road on Today — a rail with a dot
+     per challenge and the name beneath it, rather than a coloured band. */
+  h+=ZONES.map(z=>`<div class="bf-spine" style="--zc:var(${z.v})">
+      <span class="bf-rail"></span><span class="bf-dot"></span>
+      <span class="bf-nm"><i>${z.n}</i>${zname(z)}</span></div>`).join('');
 
   /* --- who you have, growing down --- */
   h+=`<div class="bf-gut dn"><b id="cnt-tot">${tot}</b><span>${t('today.students')}</span>
