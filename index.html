@@ -183,6 +183,17 @@ h2{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.01
 .bar{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--ink-08)}
 .bar .lb{font-size:14px;font-weight:500;min-width:150px}
 .bar .vl{font-size:13.5px;font-weight:600;min-width:118px;color:var(--ink-45)}
+/* Each phase's categories in their own panel, so the eye can see where one
+   tool ends and the next begins without reading the tag on every row. */
+.catgrp{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  padding:6px 18px 10px;margin-bottom:10px}
+.catgrp.mine{border-color:var(--phase);box-shadow:0 0 0 1px var(--phase)}
+.catgrp-hd{display:flex;align-items:baseline;gap:10px;padding:11px 0 7px;
+  border-bottom:1px solid var(--ink-08);margin-bottom:2px}
+.cg-acr{font-family:var(--mono);font-size:14px;font-weight:600;letter-spacing:.1em;
+  color:var(--phase)}
+.cg-ph{font-family:var(--display);font-weight:700;font-size:14.5px}
+.catgrp .bar:last-child{border-bottom:0}
 .bar.true .vl{color:var(--z3-t)} .bar.part .vl{color:var(--z4-t)} .bar.not .vl{color:var(--phase)}
 .bar .lb{flex:1}
 .act{display:flex;gap:15px;padding:17px 0;border-bottom:1px solid var(--line)}
@@ -3359,15 +3370,29 @@ function vReport(){
     <div class="sec">
       <div class="sec-hd"><h2>${t('report.every')}</h2><span class="n">${t('report.measured',{n:ranked.length})}</span></div>
       ${(()=>{
-        /* Grouped by phase, and inside a phase in the tool's own order —
-           so REST reads Restructure, Entrust, Support, Train. Sorting the
-           whole list by score scattered the letters and the acronym beside
-           each one stopped meaning anything. The weakest is still called
-           out by name in the panel above. */
-        const order=[]; PHASES.forEach(ps=>TOOLS[ps.tool].words.forEach(w=>order.push(w)));
-        return order.filter(w=>cats[w]).map(w=>[w,cats[w]]);})()
-        .map(k=>{const b=band(k[1].v),acr=CAT_TOOL[k[0]],mine=CAT_PHASE[k[0]]===ph;
-        return `<div class="bar ${b.k}"><div class="lb">${catLabel(k[0])}${acr?`<span class="acrtag ${mine?'mine':''}">${acr}</span>`:''}${mine?`<span class="tag">${t('report.yourphase')}</span>`:''}</div>${pips(k[1].v)}<div class="vl">${bandLabel(k[1].v)}</div></div>`}).join('')}
+        /* One panel per phase, headed by its tool. Mel, 20 Sep: "every
+           category can you put the groupings in their own window."
+
+           Twenty-one rows in a single list gave no clue where CCE ended and
+           SIX began, so the acronym tag beside each row was doing work the
+           layout should have done. Inside a panel the rows keep the tool's
+           own order — REST reads Restructure, Entrust, Support, Train —
+           which is why they are not sorted by score. */
+        return PHASES.map(ps=>{
+          const tk=ps.tool, rows=TOOLS[tk].words.filter(w=>cats[w]).map(w=>[w,cats[w]]);
+          if(!rows.length) return '';
+          const mine=ps.n===ph;
+          return `<div class="catgrp${mine?' mine':''}">
+            <div class="catgrp-hd">
+              <span class="cg-acr">${tk}</span>
+              <span class="cg-ph">${pname(ps)}</span>
+              ${mine?`<span class="tag">${t('report.yourphase')}</span>`:''}
+            </div>
+            ${rows.map(k=>{const b=band(k[1].v);
+              return `<div class="bar ${b.k}"><div class="lb">${catLabel(k[0])}</div>${
+                pips(k[1].v)}<div class="vl">${bandLabel(k[1].v)}</div></div>`}).join('')}
+          </div>`;
+        }).join('');})()}
     </div>
   </div></div>`;
 }
