@@ -407,6 +407,16 @@ button.phtier{cursor:pointer}
 .mg-num.edit{padding:6px 10px}
 .mg-num.edit .cnv{font-size:21px;width:2.6ch;text-align:left}
 .mg-num.edit .stp{width:22px;height:22px;font-size:14px}
+/* One baseline under all five, so the bars read as a single chart rather
+   than five unrelated cells — the same shape as the road on Today. */
+.mg-bar{position:relative;height:120px;display:flex;align-items:flex-end;justify-content:center;
+  padding:0 12px 16px}
+.mg-bar i{display:block;width:100%;max-width:74px;border-radius:5px 5px 0 0;background:var(--zc)}
+.mg-bar .mg-dash{align-self:flex-end;margin-bottom:0}
+/* the label sits on the same baseline as the foot of the bars */
+.mg-barlab{display:flex;align-items:flex-end;padding:0 14px 16px;
+  font-family:var(--mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink-45)}
 
 /* Programme and name cells read as a list down the column, one per line —
    the way the paper form lists them. Chips wrapping side by side turned a
@@ -2030,6 +2040,7 @@ const STRINGS={en:{
   'map.running':      'running',
   'map.addprog':      '+ Add a program',
   'map.people':       'People',
+  'map.reach':        'Reached',
   'map.names':        'Names',
   'map.new':          'new',
   'map.note':         'The programs you offer are above, the people you care for are below.',
@@ -2790,6 +2801,22 @@ function mapGridHTML(){
                   value="${c[i]}" aria-label="${plain(t('map.aria.count',{ch:plain(zname(z))}))}">
            <button class="stp" data-cnt="${i}:1" aria-label="${plain(t('map.aria.more'))}">+</button>
          </div>`).join('');
+
+  /* Bars off one baseline, in the same five columns as the programmes above.
+     Mel and Dave asked for this independently on 19 and 20 Sep: the People
+     half was a single stepper row against four programme rows, so the sheet
+     read as though the programmes mattered more. Dave: "the size of the top
+     and bottom are not matched visually... just show a bar with the
+     representative number of people."
+
+     Same scale rule as the road on Today — 12% floor so a challenge with
+     one student still shows, and a shared maximum so the five are
+     comparable with each other. */
+  const pmx=Math.max(1,...c);
+  h+=`<div class="mg-gut mg-barlab">${t('map.reach')}</div>`;
+  h+=ZONES.map((z,i)=>`<div class="mg-bar" style="--zc:var(${z.v})">${
+    c[i] ? `<i style="height:${12+80*(c[i]/pmx)}%"></i>` : '<span class="mg-dash">&ndash;</span>'
+  }</div>`).join('');
 
   if(named){
     h+=`<div class="mg-gut mg-freq">${t('map.names')}</div>`;
