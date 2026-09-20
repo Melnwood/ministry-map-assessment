@@ -411,6 +411,30 @@ that were broken when they landed.
   the roster wiring — stay there until they are done, not merged in pieces.
 - Merge deliberately, and preferably not while someone is mid-session.
 
+## The map's two halves have to weigh the same
+
+**19-20 Sep 2026, asked twice independently.** Dave: *"the size of the top
+and bottom are not matched visually. That can make it feel like the programs
+are taking more space than the people... it keeps bothering me."* Mel, the
+next day, with a screenshot of Today's road beside one of the map: *"use the
+column and rows but the same as on today"*, then *"bars off of the same bar
+with the challenges listed."*
+
+They were describing the same fault. Programmes had a header, a count and
+four frequency rows; People had a header and one stepper row. The sheet is
+supposed to say *these two things are equal, read down a column and compare
+them* — and the layout said the opposite.
+
+People now carries a bar row on one shared baseline, in the same five
+columns, using the same scale rule as the road on Today: a 12 per cent floor
+so one student still shows, and a maximum shared across the five so they are
+comparable with each other.
+
+**The bars must stay in the grid columns.** The whole point of the sheet is
+reading straight down from a programme to the people it reaches. A chart
+that sits below the grid, however pretty, breaks the one thing the form is
+for.
+
 ## A chart is never on one screen
 
 **Before changing anything visual, say where else it appears and ask
