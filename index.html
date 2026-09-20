@@ -429,7 +429,9 @@ button.phtier{cursor:pointer}
    as the other half of the pair. */
 .bf-dn{display:flex;flex-direction:column;align-items:center;padding:8px 10px 12px;
   min-height:168px;background:color-mix(in srgb,var(--zc) 7%,transparent)}
-.bf-bar{display:block;width:100%;max-width:78px;border-radius:7px;background:var(--zc)}
+.bf-bar{display:block;width:100%;border-radius:7px;background:var(--zc)}
+/* no max-width: a people bar is the same width as a program block, so the
+   two halves of the column are the same object seen twice */
 .bf-n{display:flex;align-items:center;gap:7px;margin-top:auto;padding-top:10px}
 .bf-n b{font-family:var(--mono);font-size:20px;font-weight:600}
 .bf-n .cnv{font-size:19px;width:2.4ch;text-align:center}
