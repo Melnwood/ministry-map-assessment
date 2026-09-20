@@ -13,6 +13,33 @@ leader for numbers the map already holds.
 
 ## The framework — get this right, it is the whole point
 
+### ICCE, not CCE — Identity was added
+
+**20 Sep 2026.** Dave: *"We have changed this in the latest version and added
+Identity, which is a really important addition. Because of that it is ICCE,
+Identity, Call, Character and Empowerment."*
+
+Source: **Be Like Jesus #1 — Identity, pp. 31-37.** The teaching is that a
+leader's identity is *ordained* before time, *formed* by the circumstances
+God allowed, and *affirmed* by God directly and through his servants. Pages
+36-37 carry JV's own identity assessment: thirteen scored statements in
+those three groups.
+
+**Three of the thirteen are in the check-up**, one from each group. Not a
+composition — they are lifted from that assessment, and any of the other ten
+can swap in. Three rather than thirteen because the check-up is seven
+statements per phase; thirteen would have made Preparation a third of the
+whole instrument and told a leader the app cares more about them than about
+their ministry.
+
+The other ten stay where they are, in the book, as a leader's own inventory.
+That is what the assessment is for.
+
+**Inserting statements renumbers every one after them.** `q.*` keys are
+positional, so adding three at the top of phase 1 shifted all 35. Regenerate
+the whole `q.*` block from the table after any insert — never hand-edit
+around it.
+
 ### Five Challenges of Christ
 
 These are **invitations a leader makes to a student**. Not programmes, not

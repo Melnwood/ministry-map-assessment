@@ -35,7 +35,7 @@
   const OK=new Set([
     ...words("CB Frydlant Frýdlant youth Katka Boza Boža Czech Republic"),
     ...words("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec"),
-    ...words("CCE SIX TAR CPR REST mo am pm"),
+    ...words("ICCE CCE SIX TAR CPR REST mo am pm"),   /* CCE became ICCE on 20 Sep */
     ...STUDENTS.flatMap(x=>words(x.name)),
     ...LEADERS.flatMap(words),
     ...PROGRAMS.flatMap(x=>words(x.name)),
