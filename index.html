@@ -183,6 +183,17 @@ h2{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.01
 .bar{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--ink-08)}
 .bar .lb{font-size:14px;font-weight:500;min-width:150px}
 .bar .vl{font-size:13.5px;font-weight:600;min-width:118px;color:var(--ink-45)}
+/* Each phase's categories in their own panel, so the eye can see where one
+   tool ends and the next begins without reading the tag on every row. */
+.catgrp{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  padding:6px 18px 10px;margin-bottom:10px}
+.catgrp.mine{border-color:var(--phase);box-shadow:0 0 0 1px var(--phase)}
+.catgrp-hd{display:flex;align-items:baseline;gap:10px;padding:11px 0 7px;
+  border-bottom:1px solid var(--ink-08);margin-bottom:2px}
+.cg-acr{font-family:var(--mono);font-size:14px;font-weight:600;letter-spacing:.1em;
+  color:var(--phase)}
+.cg-ph{font-family:var(--display);font-weight:700;font-size:14.5px}
+.catgrp .bar:last-child{border-bottom:0}
 .bar.true .vl{color:var(--z3-t)} .bar.part .vl{color:var(--z4-t)} .bar.not .vl{color:var(--phase)}
 .bar .lb{flex:1}
 .act{display:flex;gap:15px;padding:17px 0;border-bottom:1px solid var(--line)}
@@ -436,6 +447,29 @@ button.phtier{cursor:pointer}
 .bf-n b{font-family:var(--mono);font-size:20px;font-weight:600}
 .bf-n .cnv{font-size:19px;width:2.4ch;text-align:center}
 .bf-n .stp{width:22px;height:22px;font-size:14px}
+
+/* The year: the same spine and the same detached, rounded bar as the map,
+   so a check-up looks like the thing it is a snapshot of. */
+.ybf{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.ybf-col{display:flex;flex-direction:column}
+.ybf-spine{display:flex;align-items:center;gap:6px;padding:9px 11px;border-radius:7px;
+  background:var(--zc);color:#fff;font-size:12px;font-weight:600;line-height:1.2}
+.ybf-spine i{font-family:var(--mono);font-size:9.5px;font-style:normal;opacity:.75}
+.ybf-up{display:flex;flex-direction:column-reverse;justify-content:flex-start;gap:3px;
+  padding-bottom:6px}
+.ybf-p{display:flex;align-items:baseline;gap:6px;border-radius:6px;padding:5px 8px;
+  background:var(--zc);color:#fff;min-height:26px}
+.ybf-p b{font-size:11.5px;font-weight:600;line-height:1.2}
+.ybf-p i{font-family:var(--mono);font-size:7.5px;letter-spacing:.08em;text-transform:uppercase;
+  font-style:normal;opacity:.82;margin-left:auto;white-space:nowrap}
+.ybf-none{font-family:var(--mono);font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--ink-45);text-align:center;margin-top:auto;padding:6px 0}
+.ybf-note{margin:10px 0 0;font-size:12px;color:var(--ink-45)}
+.ybf-n{font-family:var(--mono);font-size:19px;font-weight:600;padding:6px 2px 0;text-align:center}
+.ybf-n.zero{color:var(--ink-15)}
+.ybf-slot{display:flex;align-items:flex-start;padding-top:6px}
+.ybf-slot b{display:block;width:100%;border-radius:7px;background:var(--zc)}
+@media(max-width:640px){.ybf{gap:5px}.ybf-spine{font-size:10.5px;padding:7px 8px}}
 
 .bf-names{display:flex;flex-direction:column;gap:4px;padding:10px;
   border-top:1px solid var(--ink-08)}
@@ -1304,9 +1338,15 @@ const PROGRAMS=[
    ============================================================ */
 /* `a` holds what the leader answered, 0-3 — not what it scored. */
 const REPORTS=[
- {d:'2025-10-12',t:'19:40',r:0,a:{1:[3,2,3,2,2,2,2],2:[2,2,2,1,2,1,1],3:[1,1,1,1,1,1,0],4:[0,0,1,0,1,0,0],5:[0,0,0,0,0,0,0]}},
- {d:'2026-03-08',t:'20:05',r:1,a:{1:[3,3,3,2,3,2,2],2:[3,2,3,2,2,2,2],3:[2,1,2,1,2,1,1],4:[1,0,1,0,1,1,0],5:[0,0,0,0,0,0,0]}},
- {d:'2026-08-02',t:'09:14',r:2,a:{1:[3,3,3,2,3,2,2],2:[3,2,3,2,3,2,2],3:[2,2,2,2,2,2,1],4:[2,2,1,0,1,0,0],5:[0,0,0,0,0,0,0]}},
+ {d:'2025-10-12',t:'19:40',r:0,a:{1:[3,2,3,2,2,2,2],2:[2,2,2,1,2,1,1],3:[1,1,1,1,1,1,0],4:[0,0,1,0,1,0,0],5:[0,0,0,0,0,0,0]},
+  p:[{name:'Youth club',freq:'Weekly',ch:[1]}]},
+ {d:'2026-03-08',t:'20:05',r:1,a:{1:[3,3,3,2,3,2,2],2:[3,2,3,2,2,2,2],3:[2,1,2,1,2,1,1],4:[1,0,1,0,1,1,0],5:[0,0,0,0,0,0,0]},
+  p:[{name:'Youth club',freq:'Weekly',ch:[1]},
+     {name:'Summer camp',freq:'Yearly',ch:[2,3]}]},
+ {d:'2026-08-02',t:'09:14',r:2,a:{1:[3,3,3,2,3,2,2],2:[3,2,3,2,3,2,2],3:[2,2,2,2,2,2,1],4:[2,2,1,0,1,0,0],5:[0,0,0,0,0,0,0]},
+  p:[{name:'Youth club',freq:'Weekly',ch:[1]},
+     {name:'Summer camp',freq:'Yearly',ch:[2,3]},
+     {name:'Small groups',freq:'Weekly',ch:[3]}]},
  /* ⚠ Phase 1 gains one answer here that the original fixture did not have.
     It was added 31 Aug so Preparation would not tie with Foundation and draw
     the same cake width — a reason that no longer exists, because the cake
@@ -1320,7 +1360,8 @@ const REPORTS=[
 
     Left in place pending Mel's call — reverting it is one edit, restoring
     1:[3,3,3,2,3,2,2] here. Flagged 7 Sep 2026. */
- {d:'2026-08-05',t:'21:30',r:2,a:{1:[3,3,3,3,3,2,2],2:[3,3,3,2,3,2,2],3:[2,2,2,2,2,2,1],4:[2,2,2,0,1,0,0],5:[0,0,0,0,0,0,0]}}
+ {d:'2026-08-05',t:'21:30',r:2,a:{1:[3,3,3,3,3,2,2],2:[3,3,3,2,3,2,2],3:[2,2,2,2,2,2,1],4:[2,2,2,0,1,0,0],5:[0,0,0,0,0,0,0]},
+  p:PROGRAMS.map(x=>({name:x.name,freq:x.freq,ch:x.ch.slice()}))}
 ];
 const qIx=q=>Q.filter(x=>x.phase===q.phase).indexOf(q);
 const ansIn=(rep,q)=>rep.a[q.phase][qIx(q)];
@@ -1397,7 +1438,14 @@ const blanksHTML=(b,note)=>!b?'':`<div class="blanks">
 /* students at Follow Me or beyond — the only movement counts can show */
 const deeper=ci=>{const c=zoneCounts(ci);return c[2]+c[3]+c[4]};
 
-const coverage=()=>{const c={1:[],2:[],3:[],4:[],5:[]};PROGRAMS.forEach(p=>p.ch.forEach(x=>c[x].push(p)));return c};
+/* `list` lets a past check-up be read against the programs that were
+   running when it was taken, rather than the ones running now. */
+const coverageOf=list=>{const c={1:[],2:[],3:[],4:[],5:[]};
+  (list||[]).forEach(p=>p.ch.forEach(x=>c[x].push(p)));return c};
+const coverage=()=>coverageOf(PROGRAMS);
+/* A report taken before programs were snapshotted has none: say so rather
+   than borrowing today's, which would assert something nobody recorded. */
+const programsAt=r=>r && r.p ? r.p : null;
 const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 const el=(h)=>{const d=document.createElement('div');d.innerHTML=h;return d};
 
@@ -2143,6 +2191,7 @@ const STRINGS={en:{
   'reports.none.lede':'Every check-up you take is saved here with its date, and nothing is ever written over. The first one is the one that makes the rest worth comparing.',
   'time.one.title':   'One check-up so far',
   'time.one.lede':    'This page compares two, so there is nothing to draw yet. Yours is from {date} &mdash; take another whenever it helps, and this fills in.',
+  'time.noprograms':  'This check-up was taken before the app started keeping a record of which programs were running, so only the people are shown.',
   'time.one.see':     'See that report',
   'check.first.title':'First, who is in your group?',
   'check.first.lede': 'This part of the check-up reads off your map, and your map is still empty. Add how many students have reached each challenge &mdash; numbers only, no names &mdash; and come back. It takes a minute and it means you never type it twice.',
@@ -2666,6 +2715,31 @@ const spanLabel=x=>{
       : t('span.ym',{y:Math.floor(m/12), m:m%12});
   return x.current ? t('span.sofar',{span:label}) : label;
 };
+
+/* One check-up, drawn the way the map draws its lower half: the challenge
+   spine, and the people hanging off it.
+
+   Only the lower half. A check-up records its date, its roster and its
+   answers — it does not record which programs were running that month, so
+   there is no honest way to draw the top half of a butterfly for a date in
+   the past. Today's programs above 2025's counts would assert something
+   nobody measured. See CLAUDE.md, "The year cannot show programs". */
+function spineBarsHTML(r, mx, upmx){
+  const c=zoneCounts(r.r), cov=coverageOf(programsAt(r)), known=!!programsAt(r);
+  const BLOCK=30;
+  return `<div class="ybf">${ZONES.map((z,i)=>{
+    const ps=cov[z.n];
+    return `<div class="ybf-col" style="--zc:var(${z.v})">
+      <div class="ybf-up" style="min-height:${Math.max(1,upmx)*BLOCK+4}px">${
+        !known ? '' :
+        ps.length ? ps.map(x=>`<span class="ybf-p"><b>${esc(x.name)}</b><i>${freqLabel(x.freq)}</i></span>`).join('')
+                  : `<span class="ybf-none">${t('map.nothinghere')}</span>`}</div>
+      <div class="ybf-spine"><i>${z.n}</i>${zname(z)}</div>
+      <div class="ybf-slot">${c[i]?`<b style="height:${16+86*(c[i]/mx)}px"></b>`:''}</div>
+      <div class="ybf-n${c[i]?'':' zero'}">${c[i]}</div>
+    </div>`;}).join('')}</div>${
+    known?'':`<p class="ybf-note">${t('time.noprograms')}</p>`}`;
+}
 
 /* The road: five milestones left to right, column height = how many people.
    Used on Today. The vertical cake below is still the then/now comparison. */
@@ -3296,15 +3370,29 @@ function vReport(){
     <div class="sec">
       <div class="sec-hd"><h2>${t('report.every')}</h2><span class="n">${t('report.measured',{n:ranked.length})}</span></div>
       ${(()=>{
-        /* Grouped by phase, and inside a phase in the tool's own order —
-           so REST reads Restructure, Entrust, Support, Train. Sorting the
-           whole list by score scattered the letters and the acronym beside
-           each one stopped meaning anything. The weakest is still called
-           out by name in the panel above. */
-        const order=[]; PHASES.forEach(ps=>TOOLS[ps.tool].words.forEach(w=>order.push(w)));
-        return order.filter(w=>cats[w]).map(w=>[w,cats[w]]);})()
-        .map(k=>{const b=band(k[1].v),acr=CAT_TOOL[k[0]],mine=CAT_PHASE[k[0]]===ph;
-        return `<div class="bar ${b.k}"><div class="lb">${catLabel(k[0])}${acr?`<span class="acrtag ${mine?'mine':''}">${acr}</span>`:''}${mine?`<span class="tag">${t('report.yourphase')}</span>`:''}</div>${pips(k[1].v)}<div class="vl">${bandLabel(k[1].v)}</div></div>`}).join('')}
+        /* One panel per phase, headed by its tool. Mel, 20 Sep: "every
+           category can you put the groupings in their own window."
+
+           Twenty-one rows in a single list gave no clue where CCE ended and
+           SIX began, so the acronym tag beside each row was doing work the
+           layout should have done. Inside a panel the rows keep the tool's
+           own order — REST reads Restructure, Entrust, Support, Train —
+           which is why they are not sorted by score. */
+        return PHASES.map(ps=>{
+          const tk=ps.tool, rows=TOOLS[tk].words.filter(w=>cats[w]).map(w=>[w,cats[w]]);
+          if(!rows.length) return '';
+          const mine=ps.n===ph;
+          return `<div class="catgrp${mine?' mine':''}">
+            <div class="catgrp-hd">
+              <span class="cg-acr">${tk}</span>
+              <span class="cg-ph">${pname(ps)}</span>
+              ${mine?`<span class="tag">${t('report.yourphase')}</span>`:''}
+            </div>
+            ${rows.map(k=>{const b=band(k[1].v);
+              return `<div class="bar ${b.k}"><div class="lb">${catLabel(k[0])}</div>${
+                pips(k[1].v)}<div class="vl">${bandLabel(k[1].v)}</div></div>`}).join('')}
+          </div>`;
+        }).join('');})()}
     </div>
   </div></div>`;
 }
@@ -3614,11 +3702,15 @@ function vTime(){
     <div class="sec">
       <div class="sec-hd"><h2>${t('time.shape')}</h2><span class="n">${t('time.thennow')}</span></div>
       ${(()=>{const mx=Math.max(1,...zoneCounts(F.r),...zoneCounts(L.r));
+        /* both halves share a scale across the two dates, or the comparison
+           is between two charts drawn to different rulers */
+        const upmx=Math.max(1,...[F,L].flatMap(r=>{const cv=coverageOf(programsAt(r));
+          return ZONES.map(z=>cv[z.n].length);}));
         return `<div class="tnstack">
           <div class="tn-one"><div class="tn-lab">${fmtDate(F)}<span>${tn('time.students',t0)}</span></div>
-            ${roadHTML(F.r,{mx})}</div>
+            ${spineBarsHTML(F,mx,upmx)}</div>
           <div class="tn-one now"><div class="tn-lab">${fmtDate(L)}<span>${tn('time.students',t1)}</span></div>
-            ${roadHTML(L.r,{mx})}</div>
+            ${spineBarsHTML(L,mx,upmx)}</div>
         </div>`})()}
       <p class="note" style="margin-top:14px">${t('time.shape.note')}${furthest?' '+t('time.shape.moved',{who:furthest.name,
           from:plain(zname(ZONES[furthest.hist[F.r]-1])), to:plain(zname(ZONES[furthest.hist[L.r]-1]))})
@@ -4096,9 +4188,14 @@ document.addEventListener('click',e=>{
     if(quizIx-1>=Q.length){
       const now=new Date(), byPhase={};
       PHASES.forEach(p=>byPhase[p.n]=Q.filter(q=>q.phase===p.n).map(q=>answers[q.id]??A_NONE));
+      /* Snapshot the programs as they are right now. Without this a check-up
+         can only ever be read against today's programs, and the year cannot
+         show what actually changed. Deep-copied: renaming a program later
+         must not rewrite what was true in March. */
       REPORTS.push({d:now.toISOString().slice(0,10),
                     t:String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0'),
-                    r:2, a:byPhase});
+                    r:2, a:byPhase,
+                    p:PROGRAMS.map(x=>({name:x.name,freq:x.freq,ch:x.ch.slice()}))});
       openIx=REPORTS.length-1; selPhase=null; active='report'; renderTabs(); render();
       window.scrollTo({top:0,behavior:'instant'});
     } else render();}
