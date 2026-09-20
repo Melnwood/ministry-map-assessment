@@ -379,6 +379,65 @@ button.phtier{cursor:pointer}
    rule — that alignment is the whole information design. Wide content
    scrolls inside its own box; the page never scrolls sideways.
    ============================================================ */
+/* ---------- THE MAP: one chart with a spine ----------
+   Programs grow up, people grow down, the five challenges run between them.
+   Both halves share the same five columns, because reading straight down
+   from a program to the people it reaches is what the sheet is for. */
+.bfwrap{margin-top:26px;overflow-x:auto;border:1px solid var(--line);
+  border-radius:var(--r);background:var(--surface)}
+.bf{display:grid;grid-template-columns:118px repeat(5,minmax(150px,1fr));min-width:840px}
+
+.bf-gut{padding:12px 14px;display:flex;flex-direction:column;justify-content:flex-end;
+  border-right:1px solid var(--ink-08)}
+.bf-gut b{font-family:var(--display);font-size:26px;font-weight:800;line-height:1;
+  letter-spacing:-.02em}
+.bf-gut span{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--ink-45);margin-top:2px}
+.bf-gut em{font-family:var(--display);font-style:normal;font-weight:700;font-size:15px;
+  margin-top:8px}
+.bf-gut.up{justify-content:flex-end;padding-bottom:14px}
+.bf-gut.dn{justify-content:flex-start;padding-top:14px}
+.bf-gut.spine{border-right-color:transparent}
+.bf-gut.names{justify-content:flex-start;padding-top:12px;font-family:var(--mono);
+  font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-45)}
+
+/* up: first program sits against the spine, the stack grows away from it */
+.bf-up{display:flex;flex-direction:column-reverse;justify-content:flex-start;
+  gap:4px;padding:8px 10px;background:color-mix(in srgb,var(--zc) 7%,transparent)}
+.pblock{width:100%;text-align:left;border:0;cursor:pointer;border-radius:7px;
+  padding:7px 10px;background:var(--zc);color:#fff;font:inherit;
+  display:flex;align-items:baseline;gap:8px;min-height:34px}
+.pblock b{font-size:13px;font-weight:600;line-height:1.2}
+.pblock i{font-family:var(--mono);font-size:8.5px;letter-spacing:.09em;
+  text-transform:uppercase;font-style:normal;opacity:.82;margin-left:auto;white-space:nowrap}
+.pblock.is{outline:2px solid var(--ink);outline-offset:1px}
+.bf-none{font-family:var(--mono);font-size:9.5px;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--ink-45);align-self:center;padding:10px 0}
+.bf-up .bf-none{margin-top:auto}      /* sit against the spine, like a block would */
+
+/* the spine itself */
+.bf-spine{display:flex;align-items:center;gap:7px;padding:11px 12px;
+  background:var(--zc);color:#fff;font-size:12.5px;font-weight:600;line-height:1.2}
+.bf-spine i{font-family:var(--mono);font-size:10px;font-style:normal;opacity:.75}
+
+/* down: the bar hangs from the spine */
+/* The bar hangs from the spine and the count sits on a common line at the
+   foot, not under each bar — five sets of controls at five different
+   heights read as a mistake. */
+.bf-dn{display:flex;flex-direction:column;align-items:center;padding:0 10px 12px;
+  min-height:168px;background:color-mix(in srgb,var(--zc) 7%,transparent)}
+.bf-bar{display:block;width:100%;max-width:78px;border-radius:0 0 5px 5px;background:var(--zc)}
+.bf-n{display:flex;align-items:center;gap:7px;margin-top:auto;padding-top:10px}
+.bf-n b{font-family:var(--mono);font-size:20px;font-weight:600}
+.bf-n .cnv{font-size:19px;width:2.4ch;text-align:center}
+.bf-n .stp{width:22px;height:22px;font-size:14px}
+
+.bf-names{display:flex;flex-direction:column;gap:4px;padding:10px;
+  border-top:1px solid var(--ink-08)}
+.bf-foot{border-top:1px solid var(--ink-08);padding:4px 14px}
+
+@media(max-width:720px){.bf{grid-template-columns:96px repeat(5,minmax(132px,1fr))}}
+
 .mgwrap{margin-top:26px;overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
 .mgrid{display:grid;grid-template-columns:112px repeat(5,minmax(148px,1fr));min-width:800px;align-items:stretch}
 
@@ -2040,7 +2099,8 @@ const STRINGS={en:{
   'map.running':      'running',
   'map.addprog':      '+ Add a program',
   'map.people':       'People',
-  'map.reach':        'Reached',
+  'map.nothinghere':  'nothing yet',
+  'map.nobodyyet':    'nobody yet',
   'map.names':        'Names',
   'map.new':          'new',
   'map.note':         'The programs you offer are above, the people you care for are below.',
@@ -2766,77 +2826,79 @@ function intakeHTML(){
 function mapGridHTML(){
   const named=hasNames();
   const c=zoneCounts(NOW), tot=c.reduce((a,b)=>a+b,0), cov=coverage();
-  const inCell=(zn,fq)=>PROGRAMS.map((p,pi)=>({p,pi})).filter(x=>x.p.ch.includes(zn)&&x.p.freq===fq);
 
-  let h='<div class="mgwrap"><div class="mgrid">';
+  /* ---------- The map as one chart, not two tables ----------
+     Mel, 20 Sep: "i want the programs to go up from the challenge bar and
+     the people to go down. in the program bar it would say the event and
+     the frequency."
 
-  h+=`<div class="mg-gut mg-title">${t('map.programs')}</div>`;
-  h+=ZONES.map(z=>`<div class="mg-ch" style="--zc:var(${z.v})"><i>${z.n}</i>${zname(z)}</div>`).join('');
+     The challenges are the spine. What you offer grows up from it, one
+     block per program carrying its own name and how often it runs; who you
+     have grows down from it. The two halves read against each other at a
+     glance, which is the whole argument of the paper form — and it is why
+     frequency moved into the block. As four fixed rows it forced every
+     column to be four rows tall whether anything ran or not. */
+  const upmx=Math.max(1,...ZONES.map(z=>cov[z.n].length));   /* tallest stack */
+  const dnmx=Math.max(1,...c);
+  const BLOCK=38;                                            /* one program */
 
-  h+=`<div class="mg-gut mg-count"><b>${PROGRAMS.length}</b><span>${t('map.running')}</span></div>`;
-  h+=ZONES.map(z=>{const n=cov[z.n].length;
-    return `<div class="mg-num${n?'':' zero'}" style="--zc:var(${z.v})">${n}</div>`}).join('');
+  let h='<div class="bfwrap"><div class="bf">';
 
-  FREQS.forEach(fq=>{
-    h+=`<div class="mg-gut mg-freq">${freqLabel(fq)}</div>`;
-    h+=ZONES.map(z=>{const items=inCell(z.n,fq);
-      return `<div class="mg-cell" style="--zc:var(${z.v})">${items.length
-        ? items.map(x=>`<button class="pchip${selProgram===x.pi?' is':''}" data-prog="${x.pi}" style="--zc:var(${z.v})">${esc(x.p.name)}</button>`).join('')
-        : '<span class="mg-dash">&ndash;</span>'}</div>`}).join('');
-  });
-  h+='<div class="mg-gut mg-freq"></div>';
-  h+=`<div class="mg-wide"><button class="mg-addb" data-newprog="open">${t('map.addprog')}</button></div>`;
+  /* --- what you offer, growing up --- */
+  h+=`<div class="bf-gut up"><b>${PROGRAMS.length}</b><span>${t('map.running')}</span>
+        <em>${t('map.programs')}</em></div>`;
+  h+=ZONES.map(z=>{
+    const items=PROGRAMS.map((p,pi)=>({p,pi})).filter(x=>x.p.ch.includes(z.n));
+    return `<div class="bf-up" style="--zc:var(${z.v});min-height:${upmx*BLOCK+8}px">${
+      items.length
+        ? items.map(x=>`<button class="pblock${selProgram===x.pi?' is':''}" data-prog="${x.pi}"
+              style="--zc:var(${z.v})"><b>${esc(x.p.name)}</b><i>${freqLabel(x.p.freq)}</i></button>`).join('')
+        : `<span class="bf-none">${t('map.nothinghere')}</span>`}</div>`;
+  }).join('');
 
-  h+='<div class="mg-rule"></div>';
+  /* --- the spine --- */
+  h+=`<div class="bf-gut spine"></div>`;
+  h+=ZONES.map(z=>`<div class="bf-spine" style="--zc:var(${z.v})"><i>${z.n}</i>${zname(z)}</div>`).join('');
 
-  h+=`<div class="mg-gut mg-title">${t('map.people')}</div>`;
-  h+=ZONES.map(z=>`<div class="mg-ch" style="--zc:var(${z.v})"><i>${z.n}</i>${zname(z)}</div>`).join('');
-
-  h+=`<div class="mg-gut mg-count"><b id="cnt-tot">${tot}</b><span>${t('today.students')}</span></div>`;
-  h+=ZONES.map((z,i)=>named
-      ? `<div class="mg-num${c[i]?'':' zero'}" style="--zc:var(${z.v})">${c[i]}</div>`
-      : `<div class="mg-num edit" style="--zc:var(${z.v})">
-           <button class="stp" data-cnt="${i}:-1" aria-label="${plain(t('map.aria.fewer'))}">&minus;</button>
+  /* --- who you have, growing down --- */
+  h+=`<div class="bf-gut dn"><b id="cnt-tot">${tot}</b><span>${t('today.students')}</span>
+        <em>${t('map.people')}</em></div>`;
+  h+=ZONES.map((z,i)=>`<div class="bf-dn" style="--zc:var(${z.v})">
+      ${c[i]?`<i class="bf-bar" style="height:${16+94*(c[i]/dnmx)}px"></i>`
+            :`<span class="bf-none">${t('map.nobodyyet')}</span>`}
+      <div class="bf-n">${named
+        ? `<b>${c[i]}</b>`
+        : `<button class="stp" data-cnt="${i}:-1" aria-label="${plain(t('map.aria.fewer'))}">&minus;</button>
            <input class="cnv" id="cnv${i}" data-cntv="${i}" type="text" inputmode="numeric"
                   value="${c[i]}" aria-label="${plain(t('map.aria.count',{ch:plain(zname(z))}))}">
-           <button class="stp" data-cnt="${i}:1" aria-label="${plain(t('map.aria.more'))}">+</button>
-         </div>`).join('');
+           <button class="stp" data-cnt="${i}:1" aria-label="${plain(t('map.aria.more'))}">+</button>`}
+      </div>
+    </div>`).join('');
 
-  /* Bars off one baseline, in the same five columns as the programmes above.
-     Mel and Dave asked for this independently on 19 and 20 Sep: the People
-     half was a single stepper row against four programme rows, so the sheet
-     read as though the programmes mattered more. Dave: "the size of the top
-     and bottom are not matched visually... just show a bar with the
-     representative number of people."
-
-     Same scale rule as the road on Today — 12% floor so a challenge with
-     one student still shows, and a shared maximum so the five are
-     comparable with each other. */
-  const pmx=Math.max(1,...c);
-  h+=`<div class="mg-gut mg-barlab">${t('map.reach')}</div>`;
-  h+=ZONES.map((z,i)=>`<div class="mg-bar" style="--zc:var(${z.v})">${
-    c[i] ? `<i style="height:${12+80*(c[i]/pmx)}%"></i>` : '<span class="mg-dash">&ndash;</span>'
-  }</div>`).join('');
-
+  /* --- names, when there are any --- */
   if(named){
-    h+=`<div class="mg-gut mg-freq">${t('map.names')}</div>`;
+    h+=`<div class="bf-gut names">${t('map.names')}</div>`;
     h+=ZONES.map(z=>{const inz=STUDENTS.filter(x=>x.hist[NOW]===z.n);
-      return `<div class="mg-cell" style="--zc:var(${z.v})">${inz.map(x=>{
+      return `<div class="bf-names" style="--zc:var(${z.v})">${inz.map(x=>{
         const d=x.hist[NOW]-(x.hist[1]||x.hist[NOW]);
         const tag=!x.hist[1]?`<i class="mv">${t('map.new')}</i>`:d>0?`<i class="mv">+${d}</i>`:d<0?`<i class="mv back">${d}</i>`:'';
         return `<button class="schip${selStudent===x.id?' is':''}" data-sel="${x.id}" style="--zc:var(${z.v})">${esc(x.name)}${tag}</button>`;
       }).join('')}<button class="schip add" data-adding="${z.n}" aria-label="${plain(t('map.aria.addhere'))}">+</button></div>`}).join('');
   }
 
-  h+='</div></div>';
-  /* The two totals do not have to agree and it is not an error: a programme
+  h+='</div>';
+  h+=`<div class="bf-foot"><button class="mg-addb" data-newprog="open">${t('map.addprog')}</button></div>`;
+  h+='</div>';
+
+  /* The two totals do not have to agree and it is not an error: a program
      may make two challenges, so the row across can come to more than the
      number running. The paper form has the same property. */
-  const sum=ZONES.reduce((t,z)=>t+cov[z.n].length,0);
+  const sum=ZONES.reduce((a,z)=>a+cov[z.n].length,0);
   h+=`<p class="mg-note">${t('map.note')}${
     sum>PROGRAMS.length?' '+t('map.note.overlap'):''}</p>`;
   return h;
 }
+
 
 /* Whatever is open gets a full-width panel under the grid rather than
    expanding inside a column — a column is 1/5 of the page and a student

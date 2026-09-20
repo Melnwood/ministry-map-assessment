@@ -425,15 +425,29 @@ four frequency rows; People had a header and one stepper row. The sheet is
 supposed to say *these two things are equal, read down a column and compare
 them* — and the layout said the opposite.
 
-People now carries a bar row on one shared baseline, in the same five
-columns, using the same scale rule as the road on Today: a 12 per cent floor
-so one student still shows, and a maximum shared across the five so they are
-comparable with each other.
+The first attempt bolted a bar row onto the bottom of the existing grid.
+Mel, looking at it: *"this is not what i was pictureing. i want the programs
+to go up from the challenge bar and the people to go down. in the program
+bar it would say the event and the frequency."*
 
-**The bars must stay in the grid columns.** The whole point of the sheet is
-reading straight down from a programme to the people it reaches. A chart
-that sits below the grid, however pretty, breaks the one thing the form is
-for.
+**So the map is one chart with a spine, not two stacked tables.** The five
+challenges run through the middle. What you offer grows up from them, one
+block per program carrying its own name and how often it runs. Who you have
+grows down. The two halves read against each other at a glance, which is the
+argument the paper form is making.
+
+Frequency moved out of fixed rows and into the block. As four rows — weekly,
+bi-weekly, monthly, yearly — every column was four rows tall whether
+anything ran in them or not, which is most of why the halves looked
+unbalanced in the first place.
+
+**Both halves keep the same five columns.** Reading straight down from a
+program to the people it reaches is the one thing the form exists to do. A
+chart that breaks the columns, however good it looks, is not this form.
+
+**A column with nothing in it says so.** "Nothing yet" sits against the
+spine where a block would be — an invitation nobody makes is the finding,
+not an empty cell.
 
 ## A chart is never on one screen
 
