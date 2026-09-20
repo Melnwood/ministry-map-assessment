@@ -424,9 +424,12 @@ button.phtier{cursor:pointer}
 /* The bar hangs from the spine and the count sits on a common line at the
    foot, not under each bar — five sets of controls at five different
    heights read as a mistake. */
-.bf-dn{display:flex;flex-direction:column;align-items:center;padding:0 10px 12px;
+/* The bar sits off the spine by the same 8px the program blocks do, and is
+   rounded the same way. Attached, it read as part of the spine rather than
+   as the other half of the pair. */
+.bf-dn{display:flex;flex-direction:column;align-items:center;padding:8px 10px 12px;
   min-height:168px;background:color-mix(in srgb,var(--zc) 7%,transparent)}
-.bf-bar{display:block;width:100%;max-width:78px;border-radius:0 0 5px 5px;background:var(--zc)}
+.bf-bar{display:block;width:100%;max-width:78px;border-radius:7px;background:var(--zc)}
 .bf-n{display:flex;align-items:center;gap:7px;margin-top:auto;padding-top:10px}
 .bf-n b{font-family:var(--mono);font-size:20px;font-weight:600}
 .bf-n .cnv{font-size:19px;width:2.4ch;text-align:center}
