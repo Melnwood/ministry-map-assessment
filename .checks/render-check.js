@@ -4,6 +4,17 @@
    a day of shipping first and finding the fault afterwards. */
 (function(){
   const out={threw:[],empty:[],missingStrings:[]};
+
+  /* Every report must carry exactly one answer per statement in each phase.
+     Insert a statement without extending the fixtures and the answers slide
+     onto the wrong statements — silently, with plausible-looking scores. */
+  PHASES.forEach(p=>{
+    const want=Q.filter(q=>q.phase===p.n).length;
+    REPORTS.forEach(r=>{
+      const got=(r.a[p.n]||[]).length;
+      if(got!==want) out.threw.push('report '+r.d+' phase '+p.n+': '+got+' answers for '+want+' statements');
+    });
+  });
   const warn=console.warn;
   console.warn=function(...a){ if(String(a[0]).indexOf('missing string')===0||String(a[0]).indexOf('missing plural')===0) out.missingStrings.push(a[1]); warn.apply(console,a); };
   const views={jesus:'vJesus',today:'vToday',map:'vMap',check:'vCheck',reports:'vReports',report:'vReport',time:'vTime',notes:'vNotes',translate:'vTranslate'};
