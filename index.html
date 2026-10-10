@@ -188,6 +188,11 @@ h2{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.01
 .catgrp{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
   padding:6px 18px 10px;margin-bottom:10px}
 .catgrp.mine{border-color:var(--phase);box-shadow:0 0 0 1px var(--phase)}
+/* Filled, not outlined. An outlined tag the same weight as everything else
+   is what Dave was looking past. */
+.focus{font-family:var(--mono);font-size:9.5px;font-weight:600;letter-spacing:.1em;
+  text-transform:uppercase;color:#fff;background:var(--phase);border-radius:99px;
+  padding:3px 10px;margin-left:auto;align-self:center}
 .catgrp-hd{display:flex;align-items:baseline;gap:10px;padding:11px 0 7px;
   border-bottom:1px solid var(--ink-08);margin-bottom:2px}
 .cg-acr{font-family:var(--mono);font-size:14px;font-weight:600;letter-spacing:.1em;
@@ -2262,7 +2267,11 @@ const STRINGS={en:{
 
   'report.every':     'Every category',
   'report.measured':  '{n} MEASURED',
-  'report.yourphase': 'your phase',
+  /* Dave, 19 Sep: "I wonder if there is a different way to show their
+     phase. Or say 'Focus Here'. The current tags wouldn't draw my attention
+     enough." He is right that "your phase" only labels; the report's job is
+     to say what to work on. */
+  'report.focushere': 'Focus here',
 
   /* ---------- A phase card ----------
      STORY — essence, about, turn, risk, door — is deliberately NOT here.
@@ -3427,7 +3436,7 @@ function vReport(){
             <div class="catgrp-hd">
               <span class="cg-acr">${tk}</span>
               <span class="cg-ph">${pname(ps)}</span>
-              ${mine?`<span class="tag">${t('report.yourphase')}</span>`:''}
+              ${mine?`<span class="focus">${t('report.focushere')}</span>`:''}
             </div>
             ${rows.map(k=>{const b=band(k[1].v);
               return `<div class="bar ${b.k}"><div class="lb">${catLabel(k[0])}</div>${
